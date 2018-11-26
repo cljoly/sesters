@@ -1,0 +1,7 @@
+[package]
+name = "sesters"
+version = "0.1.0"
+authors = ["Leo <leowzukw@171819.xyz>"]
+edition = "2018"
+
+[dependencies]
