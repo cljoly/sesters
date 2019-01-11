@@ -19,20 +19,26 @@ along with this program.  If not, see <https://www.gnu.org/licenses/>.
 use serde_derive::{Deserialize, Serialize};
 
 /// Position of a symbol against an amount
-#[derive(Debug, PartialEq, Serialize, Deserialize)]
+#[derive(Debug, PartialOrd, PartialEq, Serialize, Deserialize)]
 pub enum Pos {
     Before,
     After,
 }
 
+impl Default for Pos {
+    fn default() -> Pos {
+        Pos::After
+    }
+}
+
 /// Represent a currency like US Dollar or Euro, with its symbols
-#[derive(Debug, PartialEq, Serialize, Deserialize)]
+#[derive(Debug, Default, PartialOrd, PartialEq, Serialize, Deserialize)]
 pub struct Currency {
-    /// Symbols, like ₿, ฿ or Ƀ for Bitcoin
+    /// Symbols, like ₿, ฿ or Ƀ for Bitcoin. Vec must not be empty
     symbols: Vec<String>,
-    /// ISO4217-ish symbol, like BTC or XBT for Bitcoin
+    /// ISO4217-ish symbol, like BTC or XBT for Bitcoin. Vec must not be empty
     isos: Vec<String>,
-    /// Human name(s)
+    /// Human name(s). Vec must not be empty
     names: Vec<String>,
     /// Position to display symbols
     pos: Pos,
@@ -43,6 +49,11 @@ impl Currency {
         &self.isos
     }
 
+    /// Main iso symbol for a currency, USD for instance
+    pub fn get_main_iso(&self) -> &str {
+        return &self.isos[1];
+    }
+
     pub fn names(&self) -> &Vec<String> {
         &self.names
     }
@@ -51,8 +62,11 @@ impl Currency {
         &self.symbols
     }
 
-    /// Constructor, copies the &str given
+    /// Constructor, copies the &str given. Panics if vectors are empty TODO Use Result type instead
     pub fn new(symbols: Vec<String>, isos: Vec<String>, names: Vec<String>, pos: Pos) -> Currency {
+        assert!(symbols.len() > 0);
+        assert!(isos.len() > 0);
+        assert!(names.len() > 0);
         Currency {
             symbols,
             isos,
@@ -67,12 +81,13 @@ impl Currency {
             symbols.into_iter().map(|s| String::from(s)).collect(),
             isos.into_iter().map(|s| String::from(s)).collect(),
             names.into_iter().map(|s| String::from(s)).collect(),
-            pos)
+            pos,
+        )
     }
 
     /// Simplified construcor for currency with only one name, iso, symbol.
-    pub fn from_simple(symbol: &str, iso: &str, name: &str, pos: Pos) -> Currency {
-        Currency::new(
+    pub fn from_simple(symbol: &str, iso: &str, name: &str, pos: Pos) -> Self {
+        Self::new(
             vec![symbol.to_string()],
             vec![iso.to_string()],
             vec![name.to_string()],

@@ -16,13 +16,13 @@ You should have received a copy of the GNU General Public License
 along with this program.  If not, see <https://www.gnu.org/licenses/>.
  */
 
-use log::{info, warn};
+use log::info;
 
 mod currency;
 mod price_in_text;
+mod config;
 
 fn main() {
     env_logger::init();
     info!("Starting up");
-    info!("")
 }

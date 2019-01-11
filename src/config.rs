@@ -18,32 +18,37 @@ along with this program.  If not, see <https://www.gnu.org/licenses/>.
 
 // Store and retrieve user configuration
 
+use serde_derive::{Deserialize, Serialize};
 
 /// Configuration file
+#[derive(Serialize, Deserialize)]
 pub struct Config {
     /// Version of the config file
-    version: u8,
+    pub version: u8,
     /// Currencies to support
-    currencies: Vec<String>
+    pub currencies: Vec<String>,
+    /// Path of the database (directory)
+    pub db_path: Path,
 }
 
 impl Default for Config {
-    default() -> Self {
+    fn default() -> Self {
         Config {
             version: 0,
-            currencies: vec!["EUR", "USD", "GBP"]
+            currencies: vec!["EUR".to_string(), "USD".to_string(), "GBP".to_string()],
+            db_path: Path::from("~/.local/share/sesters/db"),
         }
     }
 }
 
-let app_name = "sesters";
+static APP_NAME: &'static str = "sesters";
 
 /// Get current configuration. Doesn’t handle errors, panics
 pub fn get() -> Config {
-    confy::load(app_name).unwrap()
+    confy::load(APP_NAME).unwrap()
 }
 
 /// Change current configuration. Doesn’t handle errors, panics
-fn set(Config) {
-    confy::store(app_name).unwarp()
+fn set(c: Config) {
+    confy::store(APP_NAME, c).unwrap();
 }
