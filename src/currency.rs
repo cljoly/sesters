@@ -16,6 +16,7 @@ You should have received a copy of the GNU General Public License
 along with this program.  If not, see <https://www.gnu.org/licenses/>.
  */
 
+use lazy_static::lazy_static;
 use serde_derive::{Deserialize, Serialize};
 
 /// Position of a symbol against an amount
@@ -98,24 +99,29 @@ impl Currency {
 
 /// Some common currency
 /// Symbols and ISO are take form Wikipedia
-// TODO Use laziness to build only one of each currency
 
-/// https://en.wikipedia.org/wiki/Bitcoin
-pub fn btc() -> Currency {
-    Currency::from(
+lazy_static! {
+    /// https://en.wikipedia.org/wiki/Bitcoin
+    pub static ref BTC: Currency = Currency::from(
         vec!["₿", "฿", "Ƀ"],
         vec!["BTC", "XBT"],
         vec!["Bitcoin"],
         Pos::After,
-    )
+    );
+
+    /// https://en.wikipedia.org/wiki/United_States_dollar
+    pub static ref USD: Currency = Currency::from_simple("$", "USD", "United States dollar", Pos::Before);
+
+    /// https://en.wikipedia.org/wiki/Euro
+    pub static ref EUR: Currency = Currency::from_simple("€", "EUR", "Euro", Pos::After);
 }
 
-/// https://en.wikipedia.org/wiki/United_States_dollar
-pub fn usd() -> Currency {
-    Currency::from_simple("$", "USD", "United States dollar", Pos::Before)
-}
-
-/// https://en.wikipedia.org/wiki/Euro
-pub fn eur() -> Currency {
-    Currency::from_simple("€", "EUR", "Euro", Pos::After)
+/// Get an existing currency from ISO code
+pub fn existing_from_iso(code: &str) -> Option<Currency> {
+    match code {
+        "EUR" => Some(*EUR),
+        "BTC" => Some(*BTC),
+        "USD" => Some(*USD),
+        _ => None,
+    }
 }
