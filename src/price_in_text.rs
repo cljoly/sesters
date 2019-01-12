@@ -48,13 +48,13 @@ mod tests {
                 _ => panic!("More than one value is Some"),
             };
             println!("===============================");
-            assert_eq!(&iso(&vec![usd()], txt), exp1_usd);
+            assert_eq!(&iso(&vec![*USD], txt), exp1_usd);
             println!("usd ok");
-            assert_eq!(&iso(&vec![eur()], txt), exp2_eur);
+            assert_eq!(&iso(&vec![*EUR], txt), exp2_eur);
             println!("eur ok");
-            assert_eq!(&iso(&vec![btc()], txt), exp3_btc);
+            assert_eq!(&iso(&vec![*BTC], txt), exp3_btc);
             println!("btc ok");
-            assert_eq!(&iso(&vec![usd(), eur(), btc()], txt), &exp.cloned());
+            assert_eq!(&iso(&vec![&*USD, &*EUR, &*BTC], txt), &exp.cloned());
             println!("usd, eur, btc ok");
             println!("===============================");
         }
@@ -81,7 +81,7 @@ mod tests {
 
         #[test]
         fn iso_eur_before() {
-            let eur = eur();
+            let eur = *EUR;
             let currency_amount = Some(CurrencyAmount::new(&eur, 15.));
             test_iso_usd_then_with_other("EUR 15", &None, &currency_amount, &None);
         }
@@ -89,7 +89,7 @@ mod tests {
         /* TODO , Separator
         #[test]
         fn iso_eur_before_float() {
-            let eur = eur();
+            let eur = *EUR;
             let currency_amount = Some(CurrencyAmount::new(&eur, 15.11));
             test_iso_usd_then_with_other("EUR 15,11", &None, &currency_amount, &None);
         }
@@ -97,28 +97,28 @@ mod tests {
 
         #[test]
         fn iso_before() {
-            let usd = usd();
+            let usd = *USD;
             let currency_amount = Some(CurrencyAmount::new(&usd, 13.));
             test_iso_usd_then_with_other("USD 13", &currency_amount, &None, &None);
         }
 
         #[test]
         fn iso_before_float() {
-            let usd = usd();
+            let usd = *USD;
             let currency_amount = Some(CurrencyAmount::new(&usd, 13.5));
             test_iso_usd_then_with_other("USD 13.5", &currency_amount, &None, &None);
         }
 
         #[test]
         fn iso_before_null_amount() {
-            let usd = usd();
+            let usd = *USD;
             let currency_amount = Some(CurrencyAmount::new(&usd, 0.));
             test_iso_usd_then_with_other(&format!("USD 0"), &currency_amount, &None, &None);
         }
 
         #[test]
         fn iso_before_negative_amount() {
-            let usd = usd();
+            let usd = *USD;
             let currency_amount = Some(CurrencyAmount::new(&usd, -12.));
             test_iso_usd_then_with_other(&format!("USD -12"), &currency_amount, &None, &None);
         }
@@ -126,7 +126,7 @@ mod tests {
         /*
         #[test]
         fn iso_after() {
-            let usd = usd();
+            let usd = *USD;
             let currency_amount = Some(CurrencyAmount::new(&usd, 13.));
             test_iso_usd_then_with_other(
                 &format!("13 USD"),

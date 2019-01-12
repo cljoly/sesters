@@ -117,11 +117,11 @@ lazy_static! {
 }
 
 /// Get an existing currency from ISO code
-pub fn existing_from_iso(code: &str) -> Option<Currency> {
+pub fn existing_from_iso(code: &str) -> Option<&Currency> {
     match code {
-        "EUR" => Some(*EUR),
-        "BTC" => Some(*BTC),
-        "USD" => Some(*USD),
+        "EUR" => Some(&*EUR),
+        "BTC" => Some(&*BTC),
+        "USD" => Some(&*USD),
         _ => None,
     }
 }
