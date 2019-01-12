@@ -28,7 +28,7 @@ pub struct Config {
     /// Currencies to support
     pub currencies: Vec<String>,
     /// Path of the database (directory)
-    pub db_path: Path,
+    pub db_path: String,
 }
 
 impl Default for Config {
@@ -36,7 +36,7 @@ impl Default for Config {
         Config {
             version: 0,
             currencies: vec!["EUR".to_string(), "USD".to_string(), "GBP".to_string()],
-            db_path: Path::from("~/.local/share/sesters/db"),
+            db_path: String::from("~/.local/share/sesters/db"),
         }
     }
 }
