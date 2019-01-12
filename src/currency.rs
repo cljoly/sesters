@@ -18,6 +18,18 @@ along with this program.  If not, see <https://www.gnu.org/licenses/>.
 
 use serde_derive::{Deserialize, Serialize};
 
+#[cfg(test)]
+mod tests {
+    use super::*;
+
+    // Test static currencies
+    #[test]
+    fn static_currency() {
+        assert!(EUR.check());
+        assert!(USD.check());
+        assert!(BTC.check());
+    }
+}
 /// Position of a symbol against an amount
 #[derive(Debug, PartialOrd, PartialEq, Serialize, Deserialize)]
 pub enum Pos {
@@ -93,6 +105,7 @@ impl Currency {
 /// Symbols and ISO are take form Wikipedia
 
 /// https://en.wikipedia.org/wiki/Bitcoin
+// TODO Use Currency::new once const fn is in stable
 pub const BTC: Currency = Currency {
     symbols: &["₿", "฿", "Ƀ"],
     isos: &["BTC", "XBT"],

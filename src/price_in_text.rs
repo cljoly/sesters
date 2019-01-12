@@ -34,9 +34,9 @@ mod tests {
 
         fn test_iso_usd_then_with_other(
             txt: &str,
-            exp1_usd: &Option<&CurrencyAmount>,
-            exp2_eur: &Option<&CurrencyAmount>,
-            exp3_btc: &Option<&CurrencyAmount>,
+            exp1_usd: &Option<CurrencyAmount>,
+            exp2_eur: &Option<CurrencyAmount>,
+            exp3_btc: &Option<CurrencyAmount>,
         ) {
             // Infer combination when there is at most one Some
             // let exp2 = exp1_usd.as_ref().or(exp2_eur.as_ref());
@@ -48,13 +48,13 @@ mod tests {
                 _ => panic!("More than one value is Some"),
             };
             println!("===============================");
-            assert_eq!(&iso(&vec![USD.clone()], txt), exp1_usd);
+            assert_eq!(&iso(&vec![USD], txt), exp1_usd);
             println!("usd ok");
-            assert_eq!(&iso(&vec![EUR.clone()], txt), exp2_eur);
+            assert_eq!(&iso(&vec![EUR], txt), exp2_eur);
             println!("eur ok");
-            assert_eq!(&iso(&vec![BTC.clone()], txt), exp3_btc);
+            assert_eq!(&iso(&vec![BTC], txt), exp3_btc);
             println!("btc ok");
-            assert_eq!(&iso(&vec![USD.clone(), EUR.clone(), BTC.clone()], txt), &exp.cloned());
+            assert_eq!(&iso(&vec![USD], txt), &exp.cloned());
             println!("usd, eur, btc ok");
             println!("===============================");
         }
@@ -81,53 +81,53 @@ mod tests {
 
         #[test]
         fn iso_eur_before() {
-            let eur = EUR.clone();
-            let currency_amount = Some(&CurrencyAmount::new(&eur, 15.));
+            let eur = EUR;
+            let currency_amount = Some(CurrencyAmount::new(&eur, 15.));
             test_iso_usd_then_with_other("EUR 15", &None, &currency_amount, &None);
         }
 
         /* TODO , Separator
         #[test]
         fn iso_eur_before_float() {
-            let eur = EUR.clone();
-            let currency_amount = Some(&CurrencyAmount::new(&eur, 15.11));
+            let eur = EUR;
+            let currency_amount = Some(CurrencyAmount::new(&eur, 15.11));
             test_iso_usd_then_with_other("EUR 15,11", &None, &currency_amount, &None);
         }
         */
 
         #[test]
         fn iso_before() {
-            let usd = USD.clone();
-            let currency_amount = Some(&CurrencyAmount::new(&usd, 13.));
+            let usd = USD;
+            let currency_amount = Some(CurrencyAmount::new(&usd, 13.));
             test_iso_usd_then_with_other("USD 13", &currency_amount, &None, &None);
         }
 
         #[test]
         fn iso_before_float() {
-            let usd = USD.clone();
-            let currency_amount = Some(&CurrencyAmount::new(&usd, 13.5));
+            let usd = USD;
+            let currency_amount = Some(CurrencyAmount::new(&usd, 13.5));
             test_iso_usd_then_with_other("USD 13.5", &currency_amount, &None, &None);
         }
 
         #[test]
         fn iso_before_null_amount() {
-            let usd = USD.clone();
-            let currency_amount = Some(&CurrencyAmount::new(&usd, 0.));
+            let usd = USD;
+            let currency_amount = Some(CurrencyAmount::new(&usd, 0.));
             test_iso_usd_then_with_other(&format!("USD 0"), &currency_amount, &None, &None);
         }
 
         #[test]
         fn iso_before_negative_amount() {
-            let usd = USD.clone();
-            let currency_amount = Some(&CurrencyAmount::new(&usd, -12.));
+            let usd = USD;
+            let currency_amount = Some(CurrencyAmount::new(&usd, -12.));
             test_iso_usd_then_with_other(&format!("USD -12"), &currency_amount, &None, &None);
         }
 
         /*
         #[test]
         fn iso_after() {
-            let usd = USD.clone();
-            let currency_amount = Some(&CurrencyAmount::new(&usd, 13.));
+            let usd = USD;
+            let currency_amount = Some(CurrencyAmount::new(&usd, 13.));
             test_iso_usd_then_with_other(
                 &format!("13 USD"),
                 &currency_amount,
