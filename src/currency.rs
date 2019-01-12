@@ -20,7 +20,7 @@ use lazy_static::lazy_static;
 use serde_derive::{Deserialize, Serialize};
 
 /// Position of a symbol against an amount
-#[derive(Debug, PartialOrd, PartialEq, Serialize, Deserialize)]
+#[derive(Copy, Debug, PartialOrd, PartialEq, Serialize, Deserialize)]
 pub enum Pos {
     Before,
     After,
@@ -33,7 +33,7 @@ impl Default for Pos {
 }
 
 /// Represent a currency like US Dollar or Euro, with its symbols
-#[derive(Debug, Default, PartialOrd, PartialEq, Serialize, Deserialize)]
+#[derive(Copy, Debug, Default, PartialOrd, PartialEq, Serialize, Deserialize)]
 pub struct Currency {
     /// Symbols, like ₿, ฿ or Ƀ for Bitcoin. Vec must not be empty
     symbols: Vec<String>,
