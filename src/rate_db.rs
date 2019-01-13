@@ -174,7 +174,7 @@ impl<'a> RateDb<'a> {
     }
 
     /// Retrieve rate from a currency to another
-    fn get_rate<'c>(&self, txn: &Txn, src: &'c Currency, dst: &Currency) -> Option<Rate<'c>> {
+    pub fn get_rate<'c>(&self, txn: &Txn, src: &'c Currency, dst: &Currency) -> Option<Rate<'c>> {
         // Hard code this to limit storage overhead
         if src == dst {
             warn!("Same source and destination currency, don’t store");
@@ -191,12 +191,12 @@ impl<'a> RateDb<'a> {
 
     /// Set rate from a currency to another
     // TODO Return error type
-    fn set_rate(&self, txn: &mut Txn<'a>, rate: Rate) {
+    pub fn set_rate(&self, txn: &mut Txn<'a>, rate: Rate) {
         if rate.src == rate.dst {
             warn!("Same  source and destination currency, don’t store");
             return;
         }
         let ri: RateInternal = rate.into();
-        txn.set(&self.bucket, ri.key, Bincode::to_value_buf(ri.value).unwrap());
+        txn.set(&self.bucket, ri.key, Bincode::to_value_buf(ri.value).unwrap()).unwrap();
     }
 }

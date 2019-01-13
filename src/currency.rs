@@ -130,6 +130,30 @@ pub const EUR: Currency = Currency {
     pos: Pos::After,
 };
 
+/// https://en.wikipedia.org/wiki/Pound_sterling
+pub const GBP: Currency = Currency {
+    symbols: &["£"],
+    isos: &["GBP"],
+    names: &["Pound sterling"],
+    pos: Pos::Before,
+};
+
+/// https://en.wikipedia.org/wiki/Swiss_franc
+pub const CHF: Currency = Currency {
+    symbols: &["CHF", "Fr.", "SFr.", "Fr.sv.", "₣"],
+    isos: &["CHF"],
+    names: &["Swiss Franc"],
+    pos: Pos::Before,
+};
+
+/// https://en.wikipedia.org/wiki/Japanese_yen
+pub const JPY: Currency = Currency {
+    symbols: &["¥", "円", "圓"],
+    isos: &["JPY"],
+    names: &["Yen"],
+    pos: Pos::Before,
+};
+
 /// Get an existing currency from ISO code
 pub fn existing_from_iso(code: &str) -> Option<&'static Currency> {
     match code {
