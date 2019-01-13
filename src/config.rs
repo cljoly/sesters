@@ -18,6 +18,7 @@ along with this program.  If not, see <https://www.gnu.org/licenses/>.
 
 // Store and retrieve user configuration
 
+use log::info;
 use serde_derive::{Deserialize, Serialize};
 
 /// Configuration file
@@ -43,12 +44,16 @@ impl Default for Config {
 
 static APP_NAME: &'static str = "sesters";
 
-/// Get current configuration. Doesn’t handle errors, panics
-pub fn get() -> Config {
-    confy::load(APP_NAME).unwrap()
-}
+impl Config {
+    /// Get current configuration. Doesn’t handle errors, panics
+    pub fn get() -> Config {
+        info!("Reading configuration");
+        confy::load(APP_NAME).unwrap()
+    }
 
-/// Change current configuration. Doesn’t handle errors, panics
-fn set(c: Config) {
-    confy::store(APP_NAME, c).unwrap();
+    /// Change current configuration. Doesn’t handle errors, panics
+    fn set(c: Config) {
+        info!("Writing configuration");
+        confy::store(APP_NAME, c).unwrap();
+    }
 }

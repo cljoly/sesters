@@ -30,6 +30,7 @@ mod tests {
         assert!(BTC.check());
     }
 }
+
 /// Position of a symbol against an amount
 #[derive(Debug, PartialOrd, PartialEq, Serialize, Deserialize)]
 pub enum Pos {
@@ -67,7 +68,7 @@ impl Currency {
 
     /// Main iso symbol for a currency, USD for instance
     pub fn get_main_iso(&self) -> &str {
-        return &self.isos[1];
+        return &self.isos[0];
     }
 
     pub fn names(&self) -> &'static [&'static str] {
@@ -102,7 +103,7 @@ impl Currency {
 }
 
 /// Some common currency
-/// Symbols and ISO are take form Wikipedia
+/// Symbols and ISO are from Wikipedia
 
 /// https://en.wikipedia.org/wiki/Bitcoin
 // TODO Use Currency::new once const fn is in stable
