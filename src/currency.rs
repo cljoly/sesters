@@ -130,7 +130,7 @@ pub const EUR: Currency = Currency {
 };
 
 /// Get an existing currency from ISO code
-pub fn existing_from_iso(code: &str) -> Option<&Currency> {
+pub fn existing_from_iso(code: &str) -> Option<&'static Currency> {
     match code {
         "EUR" => Some(&EUR),
         "BTC" => Some(&BTC),

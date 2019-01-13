@@ -20,6 +20,7 @@ use log::info;
 
 mod currency;
 mod price_in_text;
+mod rate_db;
 mod config;
 
 fn main() {
