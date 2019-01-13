@@ -15,6 +15,6 @@ serde_json = "1"
 env_logger = "0.6.*"
 log = "0.4.*"
 confy = "0.3.*"
-rkv = "0.7.*"
+kv = { version = "0.8.*", features = ["bincode-value"] }
 chrono = { version = "0.4", features = ["serde"] }
 bincode = "1.*"

@@ -16,14 +16,28 @@ You should have received a copy of the GNU General Public License
 along with this program.  If not, see <https://www.gnu.org/licenses/>.
  */
 
+use kv::{Config as KvConfig, Manager};
 use log::info;
 
+use std::path::Path;
+
 mod currency;
+mod config;
 mod price_in_text;
 mod rate_db;
-mod config;
+
+use crate::config::Config;
 
 fn main() {
     env_logger::init();
     info!("Starting up");
+
+    let cfg = Config::get();
+
+    // Manager for the database
+    let mut mgr = Manager::new();
+    info!("Initialize database");
+    let mut cfg = KvConfig::default(Path::new(&cfg.db_path));
+    let store_handle = mgr.open(cfg).unwrap();
+    let store = store_handle.write().unwrap();
 }

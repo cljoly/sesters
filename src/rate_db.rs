@@ -18,16 +18,33 @@ along with this program.  If not, see <https://www.gnu.org/licenses/>.
 
 use chrono::offset::Local as LocalTime;
 use chrono::prelude::*;
+use kv::bincode::Bincode;
+use kv::Serde;
+use kv::{Bucket, Config as KvConfig, Store, Txn, ValueBuf};
 /// Structs related to rate and rate storage
+use lazy_static::lazy_static;
 use log::{info, warn};
-use rkv::{Manager, Rkv, Store, Value, Writer};
+use regex::Regex;
+use serde_derive::{Deserialize, Serialize};
 
-use std::path::Path;
-use std::sync::{RwLockReadGuard, RwLock};
-
-use crate::config::Config;
 use crate::currency;
 use crate::currency::{Currency, USD};
+
+#[cfg(test)]
+mod tests {
+
+    use super::*;
+    use crate::currency::{USD, EUR, BTC};
+
+    // Ensure nothing is lost when converting to RateVal
+    #[test]
+    fn ratekey_and_back() {
+        let rk1 = RateKey::new(&EUR, &EUR);
+        let rk2 = RateKey::new(&USD, &BTC);
+        assert_eq!(rk1.currencies(), (&EUR, &EUR));
+        assert_eq!(rk2.currencies(), (&USD, &BTC))
+    }
+}
 
 /// Rate form src currency to dst currency
 #[derive(Clone, PartialOrd, PartialEq, Debug)]
@@ -66,34 +83,68 @@ impl<'c> Rate<'c> {
     }
 }
 
-// Rate as stored in LMDB
-struct RateLmdb {
-    key: String,
-    value: Vec<u8>,
-}
+// The key to find a rate in the database
+#[derive(Clone)]
+struct RateKey(String);
 
-impl<'c> From<Rate<'c>> for RateLmdb {
-    fn from(val: Rate) -> RateLmdb {
-        RateLmdb {
-            key: format!("r:{}:{}", val.src.get_main_iso(), val.dst.get_main_iso()),
-            value: bincode::serialize(&(val.date, val.rate)).unwrap(),
+impl RateKey {
+    // New rate key
+    fn new(src: &Currency, dst: &Currency) -> RateKey {
+        RateKey(format!("{}:{}", src.get_main_iso(), dst.get_main_iso()))
+    }
+
+    // Get currencies used in the rate key. Panics if a rate is malformed.
+    fn currencies(&self) -> (&'static Currency, &'static Currency) {
+        lazy_static! {
+            static ref KEY: Regex = Regex::new("^(?P<src>[A-Z]{3}):(?P<dst>[A-Z]{3})$").unwrap();
         }
+        let cap = KEY.captures(&self.0).unwrap();
+        let src_iso = cap.name("src").unwrap().as_str();
+        let dst_iso = cap.name("dst").unwrap().as_str();
+        let src = currency::existing_from_iso(src_iso).unwrap();
+        let dst = currency::existing_from_iso(dst_iso).unwrap();
+        (src, dst)
     }
 }
 
-impl<'u> From<RateLmdb> for Rate<'u> {
-    fn from(val: RateLmdb) -> Rate<'u> {
-        let mut currency_keys = val.key.split(":").into_iter();
-        // Check type of the key
-        assert_eq!("r", currency_keys.next().unwrap());
-        let src_key = currency_keys.next().unwrap();
-        let dst_key = currency_keys.next().unwrap();
-        let (date, rate) = bincode::deserialize(val.value.as_slice()).unwrap();
-        Rate {
-            src: currency::existing_from_iso(src_key).unwrap(),
-            dst: currency::existing_from_iso(dst_key).unwrap(),
+// Data of a rate (value of the key in the database)
+#[derive(Debug, Clone, PartialEq, Serialize, Deserialize)]
+struct RateVal(DateTime<LocalTime>, f64);
+
+// Internal representation for storage of a rate: in the database, a rate is
+// stored partly on the key and partly on the value
+struct RateInternal {
+    key: RateKey,
+    value: RateVal,
+}
+
+impl<'c> From<Rate<'c>> for RateInternal {
+    fn from(val: Rate) -> RateInternal {
+        RateInternal::new(RateKey::new(val.src, val.dst), RateVal(val.date, val.rate))
+    }
+}
+
+impl From<RateInternal> for Rate<'static> {
+    fn from(ri: RateInternal) -> Rate<'static> {
+        let (src, dst) = ri.key.currencies();
+        let date = ri.value.0;
+            let rate = ri.value.1;
+        Rate::new(
+            src,
+            dst,
             date,
             rate,
+        )
+    }
+}
+
+impl RateInternal {
+    fn new(key: RateKey, val: RateVal) -> RateInternal {
+        RateInternal {
+            // key: RateKey::new(val.src, val.dst),
+            // val: RateVal(val.date, val.rate),
+            key,
+            value: val,
         }
     }
 }
@@ -101,80 +152,49 @@ impl<'u> From<RateLmdb> for Rate<'u> {
 /// Store and retrieve exchange rate in LMDB database
 /// Note that rate from a currency to itself are not stored
 pub struct RateDb<'a> {
-    // To get LMDB environnement
-    // arc: std::sync::Arc<RwLockReadGuard<'a, Rkv>>,
-    arc: std::sync::Arc<RwLock<Rkv>>,
-    db_path: &'a str,
+    bucket: Bucket<'a, RateKey, ValueBuf<Bincode<RateVal>>>,
 }
 
-const TMP: &str = "TMP unimplemented";
+impl std::convert::AsRef<[u8]> for RateKey {
+    fn as_ref(&self) -> &[u8] {
+        &self.0.as_ref()
+    }
+}
+
+const BUCKET_NAME: &str = "rate";
 
 impl<'a> RateDb<'a> {
     /// Initialize the rate database
-    pub fn new(c: Config) -> Self {
+    pub fn new(kcfg: &mut KvConfig, store: &mut Store) -> Self {
         info!("Initialize database");
-        let arc = Manager::singleton()
-            .write()
-            .unwrap()
-            .get_or_create(Path::new(&c.db_path), Rkv::new)
-            .unwrap();
-        // let env = arc.read().unwrap();
-        // let store = env.open_or_create_default().unwrap();
-        // RateDb { arc, store, db_path: TMP }
-        RateDb { arc, db_path: TMP }
-    }
-
-    // /// Get current environnement
-    // fn env<'b>(&'b self) -> RwLockReadGuard<'b, Rkv> {
-    //     self.arc.read().unwrap()
-    // }
-}
-
-    pub struct RateDbOpened<'a> {
-        env: RwLockReadGuard<'a, Rkv>,
-        store: Store,
-    }
-
-impl<'a> RateDbOpened<'a> {
-    /// Get named store
-    fn store_named(&self, name: &str) -> Store {
-        self.env.open_or_create(name).unwrap()
-    }
-
-    /// Get default store
-    fn default_store(&self) -> Store {
-        self.env.open_or_create_default().unwrap()
-    }
-
-    /// Get a writer
-    fn new_writer(&self) -> Writer<&str> {
-        self.env.write().unwrap()
-    }
-
-    /// Get a reader
-    fn new_reader(&self) -> Writer<&str> {
-        self.env.write().unwrap()
+        kcfg.bucket(BUCKET_NAME, None);
+        RateDb {
+            bucket: store.bucket(Some(BUCKET_NAME)).unwrap(),
+        }
     }
 
     /// Retrieve rate from a currency to another
-    fn get_rate<'c>(&self, src: &'c Currency, dst: &Currency) -> Rate<'c> {
+    fn get_rate<'c>(&self, txn: &Txn, src: &'c Currency, dst: &Currency) -> Option<Rate<'c>> {
         // Hard code this to limit storage overhead
         if src == dst {
-            warn!("Same  source and destination currency, don’t store");
-            return Rate::parity(src);
+            warn!("Same source and destination currency, don’t store");
+            return Some(Rate::parity(src));
         }
-        unimplemented!();
+        // TODO Return None only when a key is not found, not for any error
+        let rk = RateKey::new(src, dst);
+        let rv: Option<RateVal> = txn
+            .get(&self.bucket, rk.clone())
+            .map(|buf| buf.inner().unwrap().to_serde())
+            .ok();
+        rv.map(|rv| RateInternal::new(rk, rv).into())
     }
 
     /// Set rate from a currency to another
-    fn set_rate(&self, rate: &Rate) {
+    fn set_rate(&self, txn: &Txn, rate: &Rate) {
         if rate.src == rate.dst {
             warn!("Same  source and destination currency, don’t store");
             return;
         }
-        let mut writer = self.new_writer();
-        let store = self.default_store();
-        writer.put(store, "t", &Value::I64(1));
         unimplemented!();
     }
 }
