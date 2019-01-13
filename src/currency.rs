@@ -24,10 +24,18 @@ mod tests {
 
     // Test static currencies
     #[test]
-    fn static_currency() {
-        assert!(EUR.check());
-        assert!(USD.check());
-        assert!(BTC.check());
+    fn static_currency_check() {
+        for c in ALL_CURRENCIES.iter() {
+            assert!(c.check());
+        }
+    }
+
+    #[test]
+    fn static_currency_iso() {
+        for c in ALL_CURRENCIES.iter() {
+            assert_eq!(existing_from_iso(c.get_main_iso()), Some(c));
+        }
+        assert_eq!(existing_from_iso("___"), None);
     }
 }
 
@@ -154,12 +162,20 @@ pub const JPY: Currency = Currency {
     pos: Pos::Before,
 };
 
+/// All currencies registered
+pub const ALL_CURRENCIES: [Currency; 6] = [
+    BTC, USD, EUR, GBP, CHF, JPY
+];
+
 /// Get an existing currency from ISO code
 pub fn existing_from_iso(code: &str) -> Option<&'static Currency> {
     match code {
-        "EUR" => Some(&EUR),
         "BTC" => Some(&BTC),
         "USD" => Some(&USD),
+        "EUR" => Some(&EUR),
+        "GBP" => Some(&GBP),
+        "CHF" => Some(&CHF),
+        "JPY" => Some(&JPY),
         _ => None,
     }
 }
