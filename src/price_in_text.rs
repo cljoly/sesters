@@ -54,7 +54,7 @@ mod tests {
             println!("eur ok");
             assert_eq!(&iso(&vec![BTC], txt), exp3_btc);
             println!("btc ok");
-            assert_eq!(&iso(&vec![USD], txt), &exp.cloned());
+            assert_eq!(&iso(&vec![USD, EUR, BTC], txt), &exp.cloned());
             println!("usd, eur, btc ok");
             println!("===============================");
         }
