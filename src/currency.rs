@@ -16,6 +16,7 @@ You should have received a copy of the GNU General Public License
 along with this program.  If not, see <https://www.gnu.org/licenses/>.
  */
 
+use lazy_static::lazy_static;
 use serde_derive::{Deserialize, Serialize};
 
 #[cfg(test)]
@@ -162,10 +163,12 @@ pub const JPY: Currency = Currency {
     pos: Pos::Before,
 };
 
-/// All currencies registered
-pub const ALL_CURRENCIES: [Currency; 6] = [
-    BTC, USD, EUR, GBP, CHF, JPY
-];
+lazy_static! {
+    /// All currencies registered
+    pub static ref ALL_CURRENCIES: Vec<Currency> = vec![
+        BTC, USD, EUR, GBP, CHF, JPY
+    ];
+}
 
 /// Get an existing currency from ISO code
 pub fn existing_from_iso(code: &str) -> Option<&'static Currency> {
