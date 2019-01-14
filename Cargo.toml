@@ -1,9 +1,19 @@
 [package]
 name = "sesters"
+description = "Fast currency conversion tool with local cache"
+documentation = "https://github.com/leowzukw/sesters/wiki"
+repository = "https://github.com/leowzukw/sesters"
+readme = "Readme.md"
+keywords = ["currency_converter", "cli"]
+categories = ["command-line-utilities"]
 version = "0.1.0"
 authors = ["Leo <oss+sesters@131719.xyz>"]
 edition = "2018"
 license = "GPL-3.0-or-later"
+license-file = "LICENSE"
+
+[badges]
+maintenance = { status = "experimental" }
 
 [dependencies]
 reqwest = "0.9"
