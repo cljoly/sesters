@@ -16,6 +16,7 @@ Fast and offline currency converter.
 - [ ] Save searches
   - [ ] Write in database
   - [ ] Display this history in a table
+- [ ] GUI with [azul.rs]()
 
 ## About the name
 
