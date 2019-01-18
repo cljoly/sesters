@@ -3,9 +3,7 @@
 Fast and offline currency converter.
 
 <p align="center">
-[![Travis CI](https://img.shields.io/travis/leowzukw/sesters.svg)](https://travis-ci.com/leowzukw/sesters)
-[![LICENCE](https://img.shields.io/github/license/leowzukw/sesters.svg)](./LICENSE)
-[![Crates.io](https://img.shields.io/crates/v/ripgrep.svg)](https://crates.io/crates/ripgrep)
+<a href="https://travis-ci.com/leowzukw/sesters"><img src="https://img.shields.io/travis/leowzukw/sesters.svg" alt="Travis CI" /></a> <a href="./LICENSE"><img src="https://img.shields.io/github/license/leowzukw/sesters.svg" alt="LICENCE" /></a> <a href="https://crates.io/crates/ripgrep"><img src="https://img.shields.io/crates/v/ripgrep.svg" alt="Crates.io" /></a>
 </p>
 
 **Warning:** This is far from being complete yet
