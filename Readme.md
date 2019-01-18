@@ -2,6 +2,8 @@
 
 Fast and offline currency converter.
 
+[![](https://img.shields.io/travis/leowzukw/sesters.svg)](https://travis-ci.com/leowzukw/sesters)
+
 **Warning:** This is far from complete yet
 
 ## Features
