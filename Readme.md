@@ -2,7 +2,11 @@
 
 Fast and offline currency converter.
 
-[![](https://img.shields.io/travis/leowzukw/sesters.svg)](https://travis-ci.com/leowzukw/sesters)
+<p align="center">
+[![Travis CI](https://img.shields.io/travis/leowzukw/sesters.svg)](https://travis-ci.com/leowzukw/sesters)
+[![LICENCE](https://img.shields.io/github/license/leowzukw/sesters.svg)](./LICENSE)
+[![Crates.io](https://img.shields.io/crates/v/ripgrep.svg)](https://crates.io/crates/ripgrep)
+</p>
 
 **Warning:** This is far from complete yet
 
