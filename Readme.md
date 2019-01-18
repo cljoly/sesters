@@ -8,7 +8,7 @@ Fast and offline currency converter.
 [![Crates.io](https://img.shields.io/crates/v/ripgrep.svg)](https://crates.io/crates/ripgrep)
 </p>
 
-**Warning:** This is far from complete yet
+**Warning:** This is far from being complete yet
 
 ## Features
 
