@@ -20,6 +20,7 @@ along with this program.  If not, see <https://www.gnu.org/licenses/>.
 
 use log::info;
 use serde_derive::{Deserialize, Serialize};
+use std::path::PathBuf;
 
 /// Configuration file
 #[derive(Serialize, Deserialize)]
@@ -28,16 +29,18 @@ pub struct Config {
     pub version: u8,
     /// Currencies to support
     pub currencies: Vec<String>,
-    /// Path of the database (directory)
-    pub db_path: String,
+    /// Path of the database (directory). Please note that ~ is not expanded
+    pub db_path: PathBuf,
 }
 
 impl Default for Config {
     fn default() -> Self {
+        let mut db_path = dirs::data_dir().unwrap();
+        db_path.push("sesters/db");
         Config {
             version: 0,
             currencies: vec!["EUR".to_string(), "USD".to_string(), "GBP".to_string()],
-            db_path: String::from("~/.local/share/sesters/db"),
+            db_path,
         }
     }
 }

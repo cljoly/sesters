@@ -37,7 +37,7 @@ fn main() {
     // Manager for the database
     let mut mgr = Manager::new();
     info!("Initialize database");
-    let mut cfg = KvConfig::default(Path::new(&cfg.db_path));
+    let mut cfg = KvConfig::default(&cfg.db_path);
     let store_handle = mgr.open(cfg).unwrap();
     let store = store_handle.write().unwrap();
 }
