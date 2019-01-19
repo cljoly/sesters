@@ -3,7 +3,7 @@
 Fast and offline currency converter.
 
 <p align="center">
-<a href="https://travis-ci.com/leowzukw/sesters"><img src="https://img.shields.io/travis/leowzukw/sesters.svg" alt="Travis CI" /></a> <a href="./LICENSE"><img src="https://img.shields.io/github/license/leowzukw/sesters.svg" alt="LICENCE" /></a> <a href="https://crates.io/crates/sesters"><img src="https://img.shields.io/crates/v/sesters.svg" alt="Crates.io" /></a> <a href="https://deps.rs/repo/github/leowzukw/sesters"><img src="https://deps.rs/repo/github/leowzukw/sesters/status.svg" alt="dependency status" /></a>
+<a href="https://travis-ci.com/leowzukw/sesters"><img src="https://img.shields.io/travis/com/leowzukw/sesters.svg" alt="Travis CI" /></a> <a href="./LICENSE"><img src="https://img.shields.io/github/license/leowzukw/sesters.svg" alt="LICENCE" /></a> <a href="https://crates.io/crates/sesters"><img src="https://img.shields.io/crates/v/sesters.svg" alt="Crates.io" /></a> <a href="https://deps.rs/repo/github/leowzukw/sesters"><img src="https://deps.rs/repo/github/leowzukw/sesters/status.svg" alt="dependency status" /></a>
 </p>
 
 **Warning:** This is far from being complete yet
