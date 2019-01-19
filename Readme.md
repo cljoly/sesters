@@ -11,7 +11,7 @@ Fast and offline currency converter.
 ## Features
 
 - Find prices in free text with currency (partial)  [![](https://img.shields.io/github/issues/detail/s/leowzukw/sesters/1.svg)](https://github.com/leowzukw/sesters/issues/1) [![](https://img.shields.io/github/issues/detail/s/leowzukw/sesters/2.svg)](https://github.com/leowzukw/sesters/issues/2)
-- Store exchange rates locally [![](https://img.shields.io/github/issues/detail/s/leowzukw/sesters/s.svg)](https://github.com/leowzukw/sesters/issues/8)
+- Store exchange rates locally [![](https://img.shields.io/github/issues/detail/s/leowzukw/sesters/8.svg)](https://github.com/leowzukw/sesters/issues/8)
 - Retrieve exchange rate [![](https://img.shields.io/github/issues/detail/s/leowzukw/sesters/3.svg)](https://github.com/leowzukw/sesters/issues/3) [![](https://img.shields.io/github/issues/detail/s/leowzukw/sesters/4.svg)](https://github.com/leowzukw/sesters/issues/4)
 - Save searches
   -  Write in database [![](https://img.shields.io/github/issues/detail/s/leowzukw/sesters/5.svg)](https://github.com/leowzukw/sesters/issues/5)
