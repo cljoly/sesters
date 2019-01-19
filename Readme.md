@@ -10,17 +10,15 @@ Fast and offline currency converter.
 
 ## Features
 
-- [ ] Find prices in free text with currency
-  - [x] With ISO symbol, when it is before the amount
-  - [ ] All other cases
-- [x] Store exchange rates locally 
-- [ ] Retrieve exchange rate 
-  - [ ] [ExchangeRateApi.io](https://exchangeratesapi.io/)
-  - [ ] For crypto
-- [ ] Save searches
-  - [ ] Write in database
-  - [ ] Display this history in a table
-- [ ] GUI with [azul.rs]()
+- Find prices in free text with currency (partial)  [![](https://img.shields.io/github/issues/detail/s/leowzukw/sesters/1.svg)](https://github.com/leowzukw/sesters/issues/1) [![](https://img.shields.io/github/issues/detail/s/leowzukw/sesters/2.svg)](https://github.com/leowzukw/sesters/issues/2)
+- Store exchange rates locally 
+- Retrieve exchange rate [![](https://img.shields.io/github/issues/detail/s/leowzukw/sesters/3.svg)](https://github.com/leowzukw/sesters/issues/3) [![](https://img.shields.io/github/issues/detail/s/leowzukw/sesters/4.svg)](https://github.com/leowzukw/sesters/issues/4)
+- Save searches
+  -  Write in database [![](https://img.shields.io/github/issues/detail/s/leowzukw/sesters/5.svg)](https://github.com/leowzukw/sesters/issues/5)
+  - Display this history in a table [![](https://img.shields.io/github/issues/detail/s/leowzukw/sesters/6.svg)](https://github.com/leowzukw/sesters/issues/6)
+- GUI with [azul.rs](https://azul.rs/) [![](https://img.shields.io/github/issues/detail/s/leowzukw/sesters/6.svg)](https://github.com/leowzukw/sesters/issues/6)
+
+Feature with an open issue badge are not complete yet.
 
 ## About the name
 
