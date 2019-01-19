@@ -22,7 +22,6 @@ const long_txt: &'static str = "some quite loooooooooooooooooooooooooooong text"
 
 mod iso {
     use super::super::iso;
-    use super::super::CurrencyAmount;
     use crate::currency::*;
 
     fn test_iso_usd_then_with_other(

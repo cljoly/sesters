@@ -18,28 +18,11 @@ along with this program.  If not, see <https://www.gnu.org/licenses/>.
 
 use serde_derive::Serialize;
 
-use crate::currency::Currency;
+use crate::currency::{Currency, CurrencyAmount};
 /// A module to find currency unit with amount in raw text
 use regex::Regex;
 
 mod tests;
-/// An association between currency & amount, TODO with a position
-#[derive(Debug, Clone, PartialEq, Serialize)]
-pub struct CurrencyAmount<'c> {
-    currency: &'c Currency,
-    amount: f64,
-    // /// Position of the currency indicator against amount
-    // position: Pos,
-}
-
-impl<'c> CurrencyAmount<'c> {
-    fn new(currency: &'c Currency, amount: f64) -> Self {
-        Self { currency, amount }
-    }
-    fn from_currency_match(cm: CurrencyMatch<'c>) -> Self {
-        Self::new(cm.currency, cm.amount)
-    }
-}
 
 // Information about a currency match, will be used to compute the probability
 // of assocation between an amount and a currency
@@ -68,6 +51,12 @@ impl<'c> CurrencyMatch<'c> {
             currency,
             distance,
         }
+    }
+}
+
+impl<'c> From<CurrencyMatch<'c>> for CurrencyAmount<'c> {
+    fn from(cm: CurrencyMatch<'c>) -> Self {
+        Self::new(cm.currency, cm.amount)
     }
 }
 
@@ -122,5 +111,5 @@ fn iso<'c>(currencies: &'c Vec<Currency>, text: &str) -> Option<CurrencyAmount<'
             break;
         }
     }
-    cmatch_option.map(|cm| CurrencyAmount::from_currency_match(cm))
+    cmatch_option.map(|cm| cm.into())
 }

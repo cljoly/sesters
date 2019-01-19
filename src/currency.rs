@@ -53,6 +53,23 @@ impl Default for Pos {
     }
 }
 
+/// An association between currency & amount, TODO with a position
+#[derive(Debug, Clone, PartialEq, Serialize)]
+pub struct CurrencyAmount<'c> {
+    currency: &'c Currency,
+    amount: f64,
+    // TODO /// Position of the currency indicator against amount
+    // position: Pos,
+}
+
+impl<'c> CurrencyAmount<'c> {
+    /// Create new amount associated to a currency
+    pub fn new(currency: &'c Currency, amount: f64) -> Self {
+        Self { currency, amount }
+    }
+}
+
+
 /// Represent a currency like US Dollar or Euro, with its symbols
 // TODO Improve serialization/deserialization
 #[derive(Debug, Default, PartialOrd, PartialEq, Serialize, Deserialize)]
