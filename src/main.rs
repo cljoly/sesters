@@ -19,8 +19,6 @@ along with this program.  If not, see <https://www.gnu.org/licenses/>.
 use kv::{Config as KvConfig, Manager};
 use log::info;
 
-use std::path::Path;
-
 mod currency;
 mod config;
 mod price_in_text;

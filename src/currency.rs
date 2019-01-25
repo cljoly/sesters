@@ -94,7 +94,7 @@ impl Currency {
 
     /// Main iso symbol for a currency, USD for instance
     pub fn get_main_iso(&self) -> &str {
-        return &self.isos[0];
+        &self.isos[0]
     }
 
     pub fn names(&self) -> &'static [&'static str] {
@@ -124,7 +124,7 @@ impl Currency {
 
     /// Check if a currency is conform to the constraints listed in the definition of the structure
     pub fn check(&self) -> bool {
-        self.symbols.len() >= 1 && self.isos.len() >= 1 && self.names.len() >= 1
+        !self.symbols.is_empty() && !self.isos.is_empty() && !self.names.is_empty()
     }
 }
 

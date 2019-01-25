@@ -17,8 +17,8 @@ along with this program.  If not, see <https://www.gnu.org/licenses/>.
  */
 
 #[cfg(test)]
-const short_txt: &'static str = "short";
-const long_txt: &'static str = "some quite loooooooooooooooooooooooooooong text";
+const SHORT_TXT: &str = "short";
+const LONG_TXT: &str = "some quite loooooooooooooooooooooooooooong text";
 
 mod iso {
     use super::super::iso;
