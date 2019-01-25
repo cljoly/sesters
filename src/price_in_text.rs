@@ -103,7 +103,7 @@ fn iso_for_currency<'c>(c: &'c Currency, text: &str) -> Option<CurrencyMatch<'c>
 
 // Find price with iso symbol for all given currency
 // For price before and TODO after the iso symbol
-fn iso<'c>(currencies: &'c Vec<Currency>, text: &str) -> Option<CurrencyAmount<'c>> {
+fn iso<'c>(currencies: &'c[Currency], text: &str) -> Option<CurrencyAmount<'c>> {
     let mut cmatch_option = None;
     for c in currencies {
         if let Some(cmatch) = iso_for_currency(c, text) {

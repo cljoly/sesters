@@ -40,13 +40,13 @@ mod iso {
             _ => panic!("More than one value is Some"),
         };
         println!("===============================");
-        assert_eq!(&iso(&vec![USD], txt), exp1_usd);
+        assert_eq!(&iso(&[USD], txt), exp1_usd);
         println!("usd ok");
-        assert_eq!(&iso(&vec![EUR], txt), exp2_eur);
+        assert_eq!(&iso(&[EUR], txt), exp2_eur);
         println!("eur ok");
-        assert_eq!(&iso(&vec![BTC], txt), exp3_btc);
+        assert_eq!(&iso(&[BTC], txt), exp3_btc);
         println!("btc ok");
-        assert_eq!(&iso(&vec![USD, EUR, BTC], txt), &exp.cloned());
+        assert_eq!(&iso(&[USD, EUR, BTC], txt), &exp.cloned());
         println!("usd, eur, btc ok");
         println!("===============================");
     }
