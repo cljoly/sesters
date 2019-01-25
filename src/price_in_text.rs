@@ -62,7 +62,7 @@ impl<'c> From<CurrencyMatch<'c>> for CurrencyAmount<'c> {
 
 // Find iso symbol with price tag in text. Before and TODO after
 // Return a currency match
-fn iso_for_currency<'c>(c: &'c Currency, text: &str) -> Option<CurrencyMatch<'c>> {
+fn iso_for_currency<'c>(c: &'c Currency, text: &str) -> Vec<CurrencyMatch<'c>> {
     let mut formatted_regexes = Vec::new();
     for iso in c.isos() {
         // TODO Use lazy_static here
@@ -75,6 +75,7 @@ fn iso_for_currency<'c>(c: &'c Currency, text: &str) -> Option<CurrencyMatch<'c>
             iso
         ));
     }
+    let mut currency_matches = Vec::new();
     for formatted_regex in formatted_regexes {
         let r = Regex::new(formatted_regex.as_str()).unwrap();
         for cap in r.captures_iter(text) {
@@ -85,7 +86,7 @@ fn iso_for_currency<'c>(c: &'c Currency, text: &str) -> Option<CurrencyMatch<'c>
                 cap,
                 cap.name("amount").unwrap().as_str()
             );
-            return Some(CurrencyMatch::new(
+            currency_matches.push(CurrencyMatch::new(
                 cap.name("amount")
                     .unwrap()
                     .as_str()
@@ -98,18 +99,14 @@ fn iso_for_currency<'c>(c: &'c Currency, text: &str) -> Option<CurrencyMatch<'c>
         }
     }
     println!("---------------- None");
-    None
+    currency_matches
 }
 
 // Find price with iso symbol for all given currency
 // For price before and TODO after the iso symbol
-fn iso<'c>(currencies: &'c[Currency], text: &str) -> Option<CurrencyAmount<'c>> {
-    let mut cmatch_option = None;
-    for c in currencies {
-        if let Some(cmatch) = iso_for_currency(c, text) {
-            cmatch_option = Some(cmatch);
-            break;
-        }
-    }
-    cmatch_option.map(|cm| cm.into())
+fn iso<'c>(currencies: &'c [Currency], text: &str) -> Vec<CurrencyAmount<'c>> {
+    let matches_iterator = currencies
+        .iter()
+        .map(|c| iso_for_currency(c, text));
+    matches_iterator.flatten().map(|cm| cm.into()).collect()
 }

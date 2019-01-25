@@ -30,6 +30,9 @@ mod iso {
         exp2_eur: &Option<CurrencyAmount>,
         exp3_btc: &Option<CurrencyAmount>,
     ) {
+        let exp1_usd: &Option<&CurrencyAmount> = &exp1_usd.as_ref();
+        let exp2_eur: &Option<&CurrencyAmount> = &exp2_eur.as_ref();
+        let exp3_btc: &Option<&CurrencyAmount> = &exp3_btc.as_ref();
         // Infer combination when there is at most one Some
         // let exp2 = exp1_usd.as_ref().or(exp2_eur.as_ref());
         let exp = match (exp1_usd, exp2_eur, exp3_btc) {
@@ -40,13 +43,13 @@ mod iso {
             _ => panic!("More than one value is Some"),
         };
         println!("===============================");
-        assert_eq!(&iso(&[USD], txt), exp1_usd);
+        assert_eq!(&iso(&[USD], txt).first(), exp1_usd);
         println!("usd ok");
-        assert_eq!(&iso(&[EUR], txt), exp2_eur);
+        assert_eq!(&iso(&[EUR], txt).first(), exp2_eur);
         println!("eur ok");
-        assert_eq!(&iso(&[BTC], txt), exp3_btc);
+        assert_eq!(&iso(&[BTC], txt).first(), exp3_btc);
         println!("btc ok");
-        assert_eq!(&iso(&[USD, EUR, BTC], txt), &exp.cloned());
+        assert_eq!(&iso(&[USD, EUR, BTC], txt).first(), &exp.cloned());
         println!("usd, eur, btc ok");
         println!("===============================");
     }
