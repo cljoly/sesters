@@ -23,9 +23,11 @@ mod currency;
 mod config;
 mod price_in_text;
 mod db;
+mod api;
 
 use crate::config::Config;
 use crate::db::Db;
+use crate::currency::{EUR, USD};
 
 fn main() {
     env_logger::init();
@@ -38,4 +40,8 @@ fn main() {
     info!("Initialize database");
     let mut kcfg = KvConfig::default(&cfg.db_path);
     let db = Db::new(kcfg, &mut mgr);
+
+    let client = api::Client::new();
+    let rate = client.rate(&EUR, &USD);
+    dbg!(&rate);
 }

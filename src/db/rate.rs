@@ -78,6 +78,12 @@ impl<'c> Rate<'c> {
         }
     }
 
+    /// New rate with date set to now (local time)
+    pub fn now(src: &'c Currency, dst: &'c Currency, rate: f64) -> Self {
+        Self::new(src, dst, Local::now(), rate)
+    }
+
+
     /// A 1:1 rate for a currency and itself
     pub fn parity(c: &'c Currency) -> Self {
         Rate::new(c, c, Local::now(), 1.)
