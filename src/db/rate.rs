@@ -16,12 +16,13 @@ You should have received a copy of the GNU General Public License
 along with this program.  If not, see <https://www.gnu.org/licenses/>.
  */
 
+//! Structs related to rate and rate storage
+
 use chrono::offset::Local as LocalTime;
 use chrono::prelude::*;
 use kv::bincode::Bincode;
 use kv::Serde;
 use kv::{Bucket, Config as KvConfig, Store, Txn, ValueBuf};
-/// Structs related to rate and rate storage
 use lazy_static::lazy_static;
 use log::{info, warn};
 use regex::Regex;
@@ -36,7 +37,7 @@ mod tests {
     use super::*;
     use crate::currency::{USD, EUR, BTC};
 
-    // Ensure nothing is lost when converting to RateVal
+    // Ensure nothing is lost when converting to RateKey
     #[test]
     fn ratekey_and_back() {
         let rk1 = RateKey::new(&EUR, &EUR);
@@ -161,19 +162,10 @@ impl std::convert::AsRef<[u8]> for RateKey {
     }
 }
 
-const BUCKET_NAME: &str = "rate";
+pub const BUCKET_NAME: &str = "rate";
 
-impl<'a> RateDb<'a> {
-    /// Initialize the rate database
-    pub fn new(kcfg: &mut KvConfig, store: &mut Store) -> Self {
-        info!("Initialize database");
-        kcfg.bucket(BUCKET_NAME, None);
-        RateDb {
-            bucket: store.bucket(Some(BUCKET_NAME)).unwrap(),
-        }
-    }
-
-    /// Retrieve rate from a currency to another
+impl super::Db {
+        /// Retrieve rate from a currency to another
     pub fn get_rate<'c>(&self, txn: &Txn, src: &'c Currency, dst: &Currency) -> Option<Rate<'c>> {
         // Hard code this to limit storage overhead
         if src == dst {
@@ -183,7 +175,7 @@ impl<'a> RateDb<'a> {
         // TODO Return None only when a key is not found, not for any error
         let rk = RateKey::new(src, dst);
         let rv: Option<RateVal> = txn
-            .get(&self.bucket, rk.clone())
+            .get(&self.bucket_rate().as_bucket(), rk.clone())
             .map(|buf| buf.inner().unwrap().to_serde())
             .ok();
         rv.map(|rv| RateInternal::new(rk, rv).into())
@@ -191,12 +183,38 @@ impl<'a> RateDb<'a> {
 
     /// Set rate from a currency to another
     // TODO Return error type
-    pub fn set_rate(&self, txn: &mut Txn<'a>, rate: Rate) {
+    pub fn set_rate<'t, 'd>(&'d self, txn: &mut Txn<'t>, rate: Rate) where 'd: 't {
         if rate.src == rate.dst {
             warn!("Same  source and destination currency, don’t store");
             return;
         }
         let ri: RateInternal = rate.into();
-        txn.set(&self.bucket, ri.key, Bincode::to_value_buf(ri.value).unwrap()).unwrap();
+        txn.set(&self.bucket_rate().as_bucket(), ri.key, Bincode::to_value_buf(ri.value).unwrap()).unwrap();
+    }
+}
+
+/// Type mainly forcing to register in the db
+pub struct RateBucketRegistered{}
+
+impl RateBucketRegistered {
+    /// Register a bucket by its name in the configuration of the database
+    pub fn new(kcfg: &mut KvConfig) -> Self {
+        info!("Bucket '{}' registered", BUCKET_NAME);
+        kcfg.bucket(BUCKET_NAME, None);
+        RateBucketRegistered{}
+    }
+}
+
+/// The bucket of rate type
+pub struct RateBucket<'r>(Bucket<'r, RateKey, ValueBuf<Bincode<RateVal>>>);
+
+impl<'r> RateBucket<'r> {
+    /// Create a new RateBucket. Should have been registered with the register method before
+    pub fn new(_: &RateBucketRegistered, store: &Store) -> Self {
+        RateBucket(store.bucket(Some(BUCKET_NAME)).unwrap())
+    }
+
+    fn as_bucket(&self) -> &Bucket<'r, RateKey, ValueBuf<Bincode<RateVal>>> {
+        &self.0
     }
 }

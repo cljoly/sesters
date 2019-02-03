@@ -22,9 +22,10 @@ use log::info;
 mod currency;
 mod config;
 mod price_in_text;
-mod rate_db;
+mod db;
 
 use crate::config::Config;
+use crate::db::Db;
 
 fn main() {
     env_logger::init();
@@ -35,7 +36,6 @@ fn main() {
     // Manager for the database
     let mut mgr = Manager::new();
     info!("Initialize database");
-    let mut cfg = KvConfig::default(&cfg.db_path);
-    let store_handle = mgr.open(cfg).unwrap();
-    let store = store_handle.write().unwrap();
+    let mut kcfg = KvConfig::default(&cfg.db_path);
+    let db = Db::new(kcfg, &mut mgr);
 }
