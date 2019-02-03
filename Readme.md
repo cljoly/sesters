@@ -16,7 +16,7 @@ Fast and offline currency converter.
 - Save searches
   -  Write in database [![](https://img.shields.io/github/issues/detail/s/leowzukw/sesters/5.svg)](https://github.com/leowzukw/sesters/issues/5)
   - Display this history in a table [![](https://img.shields.io/github/issues/detail/s/leowzukw/sesters/6.svg)](https://github.com/leowzukw/sesters/issues/6)
-- GUI with [azul.rs](https://azul.rs/) [![](https://img.shields.io/github/issues/detail/s/leowzukw/sesters/6.svg)](https://github.com/leowzukw/sesters/issues/6)
+- GUI with [azul.rs](https://azul.rs/) [![](https://img.shields.io/github/issues/detail/s/leowzukw/sesters/7.svg)](https://github.com/leowzukw/sesters/issues/7)
 
 Feature with an open issue badge are not complete yet.
 
