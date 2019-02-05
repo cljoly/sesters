@@ -130,6 +130,7 @@ impl Currency {
 
 /// Some common currency
 /// Symbols and ISO are from Wikipedia
+// TODO Use static instead of const
 
 /// https://en.wikipedia.org/wiki/Bitcoin
 // TODO Use Currency::new once const fn is in stable
