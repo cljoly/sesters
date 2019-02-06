@@ -19,6 +19,7 @@ along with this program.  If not, see <https://www.gnu.org/licenses/>.
 //! Access several API used by Sesters
 
 use reqwest;
+use log::info;
 
 use crate::currency::Currency;
 use crate::db::Rate;
@@ -40,11 +41,13 @@ impl Client {
     pub fn rate<'c>(&self, src: &'c Currency, dst: &'c Currency) -> Option<Rate<'c>> {
         let pair = format!("{0}_{1}", src.get_main_iso(), dst.get_main_iso());
         let rate_err = |pair: &str| -> Result<Rate, Box<dyn std::error::Error>> {
+            info!("Performing conversion request for {}", pair);
             let client = &self.0;
             let mut res = client
                 .get("https://free.currencyconverterapi.com/api/v6/convert")
                 .query(&[("q", pair), ("compact", "ultra")])
                 .send()?;
+            info!("Conversion request for {} done", pair);
             // XXX Maybe HashMap is too long to build
             let rates: HashMap<String, f64> = res.json()?;
             Ok(Rate::now(src, dst, rates[pair]))
