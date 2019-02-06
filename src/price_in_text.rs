@@ -81,11 +81,6 @@ fn iso_for_currency<'c>(c: &'c Currency, text: &str) -> Vec<CurrencyMatch<'c>> {
         for cap in r.captures_iter(text) {
             // TODO Implement distance, symbol order
             // Unwrap should not be an issue as we only have numbers and a dot
-            println!(
-                "---------------- Some {:?} ----------- {:?}",
-                cap,
-                cap.name("amount").unwrap().as_str()
-            );
             currency_matches.push(CurrencyMatch::new(
                 cap.name("amount")
                     .unwrap()
@@ -98,13 +93,12 @@ fn iso_for_currency<'c>(c: &'c Currency, text: &str) -> Vec<CurrencyMatch<'c>> {
             ));
         }
     }
-    println!("---------------- None");
     currency_matches
 }
 
-// Find price with iso symbol for all given currency
-// For price before and TODO after the iso symbol
-fn iso<'c>(currencies: &'c [Currency], text: &str) -> Vec<CurrencyAmount<'c>> {
+/// Find price with iso symbol for all given currency
+/// For price before and TODO after the iso symbol
+pub fn iso<'c>(currencies: &'c [Currency], text: &str) -> Vec<CurrencyAmount<'c>> {
     let matches_iterator = currencies
         .iter()
         .map(|c| iso_for_currency(c, text));
