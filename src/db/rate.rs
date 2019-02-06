@@ -88,6 +88,26 @@ impl<'c> Rate<'c> {
     pub fn parity(c: &'c Currency) -> Self {
         Rate::new(c, c, Local::now(), 1.)
     }
+
+    /// Source currency
+    pub fn src(&self) -> &Currency {
+        &self.src
+    }
+
+    /// Destination currency
+    pub fn dst(&self) -> &Currency {
+        &self.dst
+    }
+
+    /// Date of the rate
+    pub fn date(&self) -> &DateTime<LocalTime> {
+        &self.date
+    }
+
+    /// Rate
+    pub fn rate(&self) -> f64 {
+        self.rate
+    }
 }
 
 // The key to find a rate in the database
