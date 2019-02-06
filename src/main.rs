@@ -18,16 +18,17 @@ along with this program.  If not, see <https://www.gnu.org/licenses/>.
 
 use kv::{Config as KvConfig, Manager};
 use log::info;
+use std::io::{self, BufRead};
 
-mod currency;
-mod config;
-mod price_in_text;
-mod db;
 mod api;
+mod config;
+mod currency;
+mod db;
+mod price_in_text;
 
 use crate::config::Config;
-use crate::db::Db;
 use crate::currency::{EUR, USD};
+use crate::db::Db;
 
 fn main() {
     env_logger::init();
@@ -41,7 +42,27 @@ fn main() {
     let mut kcfg = KvConfig::default(&cfg.db_path);
     let db = Db::new(kcfg, &mut mgr);
 
-    let client = api::Client::new();
-    let rate = client.rate(&EUR, &USD);
-    dbg!(&rate);
+    let mut txt;
+    // Acquire text to extract conversion instruction
+    {
+        info!("Reading stdin…");
+        let stdin = io::stdin();
+        txt = stdin.lock().lines().next().expect("Please provide some text on stdin").unwrap();
+        info!("stdin: {}", txt);
+    }
+    let currency_amounts = price_in_text::iso(&currency::ALL_CURRENCIES, &txt);
+
+    if let Some(currency_amount) = currency_amounts.get(0) {
+        let src_currency = currency_amount.currency();
+        dbg!(&src_currency);
+
+        let client = api::Client::new();
+        // TODO Use config for &USD
+        let rate = client.rate(&src_currency, &USD).unwrap();
+
+        dbg!(currency_amount.convert(&rate));
+    } else {
+        println!("No currency found.")
+    }
+
 }
