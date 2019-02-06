@@ -27,7 +27,7 @@ use std::path::PathBuf;
 pub struct Config {
     /// Version of the config file
     pub version: u8,
-    /// Currencies to support
+    /// Currencies to convert to
     pub currencies: Vec<String>,
     /// Path of the database (directory). Please note that ~ is not expanded
     pub db_path: PathBuf,
@@ -55,7 +55,7 @@ impl Config {
     }
 
     /// Change current configuration. Doesn’t handle errors, panics
-    fn set(c: Config) {
+    pub fn set(c: Config) {
         info!("Writing configuration");
         confy::store(APP_NAME, c).unwrap();
     }
