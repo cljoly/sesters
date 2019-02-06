@@ -19,6 +19,8 @@ along with this program.  If not, see <https://www.gnu.org/licenses/>.
 use lazy_static::lazy_static;
 use serde_derive::{Deserialize, Serialize};
 
+use crate::db::Rate;
+
 #[cfg(test)]
 mod tests {
     use super::*;
@@ -67,8 +69,41 @@ impl<'c> CurrencyAmount<'c> {
     pub fn new(currency: &'c Currency, amount: f64) -> Self {
         Self { currency, amount }
     }
+
+    /// Get currency of the amount
+    pub fn currency(&self) -> &Currency {
+        &self.currency
+    }
+
+    // TODO Place this method with Rate structure to avoid having a rate method
+    /// Convert the amount (in src currency) to an amount (in a dest currency).
+    /// The relation from the currency to the other is given by a rate.
+    pub fn convert<'a, 'r>(
+        &'a self,
+        rate: &'r Rate<'c>,
+    ) -> Result<CurrencyAmount<'r>, ConversionError<'a, 'c, 'r>>
+    {
+        if self.currency != rate.src() {
+            Err(ConversionError::new(rate, &self))
+        } else {
+            Ok(CurrencyAmount::new(rate.dst(), rate.rate() * self.amount))
+        }
+    }
 }
 
+/// Error when converting an amount from a currency to another. Record source currency and Rate
+#[derive(Debug, Clone)]
+pub struct ConversionError<'a, 'c, 'r> {
+    rate: &'r Rate<'c>,
+    amount: &'a CurrencyAmount<'c>,
+}
+
+impl<'a, 'c, 'r> ConversionError<'a, 'c, 'r> {
+    /// New conversion error
+    pub fn new(rate: &'r Rate<'c>, amount: &'a CurrencyAmount<'c>) -> Self {
+        ConversionError { rate, amount }
+    }
+}
 
 /// Represent a currency like US Dollar or Euro, with its symbols
 // TODO Improve serialization/deserialization
