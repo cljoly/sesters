@@ -54,15 +54,9 @@ impl Db {
         }
     }
 
-    /// Access the store
-    fn store(&self) -> std::sync::RwLockWriteGuard<Store> {
-        self.store_handle.write().unwrap()
-    }
-
     /// Access a bucket
     // TODO Generic function for any bucket
-    fn bucket_rate(&self) -> RateBucket {
-        let store = self.store();
+    fn bucket_rate(&self, store: &Store) -> RateBucket {
         RateBucket::new(&self.rbr, &store)
     }
 

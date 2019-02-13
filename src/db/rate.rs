@@ -192,7 +192,7 @@ pub const BUCKET_NAME: &str = "rate";
 
 impl super::Db {
         /// Retrieve rate from a currency to another
-    pub fn get_rate<'c>(&self, txn: &Txn, src: &'c Currency, dst: &Currency) -> Option<Rate<'c>> {
+    pub fn get_rate<'c>(&self, txn: &Txn, store: &Store, src: &'c Currency, dst: &Currency) -> Option<Rate<'c>> {
         // Hard code this to limit storage overhead
         if src == dst {
             warn!("Same source and destination currency, don’t store");
@@ -201,7 +201,7 @@ impl super::Db {
         // TODO Return None only when a key is not found, not for any error
         let rk = RateKey::new(src, dst);
         let rv: Option<RateVal> = txn
-            .get(&self.bucket_rate().as_bucket(), rk.clone())
+            .get(&self.bucket_rate(store).as_bucket(), rk.clone())
             .map(|buf| buf.inner().unwrap().to_serde())
             .ok();
         rv.map(|rv| RateInternal::new(rk, rv).into())
@@ -209,13 +209,13 @@ impl super::Db {
 
     /// Set rate from a currency to another
     // TODO Return error type
-    pub fn set_rate<'t, 'd>(&'d self, txn: &mut Txn<'t>, rate: Rate) where 'd: 't {
+    pub fn set_rate<'t, 'd>(&'d self, txn: &mut Txn<'t>, store: &Store, rate: Rate) where 'd: 't {
         if rate.src == rate.dst {
             warn!("Same  source and destination currency, don’t store");
             return;
         }
         let ri: RateInternal = rate.into();
-        txn.set(&self.bucket_rate().as_bucket(), ri.key, Bincode::to_value_buf(ri.value).unwrap()).unwrap();
+        txn.set(&self.bucket_rate(store).as_bucket(), ri.key, Bincode::to_value_buf(ri.value).unwrap()).unwrap();
     }
 }
 

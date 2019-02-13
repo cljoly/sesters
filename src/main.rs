@@ -65,14 +65,18 @@ fn main() {
 
         // Get rate
         {
+            info!("Get db handler");
             let sh = db.store_handle().write().unwrap();
+            info!("Get db transaction");
             let txn = sh.write_txn().unwrap();
 
-            let rate_from_db: Option<db::Rate> = db.get_rate(&txn, src_currency, dst_currency);
+            info!("Get rate from db");
+            let rate_from_db: Option<db::Rate> = db.get_rate(&txn, &sh, src_currency, dst_currency);
             let rate_from_api = || {
                 let client = api::Client::new();
                 client.rate(&src_currency, dst_currency).unwrap()
             };
+            info!("rate_from_db: {:?}", rate_from_db);
             let rate = rate_from_db.unwrap_or_else(rate_from_api);
             // TODO Add to db
 
