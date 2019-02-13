@@ -18,7 +18,7 @@ along with this program.  If not, see <https://www.gnu.org/licenses/>.
 
 //! Module grouping all db related concern
 
-use kv::{Config as KvConfig, Manager, Store};
+use kv::{Config as KvConfig, Manager, Store, Txn};
 use log::info;
 
 mod rate;
@@ -64,5 +64,10 @@ impl Db {
     fn bucket_rate(&self) -> RateBucket {
         let store = self.store();
         RateBucket::new(&self.rbr, &store)
+    }
+
+    /// To get a new read-write transaction
+    pub fn store_handle(&self) -> &std::sync::Arc<std::sync::RwLock<kv::Store>> {
+        &self.store_handle
     }
 }

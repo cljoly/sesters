@@ -47,22 +47,38 @@ fn main() {
     {
         info!("Reading stdin…");
         let stdin = io::stdin();
-        txt = stdin.lock().lines().next().expect("Please provide some text on stdin").unwrap();
+        txt = stdin
+            .lock()
+            .lines()
+            .next()
+            .expect("Please provide some text on stdin")
+            .unwrap();
         info!("stdin: {}", txt);
     }
     let currency_amounts = price_in_text::iso(&currency::ALL_CURRENCIES, &txt);
 
     if let Some(currency_amount) = currency_amounts.get(0) {
         let src_currency = currency_amount.currency();
+        // TODO Use config instead of &USD
+        let dst_currency = &USD;
         dbg!(&src_currency);
 
-        let client = api::Client::new();
-        // TODO Use config for &USD
-        let rate = client.rate(&src_currency, &USD).unwrap();
+        // Get rate
+        {
+            let sh = db.store_handle().write().unwrap();
+            let txn = sh.write_txn().unwrap();
 
-        dbg!(currency_amount.convert(&rate));
+            let rate_from_db: Option<db::Rate> = db.get_rate(&txn, src_currency, dst_currency);
+            let rate_from_api = || {
+                let client = api::Client::new();
+                client.rate(&src_currency, dst_currency).unwrap()
+            };
+            let rate = rate_from_db.unwrap_or_else(rate_from_api);
+            // TODO Add to db
+
+            dbg!(currency_amount.convert(&rate));
+        }
     } else {
         println!("No currency found.")
     }
-
 }
