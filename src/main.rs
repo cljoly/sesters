@@ -75,8 +75,10 @@ fn main() {
             let rate_from_db: Option<db::Rate> = db.get_rate(&txn, &sh, src_currency, dst_currency);
             info!("rate_from_db: {:?}", rate_from_db);
             let rate_from_api = || {
-                let client = api::Client::new();
-                client.rate(&src_currency, dst_currency).unwrap()
+                use crate::api::RateApi;
+                let client = reqwest::Client::new();
+                let ccac = crate::api::CurrencyConverterApiCom::new(cfg);
+                ccac.rate(&client, &src_currency, dst_currency).unwrap()
             };
             let rate = rate_from_db.unwrap_or_else(rate_from_api);
             // TODO Add to db

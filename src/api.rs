@@ -18,48 +18,95 @@ along with this program.  If not, see <https://www.gnu.org/licenses/>.
 
 //! Access several API used by Sesters
 
-use reqwest;
 use log::info;
+use reqwest;
+use std::error::Error;
 
+use crate::config::Config;
 use crate::currency::Currency;
 use crate::db::Rate;
 
 use log::warn;
+use reqwest::{Client, RequestBuilder, Response};
 use std::collections::HashMap;
 
-/// Client wrapper
-pub struct Client(reqwest::Client);
+/// Trait common to all supported API
+pub trait RateApi {
+    /// Initialise the rate API struct with config, as it may contain API key
+    fn new(config: Config) -> Self;
 
-impl Client {
-    /// Create a new client for the API provider
-    pub fn new() -> Self {
-        Client(reqwest::Client::new())
-    }
+    /// Build the query to get rate from currency src to currency dst
+    fn rate_query<'c>(
+        &self,
+        client: &Client,
+        src: &'c Currency,
+        dst: &'c Currency,
+    ) -> RequestBuilder;
 
-    /// Get rate, if it exists
-    // TODO Adapt to something else than https://www.currencyconverterapi.com/
-    pub fn rate<'c>(&self, src: &'c Currency, dst: &'c Currency) -> Option<Rate<'c>> {
-        let pair = format!("{0}_{1}", src.get_main_iso(), dst.get_main_iso());
-        let rate_err = |pair: &str| -> Result<Rate, Box<dyn std::error::Error>> {
-            info!("Performing conversion request for {}", pair);
-            let client = &self.0;
-            let mut res = client
-                .get("https://free.currencyconverterapi.com/api/v6/convert")
-                .query(&[("q", pair), ("compact", "ultra")])
-                .send()?;
-            info!("Conversion request for {} done", pair);
-            // XXX Maybe HashMap is too long to build
-            let rates: HashMap<String, f64> = res.json()?;
-            Ok(Rate::now(src, dst, rates[pair]))
+    /// Treat result of the query to get a rate
+    fn treat_result<'c>(
+        &self,
+        res: Response,
+        src: &'c Currency,
+        dst: &'c Currency,
+    ) -> Result<Rate<'c>, Box<dyn Error>>;
+
+    /// Perform request to get rate, if it exists
+    fn rate<'c>(&self, client: &Client, src: &'c Currency, dst: &'c Currency) -> Option<Rate<'c>> {
+        let rate_err = || -> Result<Rate, Box<dyn Error>> {
+            info!("Performing conversion request for {} -> {}", src, dst);
+            let mut res = self.rate_query(client, src, dst).send()?;
+            info!("Conversion request for {} -> {} done", src, dst);
+            self.treat_result(res, src, dst)
         };
-        match rate_err(&pair) {
+        match rate_err() {
             Err(e) => {
-                warn!("Error while performing request for {}: {}", pair, e);
+                warn!(
+                    "Error while performing request for {} -> {}: {}",
+                    src, dst, e
+                );
                 None
             }
-            Ok(rate) => {
-                Some(rate)
-            }
+            Ok(rate) => Some(rate),
         }
+    }
+}
+
+/// For https://currencyconverterapi.com
+pub struct CurrencyConverterApiCom {
+    /// API key, if any
+    key: String,
+}
+
+impl RateApi for CurrencyConverterApiCom {
+    // TODO Use config to populate key field
+    fn new(_: Config) -> Self {
+        CurrencyConverterApiCom {
+            key: "".to_string(),
+        }
+    }
+
+    fn rate_query<'c>(
+        &self,
+        client: &Client,
+        src: &'c Currency,
+        dst: &'c Currency,
+    ) -> RequestBuilder {
+        let pair = format!("{0}_{1}", src.get_main_iso(), dst.get_main_iso());
+        client
+            .get("https://free.currencyconverterapi.com/api/v6/convert")
+            .query(&[("q", pair.as_str()), ("compact", "ultra")])
+    }
+
+    fn treat_result<'c>(
+        &self,
+        mut res: Response,
+        src: &'c Currency,
+        dst: &'c Currency,
+    ) -> Result<Rate<'c>, Box<dyn Error>> {
+        let pair = format!("{0}_{1}", src.get_main_iso(), dst.get_main_iso());
+        // XXX Maybe HashMap is too long to build, Vec would be better
+        let rates: HashMap<String, f64> = res.json()?;
+        Ok(Rate::now(src, dst, rates[&pair]))
     }
 }
