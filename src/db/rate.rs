@@ -20,8 +20,8 @@ along with this program.  If not, see <https://www.gnu.org/licenses/>.
 
 use chrono::offset::Local as LocalTime;
 use chrono::prelude::*;
-use kv::bincode::Bincode;
 use kv::{Bucket, Config as KvConfig, Serde, Store, Txn, ValueBuf};
+use kv::bincode::Bincode;
 use lazy_static::lazy_static;
 use log::{info, warn};
 use regex::Regex;
@@ -110,7 +110,7 @@ impl<'c> Rate<'c> {
 
 // The key to find a rate in the database
 #[derive(Clone, Debug, PartialOrd, PartialEq)]
-pub struct RateKey(String);
+struct RateKey(String);
 
 impl RateKey {
     // New rate key
@@ -134,7 +134,7 @@ impl RateKey {
 
 // Data of a rate (value of the key in the database)
 #[derive(Debug, Clone, PartialEq, Serialize, Deserialize)]
-pub struct RateVal(DateTime<LocalTime>, f64);
+struct RateVal(DateTime<LocalTime>, f64);
 
 // Internal representation for storage of a rate: in the database, a rate is
 // stored partly on the key and partly on the value
@@ -207,15 +207,14 @@ impl super::Db {
 
     /// Set rate from a currency to another
     // TODO Return error type
-    pub fn set_rate<'t, 'b, 'd>(
+    pub fn set_rate<'t, 'd>(
         &'d self,
         txn: &mut Txn<'t>,
         store: &Store,
-        bucket: &Bucket<'t, RateKey, ValueBuf<Bincode<RateVal>>>,
+        bucket: &RateBucket<'t>,
         rate: Rate,
     ) where
-        'd: 'b,
-        'b: 't,
+        'd: 't,
     {
         if rate.src == rate.dst {
             warn!("Same  source and destination currency, don’t store");
@@ -223,7 +222,7 @@ impl super::Db {
         }
         let ri: RateInternal = rate.into();
         txn.set(
-            bucket,
+            bucket.as_bucket(),
             ri.key,
             Bincode::to_value_buf(ri.value).unwrap(),
         )
@@ -251,11 +250,10 @@ impl<'r> RateBucket<'r> {
     pub fn new(_: &RateBucketRegistered, store: &Store) -> Self {
         info!("New RateBucket");
         let rbucket = store.bucket(Some(BUCKET_NAME));
-        dbg!("Done");
         RateBucket(rbucket.unwrap())
     }
 
-    pub fn as_bucket(&self) -> &Bucket<'r, RateKey, ValueBuf<Bincode<RateVal>>> {
+    fn as_bucket(&self) -> &Bucket<'r, RateKey, ValueBuf<Bincode<RateVal>>> {
         &self.0
     }
 }

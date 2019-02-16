@@ -18,7 +18,7 @@ along with this program.  If not, see <https://www.gnu.org/licenses/>.
 
 //! Access several API used by Sesters
 
-use log::info;
+use log::{info, warn};
 use reqwest;
 use std::error::Error;
 
@@ -26,11 +26,10 @@ use crate::config::Config;
 use crate::currency::Currency;
 use crate::db::Rate;
 
-use log::warn;
 use reqwest::{Client, RequestBuilder, Response};
 use std::collections::HashMap;
 
-/// Trait common to all supported API
+/// Trait common to all supported API endpoints
 pub trait RateApi {
     /// Initialise the rate API struct with config, as it may contain API key
     fn new(config: &Config) -> Self;
@@ -57,10 +56,8 @@ pub trait RateApi {
     fn rate<'c>(&self, client: &Client, src: &'c Currency, dst: &'c Currency) -> Option<Rate<'c>> {
         let rate_err = || -> Result<Rate, Box<dyn Error>> {
             info!("Performing conversion request for {} -> {}", src, dst);
-            dbg!(self.rate_query(client, src, dst));
             let mut res = self.rate_query(client, src, dst).send()?;
-            info!("Conversion request for {} -> {} done", src, dst);
-            dbg!(&res);
+            info!("Conversion request for {} -> {} done, result: {:?}", src, dst, &res);
             self.treat_result(res, src, dst)
         };
         match rate_err() {
@@ -134,7 +131,6 @@ impl RateApi for ExchangeRatesApiIo {
         src: &'c Currency,
         dst: &'c Currency,
     ) -> RequestBuilder {
-        dbg!("");
         client
             .get("https://api.exchangeratesapi.io/latest")
             .query(&[("base", src.get_main_iso())])
@@ -149,6 +145,7 @@ impl RateApi for ExchangeRatesApiIo {
     ) -> Result<Rate<'c>, Box<dyn Error>> {
         // XXX Maybe HashMap is too long to build, Vec would be better
         let rates: serde_json::Value = res.json()?;
+        // TODO Use date provided and remove unwrap, to properly deal with errors
         Ok(Rate::now(
             src,
             dst,

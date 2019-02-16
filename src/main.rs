@@ -60,19 +60,17 @@ fn main() {
     if let Some(currency_amount) = currency_amounts.get(0) {
         let src_currency = currency_amount.currency();
         // TODO Use config instead of &USD
-        // let dst_currency = &USD;
-        let dst_currency = &EUR;
-        dbg!(&src_currency);
+        let dst_currency = &USD;
+        info!("src_currency: {}", &src_currency);
 
         // Get rate
         info!("Get db handler");
         let sh = db.store_handle().write().unwrap();
         info!("Get rate bucket");
         let bucket = db.bucket_rate(&sh);
+        info!("Got bucket");
         {
             let rate_from_db = || -> Option<db::Rate> {
-                // info!("Get db handler");
-                // let sh = db.store_handle().read().unwrap();
                 info!("Get db transaction");
                 let txn = sh.read_txn().unwrap();
 
@@ -86,8 +84,7 @@ fn main() {
                 info!("Get db transaction");
                 let mut txn = sh.write_txn().unwrap();
                 info!("Set rate to db");
-                let r = db.set_rate(&mut txn, &sh, bucket.as_bucket(), rate);
-                // let r = db.set_rate(&mut txn, &sh, rate);
+                let r = db.set_rate(&mut txn, &sh, &bucket, rate);
                 info!("Rate set, result: {:?}", &r);
                 txn.commit().unwrap();
             };
@@ -99,13 +96,10 @@ fn main() {
                 endpoint.rate(&client, &src_currency, dst_currency)
             };
 
-            dbg!(rate_from_db());
-            dbg!(rate_from_db());
-
             let rate = rate_from_db()
                 .or_else(rate_from_api);
 
-            dbg!(&rate);
+            info!("Final rate: {:?}", &rate);
             if let Some(rate) = rate {
                 dbg!(currency_amount.convert(&rate));
                 add_to_db(rate)
