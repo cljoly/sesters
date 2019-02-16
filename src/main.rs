@@ -107,7 +107,7 @@ fn main() {
             }
             trace!("Final rate: {:?}", &rate);
             if let Some(rate) = rate {
-                dbg!(currency_amount.convert(&rate));
+                println!("{} ➜ {}", &currency_amount, &currency_amount.convert(&rate).unwrap());
                 debug!("Set rate to db");
                 add_to_db(rate)
             }

@@ -93,6 +93,13 @@ impl<'c> CurrencyAmount<'c> {
     }
 }
 
+impl<'c> fmt::Display for CurrencyAmount<'c> {
+    fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
+        // TODO Use symbol, proper separator (, or .), proper number of cents (usually 2 or 3)
+        write!(f, "{} {:.*}", self.currency.get_main_iso(), 2, self.amount)
+    }
+}
+
 /// Error when converting an amount from a currency to another. Record source currency and Rate
 #[derive(Debug, Clone)]
 pub struct ConversionError<'a, 'c, 'r> {
