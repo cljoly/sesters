@@ -17,7 +17,7 @@ along with this program.  If not, see <https://www.gnu.org/licenses/>.
  */
 
 use kv::{Config as KvConfig, Manager};
-use log::{info, trace, debug};
+use log::{debug, info, trace};
 use std::io::{self, BufRead};
 
 mod api;
@@ -29,8 +29,8 @@ mod rate;
 
 use crate::config::Config;
 use crate::currency::{Currency, EUR, USD};
-use crate::rate::Rate;
 use crate::db::Db;
+use crate::rate::Rate;
 
 fn main() {
     env_logger::init();
@@ -62,7 +62,7 @@ fn main() {
     if let Some(currency_amount) = currency_amounts.get(0) {
         let src_currency = currency_amount.currency();
         // TODO Use config instead of &USD
-        let dst_currency = &USD;
+        let destination_currencies = vec![&USD, &EUR];
         trace!("src_currency: {}", &src_currency);
 
         // Get rate
@@ -72,7 +72,7 @@ fn main() {
         let bucket = db.bucket_rate(&sh);
         trace!("Got bucket");
         {
-            let rate_from_db = || -> Option<Rate> {
+            let rate_from_db = |dst_currency| -> Option<Rate> {
                 debug!("Create read transaction");
                 let txn = sh.read_txn().unwrap();
                 trace!("Get rate from db");
@@ -90,26 +90,33 @@ fn main() {
                 txn.commit().unwrap();
             };
 
-            let rate_from_api = || -> Option<Rate> {
+            let rate_from_api = |dst_currency| -> Option<Rate> {
                 use crate::api::RateApi;
                 let client = reqwest::Client::new();
                 let endpoint = crate::api::ExchangeRatesApiIo::new(&cfg);
                 endpoint.rate(&client, &src_currency, dst_currency)
             };
 
-            let rate = rate_from_db()
-                .or_else(rate_from_api);
+            let rates = destination_currencies
+                .iter()
+                .map(|dst| rate_from_db(dst).or_else(|| rate_from_api(dst)));
 
-            if let Some(rate) = &rate {
-                info!("Rate retrieved: {}", &rate);
-            } else {
-                info!("No rate retrieved");
-            }
-            trace!("Final rate: {:?}", &rate);
-            if let Some(rate) = rate {
-                println!("{} ➜ {}", &currency_amount, &currency_amount.convert(&rate).unwrap());
-                debug!("Set rate to db");
-                add_to_db(rate)
+            for rate in rates {
+                if let Some(rate) = &rate {
+                    info!("Rate retrieved: {}", &rate);
+                } else {
+                    info!("No rate retrieved");
+                }
+                trace!("Final rate: {:?}", &rate);
+                if let Some(rate) = rate {
+                    println!(
+                        "{} ➜ {}",
+                        &currency_amount,
+                        &currency_amount.convert(&rate).unwrap()
+                    );
+                    debug!("Set rate to db");
+                    add_to_db(rate)
+                }
             }
         }
     } else {
