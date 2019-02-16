@@ -27,7 +27,7 @@ mod db;
 mod price_in_text;
 
 use crate::config::Config;
-use crate::currency::{EUR, USD};
+use crate::currency::{Currency, EUR, USD};
 use crate::db::Db;
 
 fn main() {
@@ -65,25 +65,32 @@ fn main() {
 
         // Get rate
         {
-            info!("Get db handler");
-            let sh = db.store_handle().read().unwrap();
-            info!("Get db transaction");
-            // let txn = sh.write_txn().unwrap();
-            let txn = sh.read_txn().unwrap();
+            let rate_from_db = || -> Option<db::Rate> {
+                info!("Get db handler");
+                let sh = db.store_handle().read().unwrap();
+                info!("Get db transaction");
+                // let txn = sh.write_txn().unwrap();
+                let txn = sh.read_txn().unwrap();
 
-            info!("Get rate from db");
-            let rate_from_db: Option<db::Rate> = db.get_rate(&txn, &sh, src_currency, dst_currency);
-            info!("rate_from_db: {:?}", rate_from_db);
-            let rate_from_api = || {
+                info!("Get rate from db");
+                let rate = db.get_rate(&txn, &sh, src_currency, dst_currency);
+                info!("rate_from_db: {:?}", rate);
+                rate
+            };
+            let rate_from_api = || -> Option<db::Rate> {
                 use crate::api::RateApi;
                 let client = reqwest::Client::new();
-                let endpoint = crate::api::ExchangeRatesApiIo::new(cfg);
-                endpoint.rate(&client, &src_currency, dst_currency).unwrap()
+                let endpoint = crate::api::ExchangeRatesApiIo::new(&cfg);
+                endpoint.rate(&client, &src_currency, dst_currency)
             };
-            let rate = rate_from_db.unwrap_or_else(rate_from_api);
-            // TODO Add to db
+            let rate = rate_from_db()
+                .or_else(rate_from_api);
 
-            dbg!(currency_amount.convert(&rate));
+            dbg!(&rate);
+            if let Some(rate) = rate {
+                dbg!(currency_amount.convert(&rate));
+                // TODO Add to db
+            }
         }
     } else {
         println!("No currency found.")

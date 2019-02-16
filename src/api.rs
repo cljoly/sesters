@@ -33,7 +33,7 @@ use std::collections::HashMap;
 /// Trait common to all supported API
 pub trait RateApi {
     /// Initialise the rate API struct with config, as it may contain API key
-    fn new(config: Config) -> Self;
+    fn new(config: &Config) -> Self;
 
     // TODO Add method to get possible conversion and store it in initial struct. This requires passing client to new
 
@@ -84,7 +84,7 @@ pub struct CurrencyConverterApiCom {
 
 impl RateApi for CurrencyConverterApiCom {
     // TODO Use config to populate key field
-    fn new(_: Config) -> Self {
+    fn new(_: &Config) -> Self {
         CurrencyConverterApiCom {
             key: "".to_string(),
         }
@@ -122,7 +122,7 @@ pub struct ExchangeRatesApiIo {
 }
 
 impl RateApi for ExchangeRatesApiIo {
-    fn new(_: Config) -> Self {
+    fn new(_: &Config) -> Self {
         ExchangeRatesApiIo {
             key: "".to_string(),
         }
