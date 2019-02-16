@@ -35,6 +35,8 @@ pub trait RateApi {
     /// Initialise the rate API struct with config, as it may contain API key
     fn new(config: Config) -> Self;
 
+    // TODO Add method to get possible conversion and store it in initial struct. This requires passing client to new
+
     /// Build the query to get rate from currency src to currency dst
     fn rate_query<'c>(
         &self,
