@@ -111,7 +111,7 @@ impl<'c> Rate<'c> {
 }
 
 // The key to find a rate in the database
-#[derive(Clone)]
+#[derive(Clone, Debug, PartialOrd, PartialEq)]
 struct RateKey(String);
 
 impl RateKey {
@@ -200,8 +200,10 @@ impl super::Db {
         }
         // TODO Return None only when a key is not found, not for any error
         let rk = RateKey::new(src, dst);
-        let rv: Option<RateVal> = txn
-            .get(&self.bucket_rate(store).as_bucket(), rk.clone())
+        let bucket = self.bucket_rate(store);
+        let rvg = txn.get(&bucket.as_bucket(), rk.clone());
+        let rv: Option<RateVal> =
+            rvg
             .map(|buf| buf.inner().unwrap().to_serde())
             .ok();
         rv.map(|rv| RateInternal::new(rk, rv).into())
@@ -237,7 +239,9 @@ pub struct RateBucket<'r>(Bucket<'r, RateKey, ValueBuf<Bincode<RateVal>>>);
 impl<'r> RateBucket<'r> {
     /// Create a new RateBucket. Should have been registered with the register method before
     pub fn new(_: &RateBucketRegistered, store: &Store) -> Self {
-        RateBucket(store.bucket(Some(BUCKET_NAME)).unwrap())
+        info!("New RateBucket");
+        let rbucket = store.bucket(Some(BUCKET_NAME));
+        RateBucket(rbucket.unwrap())
     }
 
     fn as_bucket(&self) -> &Bucket<'r, RateKey, ValueBuf<Bincode<RateVal>>> {
