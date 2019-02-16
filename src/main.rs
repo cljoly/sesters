@@ -66,9 +66,10 @@ fn main() {
         // Get rate
         {
             info!("Get db handler");
-            let sh = db.store_handle().write().unwrap();
+            let sh = db.store_handle().read().unwrap();
             info!("Get db transaction");
-            let txn = sh.write_txn().unwrap();
+            // let txn = sh.write_txn().unwrap();
+            let txn = sh.read_txn().unwrap();
 
             info!("Get rate from db");
             let rate_from_db: Option<db::Rate> = db.get_rate(&txn, &sh, src_currency, dst_currency);
