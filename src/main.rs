@@ -17,7 +17,7 @@ along with this program.  If not, see <https://www.gnu.org/licenses/>.
  */
 
 use kv::{Config as KvConfig, Manager};
-use log::info;
+use log::{info, trace, debug};
 use std::io::{self, BufRead};
 
 mod api;
@@ -53,7 +53,7 @@ fn main() {
             .next()
             .expect("Please provide some text on stdin")
             .unwrap();
-        info!("stdin: {}", txt);
+        debug!("stdin: {}", txt);
     }
     let currency_amounts = price_in_text::iso(&currency::ALL_CURRENCIES, &txt);
 
@@ -61,31 +61,30 @@ fn main() {
         let src_currency = currency_amount.currency();
         // TODO Use config instead of &USD
         let dst_currency = &USD;
-        info!("src_currency: {}", &src_currency);
+        trace!("src_currency: {}", &src_currency);
 
         // Get rate
-        info!("Get db handler");
+        trace!("Get db handler");
         let sh = db.store_handle().write().unwrap();
-        info!("Get rate bucket");
+        trace!("Get rate bucket");
         let bucket = db.bucket_rate(&sh);
-        info!("Got bucket");
+        trace!("Got bucket");
         {
             let rate_from_db = || -> Option<db::Rate> {
-                info!("Get db transaction");
+                debug!("Create read transaction");
                 let txn = sh.read_txn().unwrap();
-
-                info!("Get rate from db");
+                trace!("Get rate from db");
                 let rate = db.get_rate(&txn, &sh, src_currency, dst_currency);
-                info!("rate_from_db: {:?}", rate);
+                trace!("rate_from_db: {:?}", rate);
                 rate
             };
 
             let add_to_db = |rate: db::Rate| {
-                info!("Get db transaction");
+                debug!("Get write transaction");
                 let mut txn = sh.write_txn().unwrap();
-                info!("Set rate to db");
+                trace!("Set rate to db");
                 let r = db.set_rate(&mut txn, &sh, &bucket, rate);
-                info!("Rate set, result: {:?}", &r);
+                trace!("Rate set, result: {:?}", &r);
                 txn.commit().unwrap();
             };
 
@@ -99,9 +98,11 @@ fn main() {
             let rate = rate_from_db()
                 .or_else(rate_from_api);
 
-            info!("Final rate: {:?}", &rate);
+            info!("Rate retrieved");
+            trace!("Final rate: {:?}", &rate);
             if let Some(rate) = rate {
                 dbg!(currency_amount.convert(&rate));
+                debug!("Set rate to db");
                 add_to_db(rate)
             }
         }

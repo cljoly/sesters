@@ -19,7 +19,7 @@ along with this program.  If not, see <https://www.gnu.org/licenses/>.
 //! Module grouping all db related concern
 
 use kv::{Config as KvConfig, Manager, Store, Txn};
-use log::info;
+use log::{info, debug, trace};
 
 mod rate;
 
@@ -42,7 +42,7 @@ enum BucketList{Rate}
 impl Db {
     /// Initialize the rate database
     pub fn new(mut kcfg: KvConfig, mgr: &mut Manager) -> Self {
-        info!("Initialize database");
+        trace!("Initialize database with KvConfig {:?}", kcfg);
 
         let rbr = RateBucketRegistered::new(&mut kcfg);
 

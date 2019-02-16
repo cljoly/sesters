@@ -23,7 +23,7 @@ use chrono::prelude::*;
 use kv::{Bucket, Config as KvConfig, Serde, Store, Txn, ValueBuf};
 use kv::bincode::Bincode;
 use lazy_static::lazy_static;
-use log::{info, warn};
+use log::{info, warn, debug, trace};
 use regex::Regex;
 use serde_derive::{Deserialize, Serialize};
 
@@ -236,7 +236,7 @@ pub struct RateBucketRegistered {}
 impl RateBucketRegistered {
     /// Register a bucket by its name in the configuration of the database
     pub fn new(kcfg: &mut KvConfig) -> Self {
-        info!("Bucket '{}' registered", BUCKET_NAME);
+        debug!("Bucket '{}' registered", BUCKET_NAME);
         kcfg.bucket(BUCKET_NAME, None);
         RateBucketRegistered {}
     }
@@ -248,8 +248,9 @@ pub struct RateBucket<'r>(Bucket<'r, RateKey, ValueBuf<Bincode<RateVal>>>);
 impl<'r> RateBucket<'r> {
     /// Create a new RateBucket. Should have been registered with the register method before
     pub fn new(_: &RateBucketRegistered, store: &Store) -> Self {
-        info!("New RateBucket");
+        trace!("New RateBucket…");
         let rbucket = store.bucket(Some(BUCKET_NAME));
+        trace!("Done");
         RateBucket(rbucket.unwrap())
     }
 

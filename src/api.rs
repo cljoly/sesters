@@ -18,7 +18,7 @@ along with this program.  If not, see <https://www.gnu.org/licenses/>.
 
 //! Access several API used by Sesters
 
-use log::{info, warn};
+use log::{info, warn, trace, debug};
 use reqwest;
 use std::error::Error;
 
@@ -55,9 +55,10 @@ pub trait RateApi {
     /// Perform request to get rate, if it exists
     fn rate<'c>(&self, client: &Client, src: &'c Currency, dst: &'c Currency) -> Option<Rate<'c>> {
         let rate_err = || -> Result<Rate, Box<dyn Error>> {
-            info!("Performing conversion request for {} -> {}", src, dst);
+            debug!("Performing conversion request for {} -> {}", src, dst);
             let mut res = self.rate_query(client, src, dst).send()?;
-            info!("Conversion request for {} -> {} done, result: {:?}", src, dst, &res);
+            debug!("Conversion request for {} -> {} done", src, dst);
+            trace!("Conversion request result: {:?}", &res);
             self.treat_result(res, src, dst)
         };
         match rate_err() {
