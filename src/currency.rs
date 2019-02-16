@@ -19,6 +19,8 @@ along with this program.  If not, see <https://www.gnu.org/licenses/>.
 use lazy_static::lazy_static;
 use serde_derive::{Deserialize, Serialize};
 
+use std::fmt;
+
 use crate::db::Rate;
 
 #[cfg(test)]
@@ -160,6 +162,12 @@ impl Currency {
     /// Check if a currency is conform to the constraints listed in the definition of the structure
     pub fn check(&self) -> bool {
         !self.symbols.is_empty() && !self.isos.is_empty() && !self.names.is_empty()
+    }
+}
+
+impl fmt::Display for Currency {
+    fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
+        write!(f, "{}", self.get_main_iso())
     }
 }
 
