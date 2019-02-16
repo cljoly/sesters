@@ -55,8 +55,10 @@ pub trait RateApi {
     fn rate<'c>(&self, client: &Client, src: &'c Currency, dst: &'c Currency) -> Option<Rate<'c>> {
         let rate_err = || -> Result<Rate, Box<dyn Error>> {
             info!("Performing conversion request for {} -> {}", src, dst);
+            dbg!(self.rate_query(client, src, dst));
             let mut res = self.rate_query(client, src, dst).send()?;
             info!("Conversion request for {} -> {} done", src, dst);
+            dbg!(&res);
             self.treat_result(res, src, dst)
         };
         match rate_err() {
@@ -108,5 +110,53 @@ impl RateApi for CurrencyConverterApiCom {
         // XXX Maybe HashMap is too long to build, Vec would be better
         let rates: HashMap<String, f64> = res.json()?;
         Ok(Rate::now(src, dst, rates[&pair]))
+    }
+}
+
+/// For https://exchangeratesapi.io/
+pub struct ExchangeRatesApiIo {
+    /// API key, if any
+    key: String,
+}
+
+impl RateApi for ExchangeRatesApiIo {
+    fn new(_: Config) -> Self {
+        ExchangeRatesApiIo {
+            key: "".to_string(),
+        }
+    }
+
+    fn rate_query<'c>(
+        &self,
+        client: &Client,
+        src: &'c Currency,
+        dst: &'c Currency,
+    ) -> RequestBuilder {
+        dbg!("");
+        client
+            .get("https://api.exchangeratesapi.io/latest")
+            .query(&[("base", src.get_main_iso())])
+    }
+
+    // TODO Use other rate given
+    fn treat_result<'c>(
+        &self,
+        mut res: Response,
+        src: &'c Currency,
+        dst: &'c Currency,
+    ) -> Result<Rate<'c>, Box<dyn Error>> {
+        // XXX Maybe HashMap is too long to build, Vec would be better
+        let rates: serde_json::Value = res.json()?;
+        Ok(Rate::now(
+            src,
+            dst,
+            rates
+                .get("rates")
+                .unwrap()
+                .get(&dst.get_main_iso())
+                .unwrap()
+                .as_f64()
+                .unwrap(),
+        ))
     }
 }
