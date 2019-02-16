@@ -21,8 +21,7 @@ along with this program.  If not, see <https://www.gnu.org/licenses/>.
 use chrono::offset::Local as LocalTime;
 use chrono::prelude::*;
 use kv::bincode::Bincode;
-use kv::Serde;
-use kv::{Bucket, Config as KvConfig, Store, Txn, ValueBuf};
+use kv::{Bucket, Config as KvConfig, Serde, Store, Txn, ValueBuf};
 use lazy_static::lazy_static;
 use log::{info, warn};
 use regex::Regex;
@@ -35,7 +34,7 @@ use crate::currency::{Currency, USD};
 mod tests {
 
     use super::*;
-    use crate::currency::{USD, EUR, BTC};
+    use crate::currency::{BTC, EUR, USD};
 
     // Ensure nothing is lost when converting to RateKey
     #[test]
@@ -83,7 +82,6 @@ impl<'c> Rate<'c> {
         Self::new(src, dst, Local::now(), rate)
     }
 
-
     /// A 1:1 rate for a currency and itself
     pub fn parity(c: &'c Currency) -> Self {
         Rate::new(c, c, Local::now(), 1.)
@@ -112,7 +110,7 @@ impl<'c> Rate<'c> {
 
 // The key to find a rate in the database
 #[derive(Clone, Debug, PartialOrd, PartialEq)]
-struct RateKey(String);
+pub struct RateKey(String);
 
 impl RateKey {
     // New rate key
@@ -136,7 +134,7 @@ impl RateKey {
 
 // Data of a rate (value of the key in the database)
 #[derive(Debug, Clone, PartialEq, Serialize, Deserialize)]
-struct RateVal(DateTime<LocalTime>, f64);
+pub struct RateVal(DateTime<LocalTime>, f64);
 
 // Internal representation for storage of a rate: in the database, a rate is
 // stored partly on the key and partly on the value
@@ -155,13 +153,8 @@ impl From<RateInternal> for Rate<'static> {
     fn from(ri: RateInternal) -> Rate<'static> {
         let (src, dst) = ri.key.currencies();
         let date = ri.value.0;
-            let rate = ri.value.1;
-        Rate::new(
-            src,
-            dst,
-            date,
-            rate,
-        )
+        let rate = ri.value.1;
+        Rate::new(src, dst, date, rate)
     }
 }
 
@@ -191,8 +184,14 @@ impl std::convert::AsRef<[u8]> for RateKey {
 pub const BUCKET_NAME: &str = "rate";
 
 impl super::Db {
-        /// Retrieve rate from a currency to another
-    pub fn get_rate<'c>(&self, txn: &Txn, store: &Store, src: &'c Currency, dst: &Currency) -> Option<Rate<'c>> {
+    /// Retrieve rate from a currency to another
+    pub fn get_rate<'c>(
+        &self,
+        txn: &Txn,
+        store: &Store,
+        src: &'c Currency,
+        dst: &Currency,
+    ) -> Option<Rate<'c>> {
         // Hard code this to limit storage overhead
         if src == dst {
             warn!("Same source and destination currency, don’t store");
@@ -202,34 +201,45 @@ impl super::Db {
         let rk = RateKey::new(src, dst);
         let bucket = self.bucket_rate(store);
         let rvg = txn.get(&bucket.as_bucket(), rk.clone());
-        let rv: Option<RateVal> =
-            rvg
-            .map(|buf| buf.inner().unwrap().to_serde())
-            .ok();
+        let rv: Option<RateVal> = rvg.map(|buf| buf.inner().unwrap().to_serde()).ok();
         rv.map(|rv| RateInternal::new(rk, rv).into())
     }
 
     /// Set rate from a currency to another
     // TODO Return error type
-    pub fn set_rate<'t, 'd>(&'d self, txn: &mut Txn<'t>, store: &Store, rate: Rate) where 'd: 't {
+    pub fn set_rate<'t, 'b, 'd>(
+        &'d self,
+        txn: &mut Txn<'t>,
+        store: &Store,
+        bucket: &Bucket<'t, RateKey, ValueBuf<Bincode<RateVal>>>,
+        rate: Rate,
+    ) where
+        'd: 'b,
+        'b: 't,
+    {
         if rate.src == rate.dst {
             warn!("Same  source and destination currency, don’t store");
             return;
         }
         let ri: RateInternal = rate.into();
-        txn.set(&self.bucket_rate(store).as_bucket(), ri.key, Bincode::to_value_buf(ri.value).unwrap()).unwrap();
+        txn.set(
+            bucket,
+            ri.key,
+            Bincode::to_value_buf(ri.value).unwrap(),
+        )
+        .unwrap();
     }
 }
 
 /// Type mainly forcing to register in the db
-pub struct RateBucketRegistered{}
+pub struct RateBucketRegistered {}
 
 impl RateBucketRegistered {
     /// Register a bucket by its name in the configuration of the database
     pub fn new(kcfg: &mut KvConfig) -> Self {
         info!("Bucket '{}' registered", BUCKET_NAME);
         kcfg.bucket(BUCKET_NAME, None);
-        RateBucketRegistered{}
+        RateBucketRegistered {}
     }
 }
 
@@ -241,10 +251,11 @@ impl<'r> RateBucket<'r> {
     pub fn new(_: &RateBucketRegistered, store: &Store) -> Self {
         info!("New RateBucket");
         let rbucket = store.bucket(Some(BUCKET_NAME));
+        dbg!("Done");
         RateBucket(rbucket.unwrap())
     }
 
-    fn as_bucket(&self) -> &Bucket<'r, RateKey, ValueBuf<Bincode<RateVal>>> {
+    pub fn as_bucket(&self) -> &Bucket<'r, RateKey, ValueBuf<Bincode<RateVal>>> {
         &self.0
     }
 }

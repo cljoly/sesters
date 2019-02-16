@@ -56,7 +56,7 @@ impl Db {
 
     /// Access a bucket
     // TODO Generic function for any bucket
-    fn bucket_rate(&self, store: &Store) -> RateBucket {
+    pub fn bucket_rate(&self, store: &Store) -> RateBucket {
         RateBucket::new(&self.rbr, &store)
     }
 
