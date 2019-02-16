@@ -61,8 +61,10 @@ fn main() {
 
     if let Some(currency_amount) = currency_amounts.get(0) {
         let src_currency = currency_amount.currency();
-        // TODO Use config instead of &USD
-        let destination_currencies = vec![&USD, &EUR];
+        let destination_currencies = cfg.currencies.iter().map(|iso_name| {
+            currency::existing_from_iso(&iso_name)
+                .expect(format!("Invalid currency iso symbol: {}", iso_name).as_str())
+        });
         trace!("src_currency: {}", &src_currency);
 
         // Get rate
@@ -97,9 +99,8 @@ fn main() {
                 endpoint.rate(&client, &src_currency, dst_currency)
             };
 
-            let rates = destination_currencies
-                .iter()
-                .map(|dst| rate_from_db(dst).or_else(|| rate_from_api(dst)));
+            let rates =
+                destination_currencies.map(|dst| rate_from_db(&dst).or_else(|| rate_from_api(&dst)));
 
             for rate in rates {
                 if let Some(rate) = &rate {
