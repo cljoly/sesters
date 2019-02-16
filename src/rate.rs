@@ -21,6 +21,8 @@ along with this program.  If not, see <https://www.gnu.org/licenses/>.
 use chrono::prelude::*;
 use chrono::offset::Local as LocalTime;
 
+use std::fmt;
+
 use crate::currency::{Currency, USD};
 
 #[cfg(test)]
@@ -44,6 +46,12 @@ impl<'c> Default for Rate<'c> {
             src: &USD,
             dst: &USD,
         }
+    }
+}
+
+impl<'c> fmt::Display for Rate<'c> {
+    fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
+        write!(f, "1 {src} ≈ {rate:.*} {dst} ({date})", 3, rate=self.rate(), src=self.src(), dst=self.dst(), date=self.date())
     }
 }
 

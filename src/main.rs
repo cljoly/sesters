@@ -100,7 +100,11 @@ fn main() {
             let rate = rate_from_db()
                 .or_else(rate_from_api);
 
-            info!("Rate retrieved");
+            if let Some(rate) = &rate {
+                info!("Rate retrieved: {}", &rate);
+            } else {
+                info!("No rate retrieved");
+            }
             trace!("Final rate: {:?}", &rate);
             if let Some(rate) = rate {
                 dbg!(currency_amount.convert(&rate));
