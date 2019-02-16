@@ -28,8 +28,6 @@ use rate::{RateBucket, RateBucketRegistered};
 #[cfg(test)]
 mod tests {}
 
-pub type Rate<'c> = rate::Rate<'c>;
-
 /// Store and bucket, represent the whole database
 pub struct Db {
     store_handle: std::sync::Arc<std::sync::RwLock<kv::Store>>,
@@ -37,7 +35,7 @@ pub struct Db {
 }
 
 /// All supported bucket
-enum BucketList{Rate}
+enum BucketList{RateBucket}
 
 impl Db {
     /// Initialize the rate database

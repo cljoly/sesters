@@ -21,7 +21,7 @@ use serde_derive::{Deserialize, Serialize};
 
 use std::fmt;
 
-use crate::db::Rate;
+use crate::rate::Rate;
 
 #[cfg(test)]
 mod tests {

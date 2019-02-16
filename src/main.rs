@@ -25,9 +25,11 @@ mod config;
 mod currency;
 mod db;
 mod price_in_text;
+mod rate;
 
 use crate::config::Config;
 use crate::currency::{Currency, EUR, USD};
+use crate::rate::Rate;
 use crate::db::Db;
 
 fn main() {
@@ -70,7 +72,7 @@ fn main() {
         let bucket = db.bucket_rate(&sh);
         trace!("Got bucket");
         {
-            let rate_from_db = || -> Option<db::Rate> {
+            let rate_from_db = || -> Option<Rate> {
                 debug!("Create read transaction");
                 let txn = sh.read_txn().unwrap();
                 trace!("Get rate from db");
@@ -79,7 +81,7 @@ fn main() {
                 rate
             };
 
-            let add_to_db = |rate: db::Rate| {
+            let add_to_db = |rate: Rate| {
                 debug!("Get write transaction");
                 let mut txn = sh.write_txn().unwrap();
                 trace!("Set rate to db");
@@ -88,7 +90,7 @@ fn main() {
                 txn.commit().unwrap();
             };
 
-            let rate_from_api = || -> Option<db::Rate> {
+            let rate_from_api = || -> Option<Rate> {
                 use crate::api::RateApi;
                 let client = reqwest::Client::new();
                 let endpoint = crate::api::ExchangeRatesApiIo::new(&cfg);

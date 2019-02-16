@@ -24,7 +24,7 @@ use std::error::Error;
 
 use crate::config::Config;
 use crate::currency::Currency;
-use crate::db::Rate;
+use crate::rate::Rate;
 
 use reqwest::{Client, RequestBuilder, Response};
 use std::collections::HashMap;

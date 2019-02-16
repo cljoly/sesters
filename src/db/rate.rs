@@ -18,8 +18,8 @@ along with this program.  If not, see <https://www.gnu.org/licenses/>.
 
 //! Structs related to rate and rate storage
 
-use chrono::offset::Local as LocalTime;
 use chrono::prelude::*;
+use chrono::offset::Local as LocalTime;
 use kv::{Bucket, Config as KvConfig, Serde, Store, Txn, ValueBuf};
 use kv::bincode::Bincode;
 use lazy_static::lazy_static;
@@ -29,6 +29,7 @@ use serde_derive::{Deserialize, Serialize};
 
 use crate::currency;
 use crate::currency::{Currency, USD};
+use crate::rate::Rate;
 
 #[cfg(test)]
 mod tests {
@@ -43,68 +44,6 @@ mod tests {
         let rk2 = RateKey::new(&USD, &BTC);
         assert_eq!(rk1.currencies(), (&EUR, &EUR));
         assert_eq!(rk2.currencies(), (&USD, &BTC))
-    }
-}
-
-/// Rate form src currency to dst currency
-#[derive(Clone, PartialOrd, PartialEq, Debug)]
-pub struct Rate<'c> {
-    src: &'c Currency,
-    dst: &'c Currency,
-    date: DateTime<LocalTime>,
-    rate: f64,
-}
-
-impl<'c> Default for Rate<'c> {
-    fn default() -> Self {
-        Rate {
-            date: Local::now(),
-            rate: 0.,
-            src: &USD,
-            dst: &USD,
-        }
-    }
-}
-
-impl<'c> Rate<'c> {
-    /// Instanciate
-    pub fn new(src: &'c Currency, dst: &'c Currency, date: DateTime<LocalTime>, rate: f64) -> Self {
-        Rate {
-            src,
-            dst,
-            date,
-            rate,
-        }
-    }
-
-    /// New rate with date set to now (local time)
-    pub fn now(src: &'c Currency, dst: &'c Currency, rate: f64) -> Self {
-        Self::new(src, dst, Local::now(), rate)
-    }
-
-    /// A 1:1 rate for a currency and itself
-    pub fn parity(c: &'c Currency) -> Self {
-        Rate::new(c, c, Local::now(), 1.)
-    }
-
-    /// Source currency
-    pub fn src(&self) -> &Currency {
-        &self.src
-    }
-
-    /// Destination currency
-    pub fn dst(&self) -> &Currency {
-        &self.dst
-    }
-
-    /// Date of the rate
-    pub fn date(&self) -> &DateTime<LocalTime> {
-        &self.date
-    }
-
-    /// Rate
-    pub fn rate(&self) -> f64 {
-        self.rate
     }
 }
 
@@ -145,7 +84,7 @@ struct RateInternal {
 
 impl<'c> From<Rate<'c>> for RateInternal {
     fn from(val: Rate) -> RateInternal {
-        RateInternal::new(RateKey::new(val.src, val.dst), RateVal(val.date, val.rate))
+        RateInternal::new(RateKey::new(val.src(), val.dst()), RateVal(*val.date(), val.rate()))
     }
 }
 
@@ -216,7 +155,7 @@ impl super::Db {
     ) where
         'd: 't,
     {
-        if rate.src == rate.dst {
+        if rate.src() == rate.dst() {
             warn!("Same  source and destination currency, don’t store");
             return;
         }
