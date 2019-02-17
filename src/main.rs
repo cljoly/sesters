@@ -27,11 +27,11 @@ mod db;
 mod price_in_text;
 mod rate;
 
+use crate::api::RateApi;
 use crate::config::Config;
 use crate::currency::{Currency, EUR, USD};
 use crate::db::Db;
 use crate::rate::Rate;
-use crate::api::RateApi;
 
 fn main() {
     log::set_max_level(log::LevelFilter::Info);
@@ -87,7 +87,13 @@ fn main() {
                 debug!("Create read transaction");
                 let txn = sh.read_txn().unwrap();
                 trace!("Get rate from db");
-                let rate = db.get_rate(&txn, &sh, src_currency, dst_currency, &endpoint.provider_id());
+                let rate = db.get_rate(
+                    &txn,
+                    &sh,
+                    src_currency,
+                    dst_currency,
+                    &endpoint.provider_id(),
+                );
                 trace!("rate_from_db: {:?}", rate);
                 rate
             };
@@ -107,8 +113,16 @@ fn main() {
                 endpoint.rate(&client, &src_currency, dst_currency)
             };
 
-            let rates = destination_currencies
-                .map(|dst| rate_from_db(&dst).or_else(|| rate_from_api(&dst)));
+            let rates = destination_currencies.map(|dst| {
+                rate_from_db(&dst).or_else(|| {
+                    let rate = rate_from_api(&dst);
+                    if let Some(rate) = &rate {
+                        info!("Set rate to db");
+                        add_to_db(rate.clone());
+                    }
+                    rate
+                })
+            });
 
             for rate in rates {
                 if log_enabled!(log::Level::Info) {
@@ -125,8 +139,6 @@ fn main() {
                         &currency_amount,
                         &currency_amount.convert(&rate).unwrap()
                     );
-                    debug!("Set rate to db");
-                    add_to_db(rate)
                 }
             }
         }
