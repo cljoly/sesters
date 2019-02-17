@@ -46,9 +46,16 @@ fn main() {
     let mut kcfg = KvConfig::default(&cfg.db_path);
     let db = Db::new(kcfg, &mut mgr);
 
-    let mut txt;
     // Acquire text to extract conversion instruction
-    {
+    // From argv
+    // Use join method once in stable XXX poor performance now
+    let mut txt = std::env::args().skip(1).fold(String::new(), |mut last, next| {
+        last.push_str(" ");
+        last.push_str(&next);
+        last
+    });
+    trace!("txt: {}", txt);
+    if txt == "" {
         info!("Reading stdin…");
         let stdin = io::stdin();
         txt = stdin
@@ -57,7 +64,7 @@ fn main() {
             .next()
             .expect("Please provide some text on stdin")
             .unwrap();
-        debug!("stdin: {}", txt);
+        trace!("txt: {}", txt);
     }
     let currency_amounts = price_in_text::iso(&currency::ALL_CURRENCIES, &txt);
 
