@@ -35,17 +35,47 @@ use crate::rate::Rate;
 mod tests {
 
     use super::*;
-    use crate::currency::{BTC, EUR, USD};
+    use crate::currency::{BTC, EUR, USD, CHF};
 
     // Ensure nothing is lost when converting to RateKey
     #[test]
     fn ratekey_and_back() {
-        let now = Local.ymd(2020,9,30).and_hms(17,38,49);
+        let fut = Local.ymd(2020,9,30).and_hms(17,38,49);
         let horrible_provider_name =  String::from("somelongand://strange_name.1230471-02347.TEST.com/@ñé:--:123");
-        let rk1 = RateKey::new(&EUR, &EUR, "TEST1", &now);
-        let rk2 = RateKey::new(&USD, &BTC, &horrible_provider_name, &now);
-        assert_eq!(rk1.data(), (&EUR, &EUR, String::from("TEST1"), now.clone()));
-        assert_eq!(rk2.data(), (&USD, &BTC, horrible_provider_name, now.clone()))
+        let rk1 = RateKey::new(&EUR, &EUR, "TEST1", &fut);
+        let rk2 = RateKey::new(&USD, &BTC, &horrible_provider_name, &fut);
+        assert_eq!(rk1.data(), (&EUR, &EUR, String::from("TEST1"), fut.clone()));
+        assert_eq!(rk2.data(), (&USD, &BTC, horrible_provider_name, fut.clone()))
+    }
+
+    // Ensure nothing is lost when converting to RateInternal
+    #[test]
+    fn rateinternal_and_back() {
+        let now = Local::now();
+        let fut = Local.ymd(2020,9,30).and_hms(17,38,49);
+        let r1 = Rate::new(&EUR, &CHF, now, 9.12, "RateInternal".to_string(), Some(fut.clone()));
+        let ri1: RateInternal = r1.clone().into();
+        let r1_back: Rate = ri1.into();
+        assert_eq!(r1, r1_back);
+
+        let r2 = Rate::new(&BTC, &USD, now, 9.12, "RateInternalNoCache".to_string(), Some(fut.clone()));
+        assert_ne!(r1, r2);
+        assert_ne!(r1_back, r2);
+        let r3 = Rate::new(&BTC, &USD, now, 9.12, "RateInternal".to_string(), Some(fut.clone()));
+        assert_ne!(r1, r3);
+        assert_ne!(r1_back, r3);
+        let ri2: RateInternal = r2.clone().into();
+        let r2_back: Rate = ri2.into();
+        assert_eq!(r2, r2_back);
+    }
+
+    // Ensure we cannot store rate that don’t have cache limit date
+    #[test]
+    #[should_panic]
+    fn rateinternal_cache_none() {
+        let now = Local::now();
+        let r2 = Rate::new(&BTC, &USD, now, 9.1, "RateInternalNoCache".to_string(), None);
+        let ri2: RateInternal = r2.clone().into();
     }
 }
 
@@ -135,6 +165,7 @@ impl super::Db {
         store: &Store,
         src: &'c Currency,
         dst: &Currency,
+        provider: &str,
     ) -> Option<Rate<'c>> {
         // Hard code this to limit storage overhead
         if src == dst {
@@ -142,7 +173,7 @@ impl super::Db {
             return Some(Rate::parity(src));
         }
         // TODO Return None only when a key is not found, not for any error
-        let rk = RateKey::new(src, dst, unimplemented!(), unimplemented!());
+        let rk = RateKey::new(src, dst, provider, unimplemented!());
         let bucket = self.bucket_rate(store);
         let rvg = txn.get(&bucket.as_bucket(), rk.clone());
         let rv: Option<RateVal> = rvg.map(|buf| buf.inner().unwrap().to_serde()).ok();

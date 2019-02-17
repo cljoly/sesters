@@ -81,7 +81,7 @@ fn main() {
                 debug!("Create read transaction");
                 let txn = sh.read_txn().unwrap();
                 trace!("Get rate from db");
-                let rate = db.get_rate(&txn, &sh, src_currency, dst_currency);
+                let rate = db.get_rate(&txn, &sh, src_currency, dst_currency, unimplemented!());
                 trace!("rate_from_db: {:?}", rate);
                 rate
             };
