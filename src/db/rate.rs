@@ -33,6 +33,7 @@ use crate::rate::Rate;
 
 #[cfg(test)]
 mod tests {
+    use chrono::Duration;
 
     use super::*;
     use crate::currency::{BTC, EUR, USD, CHF};
@@ -52,16 +53,20 @@ mod tests {
     #[test]
     fn rateinternal_and_back() {
         let now = Local::now();
-        let fut = Local.ymd(2020,9,30).and_hms(17,38,49);
-        let r1 = Rate::new(&EUR, &CHF, now, 9.12, "RateInternal".to_string(), Some(fut.clone()));
+        let fut = now + Duration::hours(3);
+        // Precision does not go beyond second for expriration, ceil fut to seconds
+        let fut_ceil = fut - Duration::nanoseconds(fut.timestamp_subsec_nanos() as i64);
+        let now_plus_1s_ceil = now - Duration::nanoseconds(fut.timestamp_subsec_nanos() as i64) + Duration::seconds(1);
+        dbg!((fut, fut_ceil));
+        let r1 = Rate::new(&EUR, &CHF, now, 9.12, "RateInternal".to_string(), Some(fut_ceil));
         let ri1: RateInternal = r1.clone().into();
         let r1_back: Rate = ri1.into();
         assert_eq!(r1, r1_back);
 
-        let r2 = Rate::new(&BTC, &USD, now, 9.12, "RateInternalNoCache".to_string(), Some(fut.clone()));
+        let r2 = Rate::new(&BTC, &USD, now, 9.12, "RateInternalNoCache".to_string(), Some(now_plus_1s_ceil));
         assert_ne!(r1, r2);
         assert_ne!(r1_back, r2);
-        let r3 = Rate::new(&BTC, &USD, now, 9.12, "RateInternal".to_string(), Some(fut.clone()));
+        let r3 = Rate::new(&BTC, &USD, now, 9.12, "RateInternal".to_string(), Some(fut_ceil));
         assert_ne!(r1, r3);
         assert_ne!(r1_back, r3);
         let ri2: RateInternal = r2.clone().into();
