@@ -31,6 +31,7 @@ use crate::config::Config;
 use crate::currency::{Currency, EUR, USD};
 use crate::db::Db;
 use crate::rate::Rate;
+use crate::api::RateApi;
 
 fn main() {
     log::set_max_level(log::LevelFilter::Info);
@@ -79,12 +80,14 @@ fn main() {
         trace!("Get rate bucket");
         let bucket = db.bucket_rate(&sh);
         trace!("Got bucket");
+        let endpoint = api::ExchangeRatesApiIo::new(&cfg);
+        trace!("Got API Endpoint");
         {
             let rate_from_db = |dst_currency| -> Option<Rate> {
                 debug!("Create read transaction");
                 let txn = sh.read_txn().unwrap();
                 trace!("Get rate from db");
-                let rate = db.get_rate(&txn, &sh, src_currency, dst_currency, unimplemented!());
+                let rate = db.get_rate(&txn, &sh, src_currency, dst_currency, &endpoint.provider_id());
                 trace!("rate_from_db: {:?}", rate);
                 rate
             };
@@ -99,9 +102,8 @@ fn main() {
             };
 
             let rate_from_api = |dst_currency| -> Option<Rate> {
-                use crate::api::RateApi;
+                info!("Retrieve rate online");
                 let client = reqwest::Client::new();
-                let endpoint = crate::api::ExchangeRatesApiIo::new(&cfg);
                 endpoint.rate(&client, &src_currency, dst_currency)
             };
 

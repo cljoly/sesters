@@ -23,7 +23,7 @@ use chrono::prelude::*;
 use kv::bincode::Bincode;
 use kv::{Bucket, Config as KvConfig, Serde, Store, Txn, ValueBuf};
 use lazy_static::lazy_static;
-use log::{debug, info, trace, warn};
+use log::{debug, error, info, trace, warn};
 use regex::Regex;
 use serde_derive::{Deserialize, Serialize};
 
@@ -60,8 +60,8 @@ mod tests {
         let dst = &CHF;
         let provider = "TEST1";
         let fut = Local::now() + Duration::days(11);
-        let rk1 = RateKey::new(src, dst, provider, &fut);
-        let key_str = rk1.0.as_str();
+        let key = RateKey::new(src, dst, provider, &fut);
+        let key_str = key.0.as_str();
 
         let partial3 = PartialRateKey::src_dst_provider(src, dst, provider);
         let len3 = partial3.0.len();
@@ -74,6 +74,26 @@ mod tests {
         let partial1 = PartialRateKey::src(src);
         let len1 = partial1.0.len();
         assert_eq!(partial1.0, key_str[..len1]);
+    }
+
+    // Check is_compatible_with
+    #[test]
+    fn partialratekey_compatible_with_method() {
+        let src = &EUR;
+        let dst = &CHF;
+        let provider = "TEST1";
+        let fut = Local::now() + Duration::days(11);
+        let key = RateKey::new(src, dst, provider, &fut);
+        let key_str = key.0.as_str();
+
+        let partial3 = PartialRateKey::src_dst_provider(src, dst, provider);
+        assert!(partial3.is_compatible_with(&key));
+
+        let partial2 = PartialRateKey::src_dst(src, dst);
+        assert!(partial2.is_compatible_with(&key));
+
+        let partial1 = PartialRateKey::src(src);
+        assert!(partial1.is_compatible_with(&key));
     }
 
     // Ensure nothing is lost when converting to RateInternal
@@ -188,6 +208,23 @@ impl RateKey {
     }
 }
 
+impl From<&[u8]> for RateKey {
+    fn from(val: &[u8]) -> RateKey {
+        // XXX Was found by reading the code of crate kv, need to find something
+        // more robust
+        trace!("Converting &[u8] into RateKey: {:?}", val);
+        use encoding::all::ISO_8859_1;
+        use encoding::{DecoderTrap, Encoding};
+        let raw_key = ISO_8859_1.decode(val, DecoderTrap::Ignore);
+        if let Ok(rk) = &raw_key {
+            trace!("After conversion, got: {}", &rk);
+        } else {
+            error!("Error converting from &[u8] {:?}", val);
+        }
+        RateKey(raw_key.unwrap())
+    }
+}
+
 // Data of a rate (value of the key in the database)
 #[derive(Debug, Clone, PartialEq, Serialize, Deserialize)]
 struct RateVal(DateTime<LocalTime>, f64);
@@ -244,6 +281,7 @@ impl std::convert::AsRef<[u8]> for RateKey {
 pub const BUCKET_NAME: &str = "rate";
 
 /// To query over partial key
+#[derive(Debug)]
 struct PartialRateKey(String);
 
 impl PartialRateKey {
@@ -266,6 +304,17 @@ impl PartialRateKey {
         PartialRateKey(format!("{}", src))
     }
 
+    /// Treat as key
+    fn to_key(&self) -> RateKey {
+        RateKey(self.0.clone())
+    }
+
+    /// Check whether this partial key is the beginning of another
+    fn is_compatible_with(&self, key: &RateKey) -> bool {
+        let r = key.0.starts_with(&self.0);
+        trace!("Is {:?} compatible with {:?}?: {}", self, key, r);
+        r
+    }
 }
 
 impl super::Db {
@@ -278,17 +327,46 @@ impl super::Db {
         dst: &Currency,
         provider: &str,
     ) -> Option<Rate<'c>> {
+        trace!("get_rate({}, {}, {:?})", src, dst, provider);
         // Hard code this to limit storage overhead
         if src == dst {
             warn!("Same source and destination currency, don’t store");
             return Some(Rate::parity(src));
         }
-        // TODO Return None only when a key is not found, not for any error
-        let rk = RateKey::new(src, dst, provider, unimplemented!());
+        // TODO Have this by argument
         let bucket = self.bucket_rate(store);
-        let rvg = txn.get(&bucket.as_bucket(), rk.clone());
-        let rv: Option<RateVal> = rvg.map(|buf| buf.inner().unwrap().to_serde()).ok();
-        rv.map(|rv| RateInternal::new(rk, rv).into())
+        // TODO Return None only when a key is not found, not for any error
+        let partial = PartialRateKey::src_dst_provider(src, dst, provider);
+        let partial_key = partial.to_key();
+        trace!("partial_key: {:?}", partial_key);
+        let cursor = txn.read_cursor(&bucket.as_bucket());
+        let mut cursor = cursor.unwrap();
+
+        // TODO Place this in a function
+        trace!("Iterating over key compatible with {:?}", partial_key);
+        let iter = cursor.iter();
+        // Skip key that are not starting with right thing, if any
+        let iter_key = iter
+            .skip_while(|(k, v)| {
+                trace!("Skipe {:?}?", k);
+                !partial.is_compatible_with(k)
+            })
+            // Take key that are starting with right thing, if any
+            .take_while(|(k, v)| {
+                trace!("Take {:?}?", k);
+                partial.is_compatible_with(k)
+            });
+
+        trace!("Compute most_recent");
+        let most_recent = iter_key.last();
+        trace!("most_recent: {:?}", most_recent);
+
+        most_recent.map(|(rk, rv_buf)| {
+            trace!("key: {:?}, value_buf: {:?}", rk, rv_buf);
+            let rv = rv_buf.inner().unwrap().to_serde();
+            trace!("value: {:?}", rv);
+            RateInternal::new(rk, rv).into()
+        })
     }
 
     /// Set rate from a currency to another

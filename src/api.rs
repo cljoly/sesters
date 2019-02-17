@@ -37,6 +37,9 @@ pub trait RateApi {
 
     // TODO Add method to get possible conversion and store it in initial struct. This requires passing client to new
 
+    /// Provider identifier, should be based on provider url
+    fn provider_id(&self) -> String;
+
     /// Build the query to get rate from currency src to currency dst
     fn rate_query<'c>(
         &self,
@@ -89,6 +92,10 @@ impl RateApi for CurrencyConverterApiCom {
         }
     }
 
+    fn provider_id(&self) -> String {
+        String::from("currencyconverterapi.com")
+    }
+
     fn rate_query<'c>(
         &self,
         client: &Client,
@@ -114,7 +121,7 @@ impl RateApi for CurrencyConverterApiCom {
             src,
             dst,
             rates[&pair],
-            String::from("currencyconverterapi.com"),
+            self.provider_id(),
             Some(Duration::hours(1)),
         ))
     }
@@ -131,6 +138,10 @@ impl RateApi for ExchangeRatesApiIo {
         ExchangeRatesApiIo {
             key: "".to_string(),
         }
+    }
+
+    fn provider_id(&self) -> String {
+        String::from("exchangeratesapi.io")
     }
 
     fn rate_query<'c>(
@@ -164,7 +175,7 @@ impl RateApi for ExchangeRatesApiIo {
                 .unwrap()
                 .as_f64()
                 .unwrap(),
-            String::from("exchangeratesapi.io"),
+            self.provider_id(),
             // Updated once a day, let’s bet for a refresh every few hours
             Some(Duration::hours(6)),
         ))

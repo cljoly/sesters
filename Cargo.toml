@@ -29,3 +29,4 @@ kv = { version = "0.8.*", features = ["bincode-value"] }
 chrono = { version = "0.4", features = ["serde"] }
 bincode = "1.*"
 dirs = "~1.0"
+encoding = "0.2"
