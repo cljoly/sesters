@@ -85,31 +85,30 @@ struct RateKey(String);
 
 impl RateKey {
     // New rate key
-    fn new(src: &Currency, dst: &Currency, provider: &str, cache_until: &DateTime<LocalTime>) -> RateKey {
-        RateKey(format!("{}:{}:{}:{}", src.get_main_iso(), dst.get_main_iso(), provider, cache_until.timestamp()))
+    fn new(src: &Currency, dst: &Currency, provider: &str) -> RateKey {
+        RateKey(format!("{}:{}:{}", src.get_main_iso(), dst.get_main_iso(), provider))
     }
 
     // Get data stored in the rate key. Panics if a rate is malformed.
-    fn data(&self) -> (&'static Currency, &'static Currency, String, DateTime<LocalTime>) {
+    fn data(&self) -> (&'static Currency, &'static Currency, String) {
         lazy_static! {
-            static ref KEY: Regex = Regex::new(r"^(?P<src>[A-Z]{3}):(?P<dst>[A-Z]{3}):(?P<prov>.+):(?P<until>\d+)$").unwrap();
+            static ref KEY: Regex = Regex::new(r"^(?P<src>[A-Z]{3}):(?P<dst>[A-Z]{3}):(?P<prov>.+)$").unwrap();
         }
         let cap = KEY.captures(&self.0).unwrap();
         let src_iso = cap.name("src").unwrap().as_str();
         let dst_iso = cap.name("dst").unwrap().as_str();
         let provider_str = cap.name("prov").unwrap().as_str();
-        let timestamp_str = cap.name("until").unwrap().as_str();
         let src = currency::existing_from_iso(src_iso).unwrap();
         let dst = currency::existing_from_iso(dst_iso).unwrap();
         let provider = String::from(provider_str);
-        let cache_until = Local.timestamp(timestamp_str.parse().unwrap(), 0);
-        (src, dst, provider, cache_until)
+        (src, dst, provider)
     }
 }
 
 // Data of a rate (value of the key in the database)
+// Date of the rate, rate, cache limit for the rate
 #[derive(Debug, Clone, PartialEq, Serialize, Deserialize)]
-struct RateVal(DateTime<LocalTime>, f64);
+struct RateVal(DateTime<LocalTime>, f64, DateTime<LocalTime>);
 
 // Internal representation for storage of a rate: in the database, a rate is
 // stored partly on the key and partly on the value
@@ -121,15 +120,16 @@ struct RateInternal {
 impl<'c> From<Rate<'c>> for RateInternal {
     fn from(val: Rate) -> RateInternal {
         // TODO Remove unwrap and use TryFrom
-        RateInternal::new(RateKey::new(val.src(), val.dst(), val.provider(), val.cache_until().as_ref().unwrap()), RateVal(*val.date(), val.rate()))
+        RateInternal::new(RateKey::new(val.src(), val.dst(), val.provider()), RateVal(*val.date(), val.rate(), val.cache_until().unwrap()))
     }
 }
 
 impl From<RateInternal> for Rate<'static> {
     fn from(ri: RateInternal) -> Rate<'static> {
-        let (src, dst, provider, cache_until) = ri.key.data();
+        let (src, dst, provider) = ri.key.data();
         let date = ri.value.0;
         let rate = ri.value.1;
+        let cache_until = ri.value.2;
         Rate::new(src, dst, date, rate, provider, Some(cache_until))
     }
 }
@@ -173,7 +173,7 @@ impl super::Db {
             return Some(Rate::parity(src));
         }
         // TODO Return None only when a key is not found, not for any error
-        let rk = RateKey::new(src, dst, provider, unimplemented!());
+        let rk = RateKey::new(src, dst, provider);
         let bucket = self.bucket_rate(store);
         let rvg = txn.get(&bucket.as_bucket(), rk.clone());
         let rv: Option<RateVal> = rvg.map(|buf| buf.inner().unwrap().to_serde()).ok();
