@@ -40,10 +40,12 @@ mod tests {
     // Ensure nothing is lost when converting to RateKey
     #[test]
     fn ratekey_and_back() {
-        let rk1 = RateKey::new(&EUR, &EUR);
-        let rk2 = RateKey::new(&USD, &BTC);
-        assert_eq!(rk1.currencies(), (&EUR, &EUR));
-        assert_eq!(rk2.currencies(), (&USD, &BTC))
+        let now = Local.ymd(2020,9,30).and_hms(17,38,49);
+        let horrible_provider_name =  String::from("somelongand://strange_name.1230471-02347.TEST.com/@ñé:--:123");
+        let rk1 = RateKey::new(&EUR, &EUR, "TEST1", &now);
+        let rk2 = RateKey::new(&USD, &BTC, &horrible_provider_name, &now);
+        assert_eq!(rk1.data(), (&EUR, &EUR, String::from("TEST1"), now.clone()));
+        assert_eq!(rk2.data(), (&USD, &BTC, horrible_provider_name, now.clone()))
     }
 }
 
@@ -60,13 +62,13 @@ impl RateKey {
     // Get data stored in the rate key. Panics if a rate is malformed.
     fn data(&self) -> (&'static Currency, &'static Currency, String, DateTime<LocalTime>) {
         lazy_static! {
-            static ref KEY: Regex = Regex::new(r"^(?P<src>[A-Z]{3}):(?P<dst>[A-Z]{3}):(?P<prov>[A-Z]*):(?P<until>\d+)$").unwrap();
+            static ref KEY: Regex = Regex::new(r"^(?P<src>[A-Z]{3}):(?P<dst>[A-Z]{3}):(?P<prov>.+):(?P<until>\d+)$").unwrap();
         }
         let cap = KEY.captures(&self.0).unwrap();
         let src_iso = cap.name("src").unwrap().as_str();
         let dst_iso = cap.name("dst").unwrap().as_str();
         let provider_str = cap.name("prov").unwrap().as_str();
-        let timestamp_str = cap.name("dst").unwrap().as_str();
+        let timestamp_str = cap.name("until").unwrap().as_str();
         let src = currency::existing_from_iso(src_iso).unwrap();
         let dst = currency::existing_from_iso(dst_iso).unwrap();
         let provider = String::from(provider_str);
