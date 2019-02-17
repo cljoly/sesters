@@ -18,12 +18,12 @@ along with this program.  If not, see <https://www.gnu.org/licenses/>.
 
 //! Structs related to rate and rate storage
 
-use chrono::prelude::*;
 use chrono::offset::Local as LocalTime;
-use kv::{Bucket, Config as KvConfig, Serde, Store, Txn, ValueBuf};
+use chrono::prelude::*;
 use kv::bincode::Bincode;
+use kv::{Bucket, Config as KvConfig, Serde, Store, Txn, ValueBuf};
 use lazy_static::lazy_static;
-use log::{info, warn, debug, trace};
+use log::{debug, info, trace, warn};
 use regex::Regex;
 use serde_derive::{Deserialize, Serialize};
 
@@ -36,17 +36,21 @@ mod tests {
     use chrono::Duration;
 
     use super::*;
-    use crate::currency::{BTC, EUR, USD, CHF};
+    use crate::currency::{BTC, CHF, EUR, USD};
 
     // Ensure nothing is lost when converting to RateKey
     #[test]
     fn ratekey_and_back() {
-        let fut = Local.ymd(2020,9,30).and_hms(17,38,49);
-        let horrible_provider_name =  String::from("somelongand://strange_name.1230471-02347.TEST.com/@ñé:--:123");
+        let fut = Local.ymd(2020, 9, 30).and_hms(17, 38, 49);
+        let horrible_provider_name =
+            String::from("somelongand://strange_name.1230471-02347.TEST.com/@ñé:--:123");
         let rk1 = RateKey::new(&EUR, &EUR, "TEST1", &fut);
         let rk2 = RateKey::new(&USD, &BTC, &horrible_provider_name, &fut);
         assert_eq!(rk1.data(), (&EUR, &EUR, String::from("TEST1"), fut.clone()));
-        assert_eq!(rk2.data(), (&USD, &BTC, horrible_provider_name, fut.clone()))
+        assert_eq!(
+            rk2.data(),
+            (&USD, &BTC, horrible_provider_name, fut.clone())
+        )
     }
 
     // Ensure nothing is lost when converting to RateInternal
@@ -56,17 +60,39 @@ mod tests {
         let fut = now + Duration::hours(3);
         // Precision does not go beyond second for expriration, ceil fut to seconds
         let fut_ceil = fut - Duration::nanoseconds(fut.timestamp_subsec_nanos() as i64);
-        let now_plus_1s_ceil = now - Duration::nanoseconds(fut.timestamp_subsec_nanos() as i64) + Duration::seconds(1);
+        let now_plus_1s_ceil =
+            now - Duration::nanoseconds(fut.timestamp_subsec_nanos() as i64) + Duration::seconds(1);
         dbg!((fut, fut_ceil));
-        let r1 = Rate::new(&EUR, &CHF, now, 9.12, "RateInternal".to_string(), Some(fut_ceil));
+        let r1 = Rate::new(
+            &EUR,
+            &CHF,
+            now,
+            9.12,
+            "RateInternal".to_string(),
+            Some(fut_ceil),
+        );
         let ri1: RateInternal = r1.clone().into();
         let r1_back: Rate = ri1.into();
         assert_eq!(r1, r1_back);
 
-        let r2 = Rate::new(&BTC, &USD, now, 9.12, "RateInternalNoCache".to_string(), Some(now_plus_1s_ceil));
+        let r2 = Rate::new(
+            &BTC,
+            &USD,
+            now,
+            9.12,
+            "RateInternalNoCache".to_string(),
+            Some(now_plus_1s_ceil),
+        );
         assert_ne!(r1, r2);
         assert_ne!(r1_back, r2);
-        let r3 = Rate::new(&BTC, &USD, now, 9.12, "RateInternal".to_string(), Some(fut_ceil));
+        let r3 = Rate::new(
+            &BTC,
+            &USD,
+            now,
+            9.12,
+            "RateInternal".to_string(),
+            Some(fut_ceil),
+        );
         assert_ne!(r1, r3);
         assert_ne!(r1_back, r3);
         let ri2: RateInternal = r2.clone().into();
@@ -79,7 +105,14 @@ mod tests {
     #[should_panic]
     fn rateinternal_cache_none() {
         let now = Local::now();
-        let r2 = Rate::new(&BTC, &USD, now, 9.1, "RateInternalNoCache".to_string(), None);
+        let r2 = Rate::new(
+            &BTC,
+            &USD,
+            now,
+            9.1,
+            "RateInternalNoCache".to_string(),
+            None,
+        );
         let ri2: RateInternal = r2.clone().into();
     }
 }
@@ -90,14 +123,34 @@ struct RateKey(String);
 
 impl RateKey {
     // New rate key
-    fn new(src: &Currency, dst: &Currency, provider: &str, cache_until: &DateTime<LocalTime>) -> RateKey {
-        RateKey(format!("{}:{}:{}:{}", src.get_main_iso(), dst.get_main_iso(), provider, cache_until.timestamp()))
+    fn new(
+        src: &Currency,
+        dst: &Currency,
+        provider: &str,
+        cache_until: &DateTime<LocalTime>,
+    ) -> RateKey {
+        RateKey(format!(
+            "{}:{}:{}:{}",
+            src.get_main_iso(),
+            dst.get_main_iso(),
+            provider,
+            cache_until.timestamp()
+        ))
     }
 
     // Get data stored in the rate key. Panics if a rate is malformed.
-    fn data(&self) -> (&'static Currency, &'static Currency, String, DateTime<LocalTime>) {
+    fn data(
+        &self,
+    ) -> (
+        &'static Currency,
+        &'static Currency,
+        String,
+        DateTime<LocalTime>,
+    ) {
         lazy_static! {
-            static ref KEY: Regex = Regex::new(r"^(?P<src>[A-Z]{3}):(?P<dst>[A-Z]{3}):(?P<prov>.+):(?P<until>\d+)$").unwrap();
+            static ref KEY: Regex =
+                Regex::new(r"^(?P<src>[A-Z]{3}):(?P<dst>[A-Z]{3}):(?P<prov>.+):(?P<until>\d+)$")
+                    .unwrap();
         }
         let cap = KEY.captures(&self.0).unwrap();
         let src_iso = cap.name("src").unwrap().as_str();
@@ -126,7 +179,15 @@ struct RateInternal {
 impl<'c> From<Rate<'c>> for RateInternal {
     fn from(val: Rate) -> RateInternal {
         // TODO Remove unwrap and use TryFrom
-        RateInternal::new(RateKey::new(val.src(), val.dst(), val.provider(), val.cache_until().as_ref().unwrap()), RateVal(*val.date(), val.rate()))
+        RateInternal::new(
+            RateKey::new(
+                val.src(),
+                val.dst(),
+                val.provider(),
+                val.cache_until().as_ref().unwrap(),
+            ),
+            RateVal(*val.date(), val.rate()),
+        )
     }
 }
 
@@ -141,10 +202,7 @@ impl From<RateInternal> for Rate<'static> {
 
 impl RateInternal {
     fn new(key: RateKey, val: RateVal) -> RateInternal {
-        RateInternal {
-            key,
-            value: val,
-        }
+        RateInternal { key, value: val }
     }
 }
 

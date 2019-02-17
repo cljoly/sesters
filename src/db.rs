@@ -19,7 +19,7 @@ along with this program.  If not, see <https://www.gnu.org/licenses/>.
 //! Module grouping all db related concern
 
 use kv::{Config as KvConfig, Manager, Store, Txn};
-use log::{info, debug, trace};
+use log::{debug, info, trace};
 
 mod rate;
 
@@ -31,11 +31,13 @@ mod tests {}
 /// Store and bucket, represent the whole database
 pub struct Db {
     store_handle: std::sync::Arc<std::sync::RwLock<kv::Store>>,
-    rbr: RateBucketRegistered
+    rbr: RateBucketRegistered,
 }
 
 /// All supported bucket
-enum BucketList{RateBucket}
+enum BucketList {
+    RateBucket,
+}
 
 impl Db {
     /// Initialize the rate database
@@ -46,10 +48,7 @@ impl Db {
 
         let store_handle = mgr.open(kcfg).unwrap();
 
-        Db {
-            store_handle,
-            rbr
-        }
+        Db { store_handle, rbr }
     }
 
     /// Access a bucket

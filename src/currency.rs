@@ -83,8 +83,7 @@ impl<'c> CurrencyAmount<'c> {
     pub fn convert<'a, 'r>(
         &'a self,
         rate: &'r Rate<'c>,
-    ) -> Result<CurrencyAmount<'r>, ConversionError<'a, 'c, 'r>>
-    {
+    ) -> Result<CurrencyAmount<'r>, ConversionError<'a, 'c, 'r>> {
         if self.currency != rate.src() {
             Err(ConversionError::new(rate, &self))
         } else {

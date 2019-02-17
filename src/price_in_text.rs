@@ -99,8 +99,6 @@ fn iso_for_currency<'c>(c: &'c Currency, text: &str) -> Vec<CurrencyMatch<'c>> {
 /// Find price with iso symbol for all given currency
 /// For price before and TODO after the iso symbol
 pub fn iso<'c>(currencies: &'c [Currency], text: &str) -> Vec<CurrencyAmount<'c>> {
-    let matches_iterator = currencies
-        .iter()
-        .map(|c| iso_for_currency(c, text));
+    let matches_iterator = currencies.iter().map(|c| iso_for_currency(c, text));
     matches_iterator.flatten().map(|cm| cm.into()).collect()
 }

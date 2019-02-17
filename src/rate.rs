@@ -18,8 +18,8 @@ along with this program.  If not, see <https://www.gnu.org/licenses/>.
 
 //! Store common representation for rates
 
-use chrono::prelude::*;
 use chrono::offset::Local as LocalTime;
+use chrono::prelude::*;
 use chrono::Duration;
 
 use std::fmt;
@@ -27,8 +27,7 @@ use std::fmt;
 use crate::currency::{Currency, USD};
 
 #[cfg(test)]
-mod tests {
-}
+mod tests {}
 
 /// Rate from a source currency to a destination currency
 #[derive(Clone, PartialOrd, PartialEq, Debug)]
@@ -62,25 +61,46 @@ impl<'c> Default for Rate<'c> {
 
 impl<'c> fmt::Display for Rate<'c> {
     fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
-        write!(f, "1 {src} ≈ {rate:.*} {dst} ({date})", 3, rate=self.rate(), src=self.src(), dst=self.dst(), date=self.date())
+        write!(
+            f,
+            "1 {src} ≈ {rate:.*} {dst} ({date})",
+            3,
+            rate = self.rate(),
+            src = self.src(),
+            dst = self.dst(),
+            date = self.date()
+        )
     }
 }
 
 impl<'c> Rate<'c> {
     /// Instanciate
-    pub fn new(src: &'c Currency, dst: &'c Currency, date: DateTime<LocalTime>, rate: f64, provider: String, cache_until: Option<DateTime<LocalTime>>) -> Self {
+    pub fn new(
+        src: &'c Currency,
+        dst: &'c Currency,
+        date: DateTime<LocalTime>,
+        rate: f64,
+        provider: String,
+        cache_until: Option<DateTime<LocalTime>>,
+    ) -> Self {
         Rate {
             src,
             dst,
             date,
             rate,
             provider,
-            cache_until
+            cache_until,
         }
     }
 
     /// New rate with date set to now (local time), with an optional caching duration from now
-    pub fn now(src: &'c Currency, dst: &'c Currency, rate: f64, provider: String, duration: Option<Duration>) -> Self {
+    pub fn now(
+        src: &'c Currency,
+        dst: &'c Currency,
+        rate: f64,
+        provider: String,
+        duration: Option<Duration>,
+    ) -> Self {
         let now = Local::now();
         let cache_until = duration.map(|d| now + d);
         Self::new(src, dst, now, rate, provider, cache_until)

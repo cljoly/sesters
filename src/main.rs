@@ -64,7 +64,10 @@ fn main() {
         let src_currency = currency_amount.currency();
         let destination_currencies = cfg.currencies.iter().filter_map(|iso_name| {
             currency::existing_from_iso(&iso_name).or_else(|| {
-                error!("Invalid currency iso symbol in configuration file, ignored: {}", iso_name);
+                error!(
+                    "Invalid currency iso symbol in configuration file, ignored: {}",
+                    iso_name
+                );
                 None
             })
         });

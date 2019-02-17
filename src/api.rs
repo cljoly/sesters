@@ -18,9 +18,9 @@ along with this program.  If not, see <https://www.gnu.org/licenses/>.
 
 //! Access several API used by Sesters
 
-use log::{info, error, trace, debug};
-use reqwest;
 use chrono::Duration;
+use log::{debug, error, info, trace};
+use reqwest;
 use std::error::Error;
 
 use crate::config::Config;
@@ -110,7 +110,13 @@ impl RateApi for CurrencyConverterApiCom {
         let pair = format!("{0}_{1}", src.get_main_iso(), dst.get_main_iso());
         // XXX Maybe HashMap is too long to build, Vec would be better
         let rates: HashMap<String, f64> = res.json()?;
-        Ok(Rate::now(src, dst, rates[&pair], String::from("currencyconverterapi.com"), Some(Duration::hours(1))))
+        Ok(Rate::now(
+            src,
+            dst,
+            rates[&pair],
+            String::from("currencyconverterapi.com"),
+            Some(Duration::hours(1)),
+        ))
     }
 }
 
@@ -160,7 +166,7 @@ impl RateApi for ExchangeRatesApiIo {
                 .unwrap(),
             String::from("exchangeratesapi.io"),
             // Updated once a day, let’s bet for a refresh every few hours
-            Some(Duration::hours(6))
+            Some(Duration::hours(6)),
         ))
     }
 }
