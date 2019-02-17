@@ -53,6 +53,29 @@ mod tests {
         )
     }
 
+    // Check consistency between
+    #[test]
+    fn partialratekey_consistency() {
+        let src = &EUR;
+        let dst = &CHF;
+        let provider = "TEST1";
+        let fut = Local::now() + Duration::days(11);
+        let rk1 = RateKey::new(src, dst, provider, &fut);
+        let key_str = rk1.0.as_str();
+
+        let partial3 = PartialRateKey::src_dst_provider(src, dst, provider);
+        let len3 = partial3.0.len();
+        assert_eq!(partial3.0, key_str[..len3]);
+
+        let partial2 = PartialRateKey::src_dst(src, dst);
+        let len2 = partial2.0.len();
+        assert_eq!(partial2.0, key_str[..len2]);
+
+        let partial1 = PartialRateKey::src(src);
+        let len1 = partial1.0.len();
+        assert_eq!(partial1.0, key_str[..len1]);
+    }
+
     // Ensure nothing is lost when converting to RateInternal
     #[test]
     fn rateinternal_and_back() {
@@ -219,6 +242,31 @@ impl std::convert::AsRef<[u8]> for RateKey {
 }
 
 pub const BUCKET_NAME: &str = "rate";
+
+/// To query over partial key
+struct PartialRateKey(String);
+
+impl PartialRateKey {
+    /// Create a partial key before all key with the given src currency, dst
+    /// currency and provider
+    fn src_dst_provider(src: &Currency, dst: &Currency, provider: &str) -> Self {
+        // TODO store ":" separator in a const
+        PartialRateKey(format!("{}:{}:{}", src, dst, provider))
+    }
+
+    /// Create a partial key before all key with the given src currency and dst
+    /// currency
+    fn src_dst(src: &Currency, dst: &Currency) -> Self {
+        PartialRateKey(format!("{}:{}", src, dst))
+    }
+
+    /// Create a partial key before all key with the given src currency and dst
+    /// currency
+    fn src(src: &Currency) -> Self {
+        PartialRateKey(format!("{}", src))
+    }
+
+}
 
 impl super::Db {
     /// Retrieve rate from a currency to another
