@@ -20,6 +20,7 @@ along with this program.  If not, see <https://www.gnu.org/licenses/>.
 
 use chrono::prelude::*;
 use chrono::offset::Local as LocalTime;
+use chrono::Duration;
 
 use std::fmt;
 
@@ -29,22 +30,32 @@ use crate::currency::{Currency, USD};
 mod tests {
 }
 
-/// Rate form src currency to dst currency
+/// Rate from a source currency to a destination currency
 #[derive(Clone, PartialOrd, PartialEq, Debug)]
 pub struct Rate<'c> {
+    /// Source currency
     src: &'c Currency,
+    /// Destination currency
     dst: &'c Currency,
+    /// Date and time the rate was obtained
     date: DateTime<LocalTime>,
+    /// Exchange rate
     rate: f64,
+    /// Service which provided the rate
+    provider: String,
+    /// Cache until this date. If None, can’t be cached
+    cache_until: Option<DateTime<LocalTime>>,
 }
 
 impl<'c> Default for Rate<'c> {
     fn default() -> Self {
         Rate {
-            date: Local::now(),
-            rate: 0.,
             src: &USD,
             dst: &USD,
+            date: Local::now(),
+            rate: 0.,
+            provider: String::from("DEFAULT"),
+            cache_until: None,
         }
     }
 }
@@ -57,23 +68,27 @@ impl<'c> fmt::Display for Rate<'c> {
 
 impl<'c> Rate<'c> {
     /// Instanciate
-    pub fn new(src: &'c Currency, dst: &'c Currency, date: DateTime<LocalTime>, rate: f64) -> Self {
+    pub fn new(src: &'c Currency, dst: &'c Currency, date: DateTime<LocalTime>, rate: f64, provider: String, cache_until: Option<DateTime<LocalTime>>) -> Self {
         Rate {
             src,
             dst,
             date,
             rate,
+            provider,
+            cache_until
         }
     }
 
-    /// New rate with date set to now (local time)
-    pub fn now(src: &'c Currency, dst: &'c Currency, rate: f64) -> Self {
-        Self::new(src, dst, Local::now(), rate)
+    /// New rate with date set to now (local time), with an optional caching duration from now
+    pub fn now(src: &'c Currency, dst: &'c Currency, rate: f64, provider: String, duration: Option<Duration>) -> Self {
+        let now = Local::now();
+        let cache_until = duration.map(|d| now + d);
+        Self::new(src, dst, now, rate, provider, cache_until)
     }
 
     /// A 1:1 rate for a currency and itself
     pub fn parity(c: &'c Currency) -> Self {
-        Rate::new(c, c, Local::now(), 1.)
+        Rate::new(c, c, Local::now(), 1., String::from("PARITY"), None)
     }
 
     /// Source currency
@@ -94,5 +109,15 @@ impl<'c> Rate<'c> {
     /// Rate
     pub fn rate(&self) -> f64 {
         self.rate
+    }
+
+    /// Provider
+    pub fn provider(&self) -> &str {
+        &self.provider
+    }
+
+    /// Cache until
+    pub fn cache_until(&self) -> &Option<DateTime<LocalTime>> {
+        &self.cache_until
     }
 }

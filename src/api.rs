@@ -20,6 +20,7 @@ along with this program.  If not, see <https://www.gnu.org/licenses/>.
 
 use log::{info, error, trace, debug};
 use reqwest;
+use chrono::Duration;
 use std::error::Error;
 
 use crate::config::Config;
@@ -109,7 +110,7 @@ impl RateApi for CurrencyConverterApiCom {
         let pair = format!("{0}_{1}", src.get_main_iso(), dst.get_main_iso());
         // XXX Maybe HashMap is too long to build, Vec would be better
         let rates: HashMap<String, f64> = res.json()?;
-        Ok(Rate::now(src, dst, rates[&pair]))
+        Ok(Rate::now(src, dst, rates[&pair], String::from("currencyconverterapi.com"), Some(Duration::hours(1))))
     }
 }
 
@@ -157,6 +158,9 @@ impl RateApi for ExchangeRatesApiIo {
                 .unwrap()
                 .as_f64()
                 .unwrap(),
+            String::from("exchangeratesapi.io"),
+            // Updated once a day, let’s bet for a refresh every few hours
+            Some(Duration::hours(6))
         ))
     }
 }
