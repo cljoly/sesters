@@ -33,6 +33,7 @@ use crate::rate::Rate;
 
 #[cfg(test)]
 mod tests {
+    use chrono::Duration;
 
     use super::*;
     use crate::currency::{BTC, EUR, USD, CHF};
@@ -40,25 +41,24 @@ mod tests {
     // Ensure nothing is lost when converting to RateKey
     #[test]
     fn ratekey_and_back() {
-        let fut = Local.ymd(2020,9,30).and_hms(17,38,49);
         let horrible_provider_name =  String::from("somelongand://strange_name.1230471-02347.TEST.com/@ñé:--:123");
-        let rk1 = RateKey::new(&EUR, &EUR, "TEST1", &fut);
-        let rk2 = RateKey::new(&USD, &BTC, &horrible_provider_name, &fut);
-        assert_eq!(rk1.data(), (&EUR, &EUR, String::from("TEST1"), fut.clone()));
-        assert_eq!(rk2.data(), (&USD, &BTC, horrible_provider_name, fut.clone()))
+        let rk1 = RateKey::new(&EUR, &EUR, "TEST1");
+        let rk2 = RateKey::new(&USD, &BTC, &horrible_provider_name);
+        assert_eq!(rk1.data(), (&EUR, &EUR, String::from("TEST1")));
+        assert_eq!(rk2.data(), (&USD, &BTC, horrible_provider_name))
     }
 
     // Ensure nothing is lost when converting to RateInternal
     #[test]
     fn rateinternal_and_back() {
         let now = Local::now();
-        let fut = Local.ymd(2020,9,30).and_hms(17,38,49);
+        let fut = now + Duration::hours(3);
         let r1 = Rate::new(&EUR, &CHF, now, 9.12, "RateInternal".to_string(), Some(fut.clone()));
         let ri1: RateInternal = r1.clone().into();
         let r1_back: Rate = ri1.into();
         assert_eq!(r1, r1_back);
 
-        let r2 = Rate::new(&BTC, &USD, now, 9.12, "RateInternalNoCache".to_string(), Some(fut.clone()));
+        let r2 = Rate::new(&BTC, &USD, now, 9.12, "RateInternalNoCache".to_string(), Some(now));
         assert_ne!(r1, r2);
         assert_ne!(r1_back, r2);
         let r3 = Rate::new(&BTC, &USD, now, 9.12, "RateInternal".to_string(), Some(fut.clone()));
