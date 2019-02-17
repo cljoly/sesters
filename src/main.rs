@@ -17,7 +17,7 @@ along with this program.  If not, see <https://www.gnu.org/licenses/>.
  */
 
 use kv::{Config as KvConfig, Manager};
-use log::{debug, info, trace};
+use log::{debug, error, info, log_enabled, trace};
 use std::io::{self, BufRead};
 
 mod api;
@@ -33,6 +33,7 @@ use crate::db::Db;
 use crate::rate::Rate;
 
 fn main() {
+    log::set_max_level(log::LevelFilter::Info);
     env_logger::init();
     info!("Starting up");
 
@@ -61,9 +62,11 @@ fn main() {
 
     if let Some(currency_amount) = currency_amounts.get(0) {
         let src_currency = currency_amount.currency();
-        let destination_currencies = cfg.currencies.iter().map(|iso_name| {
-            currency::existing_from_iso(&iso_name)
-                .expect(format!("Invalid currency iso symbol: {}", iso_name).as_str())
+        let destination_currencies = cfg.currencies.iter().filter_map(|iso_name| {
+            currency::existing_from_iso(&iso_name).or_else(|| {
+                error!("Invalid currency iso symbol in configuration file, ignored: {}", iso_name);
+                None
+            })
         });
         trace!("src_currency: {}", &src_currency);
 
@@ -99,14 +102,16 @@ fn main() {
                 endpoint.rate(&client, &src_currency, dst_currency)
             };
 
-            let rates =
-                destination_currencies.map(|dst| rate_from_db(&dst).or_else(|| rate_from_api(&dst)));
+            let rates = destination_currencies
+                .map(|dst| rate_from_db(&dst).or_else(|| rate_from_api(&dst)));
 
             for rate in rates {
-                if let Some(rate) = &rate {
-                    info!("Rate retrieved: {}", &rate);
-                } else {
-                    info!("No rate retrieved");
+                if log_enabled!(log::Level::Info) {
+                    if let Some(rate) = &rate {
+                        info!("Rate retrieved: {}", &rate);
+                    } else {
+                        info!("No rate retrieved");
+                    }
                 }
                 trace!("Final rate: {:?}", &rate);
                 if let Some(rate) = rate {
@@ -123,4 +128,5 @@ fn main() {
     } else {
         println!("No currency found.")
     }
+    info!("Exiting");
 }

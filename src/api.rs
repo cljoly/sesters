@@ -18,7 +18,7 @@ along with this program.  If not, see <https://www.gnu.org/licenses/>.
 
 //! Access several API used by Sesters
 
-use log::{info, warn, trace, debug};
+use log::{info, error, trace, debug};
 use reqwest;
 use std::error::Error;
 
@@ -63,7 +63,7 @@ pub trait RateApi {
         };
         match rate_err() {
             Err(e) => {
-                warn!(
+                error!(
                     "Error while performing request for {} -> {}: {}",
                     src, dst, e
                 );
