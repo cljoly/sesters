@@ -63,12 +63,13 @@ impl<'c> fmt::Display for Rate<'c> {
     fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
         write!(
             f,
-            "1 {src} ≈ {rate:.*} {dst} ({date})",
+            "1 {src} ≈ {rate:.*} {dst} ({date} - {provider})",
             3,
             rate = self.rate(),
             src = self.src(),
             dst = self.dst(),
-            date = self.date()
+            date = self.date().format("%F %T"),
+            provider = self.provider()
         )
     }
 }
