@@ -13,13 +13,13 @@ Fast and offline currency converter.
 🏗️ This is a work in progress, only checked features are implemented yet
 
 - [X] Find prices in free text with currency (partial)
-  - More to come. #1 #2
-- [X] Store exchange rates locally #8
-- [ ] Retrieve exchange rate #3 #4
-- [ ] Save recent searches and conversion request
-  - [ ] Write in database #5
-  - [ ] Display this history in a table #6
-- [ ] GUI with [azul.rs](https://azul.rs/) #7
+  - More to come. ![GitHub issues by-label](https://img.shields.io/github/issues/leowzukw/sesters/text-extraction.svg)
+- [X] Store exchange rates locally
+- [X] Retrieve exchange rate (partial) ![GitHub issues by-label](https://img.shields.io/github/issues/leowzukw/sesters/rate-source.svg)
+- [X] Cache retrieved rate
+- [ ] Save recent searches
+  - [ ] Display this history in a table
+- [ ] GUI with [azul.rs](https://azul.rs/)
 
 ## About the name
 
@@ -43,3 +43,4 @@ Inspired by this [coin](https://en.wikipedia.org/wiki/Sestertius).
 > 
 > You should have received a copy of the GNU General Public License
 > along with this program.  If not, see <https://www.gnu.org/licenses/>.
+,
