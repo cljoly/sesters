@@ -13,7 +13,7 @@ Fast and offline currency converter.
 🏗️ This is a work in progress, only checked features are implemented yet.
 
 - [X] Find prices in free text with currency (partial)
-  - More to come. ![GitHub issues by-label](https://img.shields.io/github/issues/leowzukw/sesters/text-extraction.svg)
+  - More to come ![GitHub issues by-label](https://img.shields.io/github/issues/leowzukw/sesters/text-extraction.svg)
 - [X] Store exchange rates locally
 - [X] Retrieve exchange rate (partial)
   - [ ] More to come ![GitHub issues by-label](https://img.shields.io/github/issues/leowzukw/sesters/rate-source.svg)
