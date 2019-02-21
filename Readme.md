@@ -10,7 +10,7 @@ Fast and offline currency converter.
 
 ## Features
 
-🏗️ This is a work in progress, only checked features are implemented yet
+🏗️ This is a work in progress, only checked features are implemented yet.
 
 - [X] Find prices in free text with currency (partial)
   - More to come. ![GitHub issues by-label](https://img.shields.io/github/issues/leowzukw/sesters/text-extraction.svg)
