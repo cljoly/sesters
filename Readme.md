@@ -15,8 +15,9 @@ Fast and offline currency converter.
 - [X] Find prices in free text with currency (partial)
   - More to come. ![GitHub issues by-label](https://img.shields.io/github/issues/leowzukw/sesters/text-extraction.svg)
 - [X] Store exchange rates locally
-- [X] Retrieve exchange rate (partial) ![GitHub issues by-label](https://img.shields.io/github/issues/leowzukw/sesters/rate-source.svg)
-- [X] Cache retrieved rate
+- [X] Retrieve exchange rate (partial)
+  - [ ] More to come ![GitHub issues by-label](https://img.shields.io/github/issues/leowzukw/sesters/rate-source.svg)
+  - [X] Cache retrieved rate
 - [ ] Save recent searches
   - [ ] Display this history in a table
 - [ ] GUI with [azul.rs](https://azul.rs/)
