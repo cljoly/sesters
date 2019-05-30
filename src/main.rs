@@ -29,7 +29,6 @@ mod rate;
 
 use crate::api::RateApi;
 use crate::config::Config;
-use crate::currency::{Currency, EUR, USD};
 use crate::db::Db;
 use crate::rate::Rate;
 
@@ -43,7 +42,7 @@ fn main() {
     // Manager for the database
     let mut mgr = Manager::new();
     info!("Initialize database");
-    let mut kcfg = KvConfig::default(&cfg.db_path);
+    let kcfg = KvConfig::default(&cfg.db_path);
     let db = Db::new(kcfg, &mut mgr);
 
     // Acquire text to extract conversion instruction
@@ -55,7 +54,7 @@ fn main() {
         last
     });
     trace!("txt: {}", txt);
-    if txt == "" {
+    if txt.is_empty() {
         info!("Reading stdin…");
         let stdin = io::stdin();
         txt = stdin
