@@ -1,6 +1,9 @@
-# Sesters
+<div align="center">
+
+<h1>Sesters</h1>
 
 Fast and offline currency converter.
+</div>
 
 <p align="center">
 <a href="https://travis-ci.com/leowzukw/sesters"><img src="https://img.shields.io/travis/com/leowzukw/sesters.svg" alt="Travis CI" /></a> <a href="./LICENSE"><img src="https://img.shields.io/github/license/leowzukw/sesters.svg" alt="LICENCE" /></a> <a href="https://crates.io/crates/sesters"><img src="https://img.shields.io/crates/v/sesters.svg" alt="Crates.io" /></a> <a href="https://crates.io/crates/sesters"><img alt="undefined" src="https://img.shields.io/crates/d/sesters.svg"></a> <a href="https://deps.rs/repo/github/leowzukw/sesters"><img src="https://deps.rs/repo/github/leowzukw/sesters/status.svg" alt="dependency status" /></a>
