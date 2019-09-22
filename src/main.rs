@@ -39,6 +39,7 @@ use crate::rate::Rate;
 fn concat_or_stdin(arg_text: Option<clap::Values>) -> String {
     fn read_stdin() -> String {
         info!("Reading stdin…");
+        eprintln!("Enter the plain text on the first line");
         let stdin = io::stdin();
         let txt = stdin
             .lock()

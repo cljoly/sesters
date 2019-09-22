@@ -19,7 +19,8 @@ along with this program.  If not, see <https://www.gnu.org/licenses/>.
 use serde_derive::Serialize;
 
 use crate::currency::{Currency, CurrencyAmount};
-/// A module to find currency unit with amount in raw text
+use crate::currency;
+/// A module to find currency unit with amount (a **price tag**) in raw text
 use regex::Regex;
 
 mod tests;
@@ -101,4 +102,56 @@ fn iso_for_currency<'c>(c: &'c Currency, text: &str) -> Vec<CurrencyMatch<'c>> {
 pub fn iso<'c>(currencies: &'c [Currency], text: &str) -> Vec<CurrencyAmount<'c>> {
     let matches_iterator = currencies.iter().map(|c| iso_for_currency(c, text));
     matches_iterator.flatten().map(|cm| cm.into()).collect()
+}
+
+/// Price tag engine, used to extract price tags in plain text
+/// It proceeds in 3 steps:
+/// 1. Find positions of all number (possibly with various separator)
+/// 2. Find positions of currencies looked for, and for each, look for number, forward and backward in a certain distance (name *window*). A probability of “matching” is computed for each.
+/// 3. Return N topmost matches
+pub struct Engine<'c> {
+    options: EngineOptions<'c>,
+}
+
+impl<'c> Engine<'c> {
+    fn new() -> Engine<'c> {
+        EngineBuilder::new().fire()
+    }
+
+    fn all_price_tag() -> Vec<CurrencyAmount<'c>> {
+        unreachable!();
+    }
+}
+
+pub struct EngineOptions<'c> {
+    window_size: usize,
+    currencies: Vec<&'c Currency>
+}
+
+impl Default for EngineOptions<'_> {
+    fn default() -> EngineOptions<'static> {
+        EngineOptions {
+            window_size: 10,
+            currencies: vec![], // TODO Use ALL_CURRENCIES instead
+        }
+    }
+}
+
+pub struct EngineBuilder<'c>(EngineOptions<'c>);
+
+impl<'c> EngineBuilder<'c> {
+    /// Create a builder with default option, to be custumized
+    fn new() -> EngineBuilder<'static> {
+        EngineBuilder(Default::default())
+    }
+
+    /// Consume Builder and fire the Engine, so that it can match text
+    fn fire(self) -> Engine<'c> {
+        unimplemented!();
+    }
+
+    fn window(&mut self, size: usize) -> &mut EngineBuilder<'c> {
+        self.0.window_size = size;
+        self
+    }
 }
