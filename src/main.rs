@@ -32,21 +32,8 @@ use crate::config::Config;
 use crate::db::Db;
 use crate::rate::Rate;
 
-fn main() {
-    log::set_max_level(log::LevelFilter::Info);
-    env_logger::init();
-    info!("Starting up");
-
-    let cfg = Config::get();
-
-    // Manager for the database
-    let mut mgr = Manager::new();
-    info!("Initialize database");
-    let kcfg = KvConfig::default(&cfg.db_path);
-    let db = Db::new(kcfg, &mut mgr);
-
-    // Acquire text to extract conversion instruction
-    // From argv
+/// Read text to extract conversion instructions
+fn read_argv_or_stdin() -> String {
     // Use join method once in stable XXX poor performance now
     let mut txt = std::env::args().skip(1).fold(String::new(), |mut last, next| {
         last.push_str(" ");
@@ -64,7 +51,24 @@ fn main() {
             .expect("Please provide some text on stdin")
             .unwrap();
         trace!("txt: {}", txt);
-    }
+    };
+    txt
+}
+
+fn main() {
+    log::set_max_level(log::LevelFilter::Info);
+    env_logger::init();
+    info!("Starting up");
+
+    let cfg = Config::get();
+
+    // Manager for the database
+    let mut mgr = Manager::new();
+    info!("Initialize database");
+    let kcfg = KvConfig::default(&cfg.db_path);
+    let db = Db::new(kcfg, &mut mgr);
+
+    let txt = read_argv_or_stdin();
     let currency_amounts = price_in_text::iso(&currency::ALL_CURRENCIES, &txt);
 
     if let Some(currency_amount) = currency_amounts.get(0) {
