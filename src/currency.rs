@@ -158,6 +158,10 @@ impl Currency {
         &self.symbols
     }
 
+    pub fn pos(&self) -> Pos {
+        self.pos
+    }
+
     /// Constructor, copies the &str given. Panics if vectors are empty TODO Use Result type instead
     pub fn new(
         symbols: &'static [&'static str],

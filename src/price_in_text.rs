@@ -17,6 +17,9 @@ along with this program.  If not, see <https://www.gnu.org/licenses/>.
 */
 
 use std::collections::{BTreeMap, HashMap};
+use std::ops::Bound::{Included, Excluded};
+use std::convert::TryInto;
+use log::trace;
 use serde_derive::Serialize;
 
 use crate::currency::{Currency, PriceTag};
@@ -129,6 +132,7 @@ impl<'c> Engine<'c> {
     pub fn all_price_tags<'txt>(&self, plain_text: &'txt str) -> Vec<PriceTag> {
         // Record locations of price ends in price tags
         let price_locations = || {
+            trace!("price_locations");
             let mut price_loc_start = BTreeMap::new();
             let mut price_loc_end = BTreeMap::new();
 
@@ -146,9 +150,35 @@ impl<'c> Engine<'c> {
 
         let (price_loc_start, price_loc_end) = price_locations();
 
-        // let pricetag_matches = Vec::new();
+        let mut pricetag_matches = Vec::new();
         for (currency_main_iso, currency_match) in &self.currency_matches {
-            // TODO Look forward and backward for the price, and record the thus obtained PriceTagMatch in pricetag_matches
+            trace!("Matches for {}", currency_main_iso);
+            for cap in currency_match.captures_iter(plain_text) {
+                let m = cap.get(0).unwrap(); // 0 is the whole pattern, always present
+                let start = m.start();
+                let end = m.end();
+                let win = self.options.window_size;
+                // Look backward, for the end of the price. If we were looking
+                // from the start of the price, we would miss some corner
+                // cases, like this one:
+                //     window_size
+                //   /-------------\
+                //133  Lorem ipsumm USD
+                for (&location, &price_str) in price_loc_end.range((Included(&(start-win)), Excluded(&start))) {
+                    let currency = currency::existing_from_iso(currency_main_iso).unwrap();
+                    let ptm = PriceTagMatch::new(
+                        price_str.parse().expect("Float impossible to parse"),
+                        currency,
+                        ((location-start) as i32).try_into().unwrap(),
+                        currency.pos() == currency::Pos::Before,
+                        );
+                    pricetag_matches.push(ptm);
+                }
+                // Idem, but with the start of the number when looking forward
+                for (&location, &price_str) in price_loc_start.range((Excluded(&end), Included(&(end+win)))) {
+                    // TODO Idem
+                }
+            }
             unimplemented!();
         }
 
