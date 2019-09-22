@@ -6,7 +6,7 @@ Fast and offline currency converter.
 </div>
 
 <p align="center">
-<a href="https://travis-ci.com/leowzukw/sesters"><img src="https://img.shields.io/travis/com/leowzukw/sesters.svg" alt="Travis CI" /></a> <a href="./LICENSE"><img src="https://img.shields.io/github/license/leowzukw/sesters.svg" alt="LICENCE" /></a> <a href="https://crates.io/crates/sesters"><img src="https://img.shields.io/crates/v/sesters.svg" alt="Crates.io" /></a> <a href="https://crates.io/crates/sesters"><img alt="undefined" src="https://img.shields.io/crates/d/sesters.svg"></a> <a href="https://deps.rs/repo/github/leowzukw/sesters"><img src="https://deps.rs/repo/github/leowzukw/sesters/status.svg" alt="dependency status" /></a>
+<a href="https://travis-ci.com/cljoly/sesters"><img src="https://img.shields.io/travis/com/cljoly/sesters.svg" alt="Travis CI" /></a> <a href="./LICENSE"><img src="https://img.shields.io/github/license/cljoly/sesters.svg" alt="LICENCE" /></a> <a href="https://crates.io/crates/sesters"><img src="https://img.shields.io/crates/v/sesters.svg" alt="Crates.io" /></a> <a href="https://crates.io/crates/sesters"><img alt="undefined" src="https://img.shields.io/crates/d/sesters.svg"></a> <a href="https://deps.rs/repo/github/cljoly/sesters"><img src="https://deps.rs/repo/github/cljoly/sesters/status.svg" alt="dependency status" /></a>
 </p>
 
 
@@ -16,10 +16,10 @@ Fast and offline currency converter.
 🏗️ This is a work in progress, only checked features are implemented yet.
 
 - [X] Find prices in free text with currency (partial)
-  - More to come ![GitHub issues by-label](https://img.shields.io/github/issues/leowzukw/sesters/text-extraction.svg)
+  - More to come ![GitHub issues by-label](https://img.shields.io/github/issues/cljoly/sesters/text-extraction.svg)
 - [X] Store exchange rates locally
 - [X] Retrieve exchange rate (partial)
-  - [ ] More to come ![GitHub issues by-label](https://img.shields.io/github/issues/leowzukw/sesters/rate-source.svg)
+  - [ ] More to come ![GitHub issues by-label](https://img.shields.io/github/issues/cljoly/sesters/rate-source.svg)
   - [X] Cache retrieved rate
 - [ ] Save recent searches
   - [ ] Display this history in a table
