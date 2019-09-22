@@ -18,6 +18,7 @@ along with this program.  If not, see <https://www.gnu.org/licenses/>.
 
 use lazy_static::lazy_static;
 use serde_derive::{Deserialize, Serialize};
+use regex::Regex;
 
 use std::fmt;
 
@@ -42,6 +43,14 @@ mod tests {
         }
         assert_eq!(existing_from_iso("___"), None);
     }
+}
+
+/// Common price format
+// TODO Complete this, with more than just the most common common format
+// TODO Add a preferred set of formats for each currency
+// TODO Test that these format are correct regular exprossions
+lazy_static! {
+    pub static ref PRICE_FORMAT_COMMON: Regex = Regex::new(r"-?\d+(\.\d*)?").unwrap();
 }
 
 /// Position of a symbol against an amount
@@ -249,3 +258,4 @@ pub fn existing_from_iso(code: &str) -> Option<&'static Currency> {
         _ => None,
     }
 }
+

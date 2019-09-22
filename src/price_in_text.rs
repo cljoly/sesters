@@ -120,21 +120,33 @@ impl<'c> Engine<'c> {
         EngineBuilder::new().fire()
     }
 
-    fn all_price_tag() -> Vec<PriceTag<'c>> {
-        unreachable!();
+    /// Return all price tag found
+    pub fn all_price_tags(&self) -> Vec<PriceTag<'c>> {
+        unimplemented!();
+    }
+
+    /// Return the top `n` price tags 
+    pub fn top_price_tags(&self, n: usize) -> Vec<PriceTag<'c>> {
+        self.all_price_tags().into_iter().take(n).collect()
     }
 }
 
 pub struct EngineOptions<'c> {
     window_size: usize,
-    currencies: Vec<&'c Currency>
+    currencies: Vec<&'c Currency>,
+    by_symbol: bool,
+    by_iso: bool,
+    price_format: Option<Regex>,
 }
 
-impl Default for EngineOptions<'_> {
+impl<'c> Default for EngineOptions<'c> {
     fn default() -> EngineOptions<'static> {
         EngineOptions {
             window_size: 10,
-            currencies: vec![], // TODO Use ALL_CURRENCIES instead
+            currencies: vec![], // *currency::ALL_CURRENCIES, // TODO Use ALL_CURRENCIES instead
+            by_symbol: true,
+            by_iso: true,
+            price_format: Some((*currency::PRICE_FORMAT_COMMON).clone()),
         }
     }
 }
@@ -149,6 +161,10 @@ impl<'c> EngineBuilder<'c> {
 
     /// Consume Builder and fire the Engine, so that it be used to match text
     fn fire(self) -> Engine<'c> {
+        // TODO Build a regex from formats in currency used in case
+        // price_format is None, instead of panicking as unwrap() does here
+        let price_format = self.0.price_format.unwrap();
+
         unimplemented!();
     }
 
@@ -158,4 +174,24 @@ impl<'c> EngineBuilder<'c> {
         self.0.window_size = size;
         self
     }
+
+    /// Find price tag using the symbol of the currency, like “€” or “$”
+    fn by_symbol(&mut self, yes: bool) -> &mut EngineBuilder<'c> {
+        self.0.by_symbol = yes;
+        self
+    }
+
+    /// Find price tag using the iso of the currency, like “EUR” or “USD”
+    fn by_iso(&mut self, yes: bool) -> &mut EngineBuilder<'c> {
+        self.0.by_iso = yes;
+        self
+    }
+
+    /// Set the regular expression used to match prices in plain text
+    /// If set to None, will be inferred from the currency list
+    fn price(&mut self, format: Option<Regex>) -> &mut EngineBuilder<'c> {
+        self.0.price_format = format;
+        self
+    }
+
 }
