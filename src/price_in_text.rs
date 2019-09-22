@@ -18,17 +18,17 @@ along with this program.  If not, see <https://www.gnu.org/licenses/>.
 
 use serde_derive::Serialize;
 
-use crate::currency::{Currency, CurrencyAmount};
+use crate::currency::{Currency, PriceTag};
 use crate::currency;
 /// A module to find currency unit with amount (a **price tag**) in raw text
 use regex::Regex;
 
 mod tests;
 
-// Information about a currency match, will be used to compute the probability
+// Information about a price tag match, will be used to compute the probability
 // of assocation between an amount and a currency
 #[derive(Debug, PartialEq, Clone, Serialize)]
-struct CurrencyMatch<'c> {
+struct PriceTagMatch<'c> {
     // Amount of the currency
     amount: f64,
     // Currency matching
@@ -39,14 +39,14 @@ struct CurrencyMatch<'c> {
     correct_symbol_order: bool,
 }
 
-impl<'c> CurrencyMatch<'c> {
+impl<'c> PriceTagMatch<'c> {
     fn new(
         amount: f64,
         currency: &'c Currency,
         distance: i32,
         correct_symbol_order: bool,
-    ) -> CurrencyMatch {
-        CurrencyMatch {
+    ) -> PriceTagMatch {
+        PriceTagMatch {
             amount,
             correct_symbol_order,
             currency,
@@ -55,15 +55,15 @@ impl<'c> CurrencyMatch<'c> {
     }
 }
 
-impl<'c> From<CurrencyMatch<'c>> for CurrencyAmount<'c> {
-    fn from(cm: CurrencyMatch<'c>) -> Self {
+impl<'c> From<PriceTagMatch<'c>> for PriceTag<'c> {
+    fn from(cm: PriceTagMatch<'c>) -> Self {
         Self::new(cm.currency, cm.amount)
     }
 }
 
 // Find iso symbol with price tag in text. Before and TODO after
 // Return a currency match
-fn iso_for_currency<'c>(c: &'c Currency, text: &str) -> Vec<CurrencyMatch<'c>> {
+fn iso_for_currency<'c>(c: &'c Currency, text: &str) -> Vec<PriceTagMatch<'c>> {
     let mut formatted_regexes = Vec::new();
     for iso in c.isos() {
         // TODO Use lazy_static here
@@ -82,7 +82,7 @@ fn iso_for_currency<'c>(c: &'c Currency, text: &str) -> Vec<CurrencyMatch<'c>> {
         for cap in r.captures_iter(text) {
             // TODO Implement distance, symbol order
             // Unwrap should not be an issue as we only have numbers and a dot
-            currency_matches.push(CurrencyMatch::new(
+            currency_matches.push(PriceTagMatch::new(
                 cap.name("amount")
                     .unwrap()
                     .as_str()
@@ -99,7 +99,7 @@ fn iso_for_currency<'c>(c: &'c Currency, text: &str) -> Vec<CurrencyMatch<'c>> {
 
 /// Find price with iso symbol for all given currency
 /// For price before and TODO after the iso symbol
-pub fn iso<'c>(currencies: &'c [Currency], text: &str) -> Vec<CurrencyAmount<'c>> {
+pub fn iso<'c>(currencies: &'c [Currency], text: &str) -> Vec<PriceTag<'c>> {
     let matches_iterator = currencies.iter().map(|c| iso_for_currency(c, text));
     matches_iterator.flatten().map(|cm| cm.into()).collect()
 }
@@ -118,7 +118,7 @@ impl<'c> Engine<'c> {
         EngineBuilder::new().fire()
     }
 
-    fn all_price_tag() -> Vec<CurrencyAmount<'c>> {
+    fn all_price_tag() -> Vec<PriceTag<'c>> {
         unreachable!();
     }
 }
@@ -145,7 +145,7 @@ impl<'c> EngineBuilder<'c> {
         EngineBuilder(Default::default())
     }
 
-    /// Consume Builder and fire the Engine, so that it can match text
+    /// Consume Builder and fire the Engine, so that it be used to match text
     fn fire(self) -> Engine<'c> {
         unimplemented!();
     }

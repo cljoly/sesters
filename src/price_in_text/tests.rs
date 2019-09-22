@@ -26,13 +26,13 @@ mod iso {
 
     fn test_iso_usd_then_with_other(
         txt: &str,
-        exp1_usd: &Option<CurrencyAmount>,
-        exp2_eur: &Option<CurrencyAmount>,
-        exp3_btc: &Option<CurrencyAmount>,
+        exp1_usd: &Option<PriceTag>,
+        exp2_eur: &Option<PriceTag>,
+        exp3_btc: &Option<PriceTag>,
     ) {
-        let exp1_usd: &Option<&CurrencyAmount> = &exp1_usd.as_ref();
-        let exp2_eur: &Option<&CurrencyAmount> = &exp2_eur.as_ref();
-        let exp3_btc: &Option<&CurrencyAmount> = &exp3_btc.as_ref();
+        let exp1_usd: &Option<&PriceTag> = &exp1_usd.as_ref();
+        let exp2_eur: &Option<&PriceTag> = &exp2_eur.as_ref();
+        let exp3_btc: &Option<&PriceTag> = &exp3_btc.as_ref();
         // Infer combination when there is at most one Some
         // let exp2 = exp1_usd.as_ref().or(exp2_eur.as_ref());
         let exp = match (exp1_usd, exp2_eur, exp3_btc) {
@@ -76,7 +76,7 @@ mod iso {
 
     #[test]
     fn iso_eur_before() {
-        let currency_amount = Some(CurrencyAmount::new(&EUR, 15.));
+        let currency_amount = Some(PriceTag::new(&EUR, 15.));
         test_iso_usd_then_with_other("EUR 15", &None, &currency_amount, &None);
     }
 
@@ -84,7 +84,7 @@ mod iso {
     #[test]
     fn iso_eur_before_float() {
         let eur = EUR;
-        let currency_amount = Some(CurrencyAmount::new(&eur, 15.11));
+        let currency_amount = Some(PriceTag::new(&eur, 15.11));
         test_iso_usd_then_with_other("EUR 15,11", &None, &currency_amount, &None);
     }
     */
@@ -92,28 +92,28 @@ mod iso {
     #[test]
     fn iso_before() {
         let usd = USD;
-        let currency_amount = Some(CurrencyAmount::new(&usd, 13.));
+        let currency_amount = Some(PriceTag::new(&usd, 13.));
         test_iso_usd_then_with_other("USD 13", &currency_amount, &None, &None);
     }
 
     #[test]
     fn iso_before_float() {
         let usd = USD;
-        let currency_amount = Some(CurrencyAmount::new(&usd, 13.5));
+        let currency_amount = Some(PriceTag::new(&usd, 13.5));
         test_iso_usd_then_with_other("USD 13.5", &currency_amount, &None, &None);
     }
 
     #[test]
     fn iso_before_null_amount() {
         let usd = USD;
-        let currency_amount = Some(CurrencyAmount::new(&usd, 0.));
+        let currency_amount = Some(PriceTag::new(&usd, 0.));
         test_iso_usd_then_with_other(&format!("USD 0"), &currency_amount, &None, &None);
     }
 
     #[test]
     fn iso_before_negative_amount() {
         let usd = USD;
-        let currency_amount = Some(CurrencyAmount::new(&usd, -12.));
+        let currency_amount = Some(PriceTag::new(&usd, -12.));
         test_iso_usd_then_with_other(&format!("USD -12"), &currency_amount, &None, &None);
     }
 
@@ -121,7 +121,7 @@ mod iso {
     #[test]
     fn iso_after() {
         let usd = USD;
-        let currency_amount = Some(CurrencyAmount::new(&usd, 13.));
+        let currency_amount = Some(PriceTag::new(&usd, 13.));
         test_iso_usd_then_with_other(
             &format!("13 USD"),
             &currency_amount,

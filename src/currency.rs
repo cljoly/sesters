@@ -59,14 +59,14 @@ impl Default for Pos {
 
 /// An association between currency & amount, TODO with a position
 #[derive(Debug, Clone, PartialEq, Serialize)]
-pub struct CurrencyAmount<'c> {
+pub struct PriceTag<'c> {
     currency: &'c Currency,
     amount: f64,
     // TODO /// Position of the currency indicator against amount
     // position: Pos,
 }
 
-impl<'c> CurrencyAmount<'c> {
+impl<'c> PriceTag<'c> {
     /// Create new amount associated to a currency
     pub fn new(currency: &'c Currency, amount: f64) -> Self {
         Self { currency, amount }
@@ -83,16 +83,16 @@ impl<'c> CurrencyAmount<'c> {
     pub fn convert<'a, 'r>(
         &'a self,
         rate: &'r Rate<'c>,
-    ) -> Result<CurrencyAmount<'r>, ConversionError<'a, 'c, 'r>> {
+    ) -> Result<PriceTag<'r>, ConversionError<'a, 'c, 'r>> {
         if self.currency != rate.src() {
             Err(ConversionError::new(rate, &self))
         } else {
-            Ok(CurrencyAmount::new(rate.dst(), rate.rate() * self.amount))
+            Ok(PriceTag::new(rate.dst(), rate.rate() * self.amount))
         }
     }
 }
 
-impl<'c> fmt::Display for CurrencyAmount<'c> {
+impl<'c> fmt::Display for PriceTag<'c> {
     fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
         // TODO Use symbol, proper separator (, or .), proper number of cents (usually 2 or 3)
         write!(f, "{} {:.*}", self.currency.get_main_iso(), 2, self.amount)
@@ -103,12 +103,12 @@ impl<'c> fmt::Display for CurrencyAmount<'c> {
 #[derive(Debug, Clone)]
 pub struct ConversionError<'a, 'c, 'r> {
     rate: &'r Rate<'c>,
-    amount: &'a CurrencyAmount<'c>,
+    amount: &'a PriceTag<'c>,
 }
 
 impl<'a, 'c, 'r> ConversionError<'a, 'c, 'r> {
     /// New conversion error
-    pub fn new(rate: &'r Rate<'c>, amount: &'a CurrencyAmount<'c>) -> Self {
+    pub fn new(rate: &'r Rate<'c>, amount: &'a PriceTag<'c>) -> Self {
         ConversionError { rate, amount }
     }
 }
