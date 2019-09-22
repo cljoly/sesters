@@ -19,6 +19,8 @@ along with this program.  If not, see <https://www.gnu.org/licenses/>.
 use kv::{Config as KvConfig, Manager};
 use log::{debug, error, info, log_enabled, trace};
 use std::io::{self, BufRead};
+use clap::{clap_app,crate_version,crate_name,crate_description};
+use itertools::Itertools;
 
 mod api;
 mod config;
@@ -32,33 +34,52 @@ use crate::config::Config;
 use crate::db::Db;
 use crate::rate::Rate;
 
-/// Read text to extract conversion instructions
-fn read_argv_or_stdin() -> String {
-    // Use join method once in stable XXX poor performance now
-    let mut txt = std::env::args().skip(1).fold(String::new(), |mut last, next| {
-        last.push_str(" ");
-        last.push_str(&next);
-        last
-    });
-    trace!("txt: {}", txt);
-    if txt.is_empty() {
+/// Concat the args with spaces, if args are not `None`. Read text from stdin
+/// otherwise.
+fn concat_or_stdin(arg_text: Option<clap::Values>) -> String {
+    fn read_stdin() -> String {
         info!("Reading stdin…");
         let stdin = io::stdin();
-        txt = stdin
+        let txt = stdin
             .lock()
             .lines()
             .next()
             .expect("Please provide some text on stdin")
             .unwrap();
         trace!("txt: {}", txt);
-    };
-    txt
+        txt
+    }
+    fn space_join(values: clap::Values) -> String {
+        let mut txt = String::new();
+        dbg!(&values);
+        let spaced_values = values.intersperse(" ");
+        for s in spaced_values {
+            txt.push_str(s);
+        }
+        txt
+    }
+    arg_text.map_or_else(read_stdin, space_join)
 }
 
 fn main() {
     log::set_max_level(log::LevelFilter::Info);
     env_logger::init();
     info!("Starting up");
+
+    let matches = clap_app!(myapp =>
+        (version: crate_version!())
+        (author: crate_name!())
+        (about: concat!(crate_description!(), "\n", "https://seste.rs"))
+        // TODO Implement -c
+        // (@arg CONFIG: -c --config +global +takes_value "Sets a custom config file")
+        // TODO Add flag for verbosity, for preferred currency
+        (@arg TO: -t --to +takes_value +global +multiple "Currency to convert to, uses defaults from the configuration file if not set")
+        (@subcommand convert =>
+            (about: "Perform currency conversion to your preferred currency, from a price tag found in plain text")
+            (visible_alias: "c")
+            (@arg PLAIN_TXT: +raw "Plain text to extract a price tag from. If not set, plain text will be read from stdin")
+        )
+    ).get_matches();
 
     let cfg = Config::get();
 
@@ -68,20 +89,29 @@ fn main() {
     let kcfg = KvConfig::default(&cfg.db_path);
     let db = Db::new(kcfg, &mut mgr);
 
-    let txt = read_argv_or_stdin();
+    // Argument parsing
+    dbg!(matches.values_of("TO"));
+    dbg!(&cfg.currencies);
+    let currency_iso_names_cfg: Vec<&str> = cfg.currencies.iter().map(|s| s.as_str()).collect();
+    let currency_iso_names: Vec<&str> = matches.values_of("TO").map_or(currency_iso_names_cfg, |to| to.collect());
+    let destination_currencies = currency_iso_names.iter().filter_map(|iso_name| {
+        currency::existing_from_iso(&iso_name).or_else(|| {
+            error!(
+                "Invalid currency iso symbol '{}', ignored",
+                iso_name
+            );
+            None
+        })
+    });
+
+    dbg!(matches.values_of("PLAIN_TXT"));
+    dbg!(matches.value_of("PLAIN_TXT"));
+    let txt = concat_or_stdin(matches.values_of("PLAIN_TXT"));
+    dbg!(&txt);
     let currency_amounts = price_in_text::iso(&currency::ALL_CURRENCIES, &txt);
 
     if let Some(currency_amount) = currency_amounts.get(0) {
         let src_currency = currency_amount.currency();
-        let destination_currencies = cfg.currencies.iter().filter_map(|iso_name| {
-            currency::existing_from_iso(&iso_name).or_else(|| {
-                error!(
-                    "Invalid currency iso symbol '{}' in configuration file, ignored",
-                    iso_name
-                );
-                None
-            })
-        });
         trace!("src_currency: {}", &src_currency);
 
         // Get rate

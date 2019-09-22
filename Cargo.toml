@@ -1,6 +1,6 @@
 [package]
 name = "sesters"
-description = "Fast currency conversion tool with local cache"
+description = "💱 Fast, offline currency converter 💴 💷 💶 💵"
 homepage = "https://seste.rs"
 repository = "https://github.com/leowzukw/sesters"
 readme = "Readme.md"
@@ -30,3 +30,5 @@ chrono = { version = "0.4", features = ["serde"] }
 bincode = "1.*"
 dirs = "~1.0"
 encoding = "0.2"
+clap = "2"
+itertools = "0.8"
