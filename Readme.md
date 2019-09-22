@@ -6,7 +6,7 @@
 
 <h1>Sesters</h1>
 
-Fast and offline currency converter.
+💱 Fast, offline currency converter 💴 💷 💶 💵
 </div>
 
 <p align="center">
