@@ -19,7 +19,7 @@ along with this program.  If not, see <https://www.gnu.org/licenses/>.
 use kv::{Config as KvConfig, Manager};
 use log::{debug, error, info, log_enabled, trace};
 use std::io::{self, BufRead};
-use clap::{clap_app,crate_version,crate_name,crate_description};
+use clap::{clap_app,crate_version,crate_authors,crate_description};
 use itertools::Itertools;
 
 mod api;
@@ -51,7 +51,6 @@ fn concat_or_stdin(arg_text: Option<clap::Values>) -> String {
     }
     fn space_join(values: clap::Values) -> String {
         let mut txt = String::new();
-        dbg!(&values);
         let spaced_values = values.intersperse(" ");
         for s in spaced_values {
             txt.push_str(s);
@@ -66,18 +65,21 @@ fn main() {
     env_logger::init();
     info!("Starting up");
 
-    let matches = clap_app!(myapp =>
+    let matches = clap_app!(sesters =>
+        // (@setting DontCollapseArgsInUsage)
         (version: crate_version!())
-        (author: crate_name!())
+        (author: crate_authors!())
         (about: concat!(crate_description!(), "\n", "https://seste.rs"))
         // TODO Implement -c
         // (@arg CONFIG: -c --config +global +takes_value "Sets a custom config file")
         // TODO Add flag for verbosity, for preferred currency
         (@arg TO: -t --to +takes_value +global +multiple "Currency to convert to, uses defaults from the configuration file if not set")
         (@subcommand convert =>
+            (@setting TrailingVarArg)
+            // (@setting DontDelimitTrailingValues)
             (about: "Perform currency conversion to your preferred currency, from a price tag found in plain text")
             (visible_alias: "c")
-            (@arg PLAIN_TXT: +raw "Plain text to extract a price tag from. If not set, plain text will be read from stdin")
+            (@arg PLAIN_TXT: +multiple !use_delimiter "Plain text to extract a price tag from. If not set, plain text will be read from stdin")
         )
     ).get_matches();
 
@@ -90,8 +92,6 @@ fn main() {
     let db = Db::new(kcfg, &mut mgr);
 
     // Argument parsing
-    dbg!(matches.values_of("TO"));
-    dbg!(&cfg.currencies);
     let currency_iso_names_cfg: Vec<&str> = cfg.currencies.iter().map(|s| s.as_str()).collect();
     let currency_iso_names: Vec<&str> = matches.values_of("TO").map_or(currency_iso_names_cfg, |to| to.collect());
     let destination_currencies = currency_iso_names.iter().filter_map(|iso_name| {
@@ -103,13 +103,16 @@ fn main() {
             None
         })
     });
+    let mut txt;
+    if let Some(matches) = matches.subcommand_matches("convert") {
+        txt = concat_or_stdin(matches.values_of("PLAIN_TXT"));
+        trace!("plain text: {}", &txt);
+    } else {
+        // TODO This is available here only because the rest of the code is dependant of the text to convert and becase it is executed whether the convert subcommand is used or not. Thus, to actually use subcommand, the code below should be called in the if branch of this else, allowing to remove the else.
+        txt = String::new();
+    }
 
-    dbg!(matches.values_of("PLAIN_TXT"));
-    dbg!(matches.value_of("PLAIN_TXT"));
-    let txt = concat_or_stdin(matches.values_of("PLAIN_TXT"));
-    dbg!(&txt);
     let currency_amounts = price_in_text::iso(&currency::ALL_CURRENCIES, &txt);
-
     if let Some(currency_amount) = currency_amounts.get(0) {
         let src_currency = currency_amount.currency();
         trace!("src_currency: {}", &src_currency);
