@@ -107,8 +107,10 @@ pub fn iso<'c>(currencies: &'c [Currency], text: &str) -> Vec<PriceTag<'c>> {
 /// Price tag engine, used to extract price tags in plain text
 /// It proceeds in 3 steps:
 /// 1. Find positions of all number (possibly with various separator)
-/// 2. Find positions of currencies looked for, and for each, look for number, forward and backward in a certain distance (name *window*). A probability of “matching” is computed for each.
-/// 3. Return N topmost matches
+/// 2. Find positions of currencies looked for, and for each, look for number,
+///    forward and backward in a certain distance (name *window*). A
+///    probability of “matching” is computed for each.
+/// 3. Return N topmost matches or all of them
 pub struct Engine<'c> {
     options: EngineOptions<'c>,
 }
@@ -150,6 +152,8 @@ impl<'c> EngineBuilder<'c> {
         unimplemented!();
     }
 
+    /// Set the size of the window used as the distance between a price and a
+    /// currency unit when looking for price tag
     fn window(&mut self, size: usize) -> &mut EngineBuilder<'c> {
         self.0.window_size = size;
         self
