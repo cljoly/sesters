@@ -16,6 +16,7 @@ You should have received a copy of the GNU General Public License
 along with this program.  If not, see <https://www.gnu.org/licenses/>.
 */
 
+use std::collections::{BTreeMap, HashMap};
 use serde_derive::Serialize;
 
 use crate::currency::{Currency, PriceTag};
@@ -113,21 +114,50 @@ pub fn iso<'c>(currencies: &'c [Currency], text: &str) -> Vec<PriceTag<'c>> {
 /// 3. Return N topmost matches or all of them
 pub struct Engine<'c> {
     options: EngineOptions<'c>,
+    /// Regular expression to match prices in plain text format
+    price_match: Regex,
+    /// Regular expression to match currency symbol or iso in plain text format, by currency main iso
+    currency_matches: HashMap<&'c str, Regex>,
 }
 
 impl<'c> Engine<'c> {
-    fn new() -> Engine<'c> {
+    fn new() -> Result<Engine<'c>, EngineError> {
         EngineBuilder::new().fire()
     }
 
-    /// Return all price tag found
-    pub fn all_price_tags(&self) -> Vec<PriceTag> {
+    /// Return all price tag found in plain_text
+    pub fn all_price_tags<'txt>(&self, plain_text: &'txt str) -> Vec<PriceTag> {
+        // Record locations of price ends in price tags
+        let price_locations = || {
+            let mut price_loc_start = BTreeMap::new();
+            let mut price_loc_end = BTreeMap::new();
+
+            for cap in self.price_match.captures_iter(plain_text) {
+                match cap.get(0) {
+                    Some(m) => {
+                        price_loc_start.insert(m.start(), m.as_str());
+                        price_loc_end.insert(m.end(), m.as_str());
+                    },
+                    None => unreachable!(), // Normally, get(0) gives the whole pattern, which always exist
+                }
+            }
+            (price_loc_start, price_loc_end)
+        };
+
+        let (price_loc_start, price_loc_end) = price_locations();
+
+        // let pricetag_matches = Vec::new();
+        for (currency_main_iso, currency_match) in &self.currency_matches {
+            // Look forward and backward for the price, and record the thus obtained PriceTagMatch in pricetag_matches
+            unimplemented!();
+        }
+
         unimplemented!();
     }
 
     /// Return the top `n` price tags 
-    pub fn top_price_tags(&self, n: usize) -> Vec<PriceTag> {
-        self.all_price_tags().into_iter().take(n).collect()
+    pub fn top_price_tags(&self, n: usize, plain_text: &str) -> Vec<PriceTag> {
+        self.all_price_tags(plain_text).into_iter().take(n).collect()
     }
 }
 
@@ -162,12 +192,37 @@ impl<'c> EngineBuilder<'c> {
     }
 
     /// Consume Builder and fire the Engine, so that it be used to match text
-    fn fire(self) -> Engine<'c> {
+    fn fire(self) -> Result<Engine<'c>, EngineError> {
         // TODO Build a regex from formats in currency used in case
         // price_format is None, instead of panicking as unwrap() does here
-        let price_format = self.0.price_format.unwrap();
+        // TODO Return EngineError.PriceMatchRegex
+        let price_match = self.0.price_format.clone().unwrap();
 
-        unimplemented!();
+        let mut currency_matches = HashMap::new();
+        for currency in self.0.currencies {
+            let mut currency_match_string = String::new();
+            if self.0.by_iso {
+                for iso in currency.isos() {
+                    currency_match_string.push_str(iso);
+                }
+            }
+            if self.0.by_symbol {
+                for symb in currency.symbols() {
+                    currency_match_string.push_str(symb);
+                }
+            }
+            let currency_match_err = Regex::new(currency_match_string.as_str());
+            match currency_match_err {
+                Ok(currency_match) => currency_matches.insert(currency.get_main_iso(), currency_match),
+                Err(err) => return Err(EngineError::CurrencyMatchRegex(err)),
+            };
+        }
+
+        Ok(Engine {
+            options: self.0,
+            price_match,
+            currency_matches,
+        })
     }
 
     /// Set the size of the window used as the distance between a price and a
@@ -195,5 +250,19 @@ impl<'c> EngineBuilder<'c> {
         self.0.price_format = format;
         self
     }
+}
 
+/// Error that occured while building and firing the engine
+pub enum EngineError {
+    /// Invalid regex for price_match
+    PriceMatchRegex(regex::Error),
+
+    /// Invalid regex for currency_match
+    CurrencyMatchRegex(regex::Error),
+
+    /// This enum may grow additional variants, so this makes sure clients
+    /// don't count on exhaustive matching. (Otherwise, adding a new variant
+    /// could break existing code.)
+    #[doc(hidden)]
+    __Nonexhaustive,
 }
