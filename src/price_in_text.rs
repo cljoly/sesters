@@ -121,31 +121,33 @@ impl<'c> Engine<'c> {
     }
 
     /// Return all price tag found
-    pub fn all_price_tags(&self) -> Vec<PriceTag<'c>> {
+    pub fn all_price_tags(&self) -> Vec<PriceTag> {
         unimplemented!();
     }
 
     /// Return the top `n` price tags 
-    pub fn top_price_tags(&self, n: usize) -> Vec<PriceTag<'c>> {
+    pub fn top_price_tags(&self, n: usize) -> Vec<PriceTag> {
         self.all_price_tags().into_iter().take(n).collect()
     }
 }
 
 pub struct EngineOptions<'c> {
     window_size: usize,
-    currencies: Vec<&'c Currency>,
+    currencies: &'c [Currency],
     by_symbol: bool,
     by_iso: bool,
     price_format: Option<Regex>,
 }
 
 impl<'c> Default for EngineOptions<'c> {
-    fn default() -> EngineOptions<'static> {
+    fn default() -> EngineOptions<'c> {
+        let currencies: &'c [Currency] = &(*currency::ALL_CURRENCIES);
         EngineOptions {
             window_size: 10,
-            currencies: vec![], // *currency::ALL_CURRENCIES, // TODO Use ALL_CURRENCIES instead
+            currencies,
             by_symbol: true,
             by_iso: true,
+            // TODO Try to avoid clone call here
             price_format: Some((*currency::PRICE_FORMAT_COMMON).clone()),
         }
     }
@@ -155,7 +157,7 @@ pub struct EngineBuilder<'c>(EngineOptions<'c>);
 
 impl<'c> EngineBuilder<'c> {
     /// Create a builder with default option, to be custumized
-    fn new() -> EngineBuilder<'static> {
+    fn new() -> EngineBuilder<'c> {
         EngineBuilder(Default::default())
     }
 

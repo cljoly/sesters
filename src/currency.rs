@@ -45,16 +45,17 @@ mod tests {
     }
 }
 
-/// Common price format
 // TODO Complete this, with more than just the most common common format
 // TODO Add a preferred set of formats for each currency
 // TODO Test that these format are correct regular exprossions
+/// Price formats
 lazy_static! {
+    /// Common price format
     pub static ref PRICE_FORMAT_COMMON: Regex = Regex::new(r"-?\d+(\.\d*)?").unwrap();
 }
 
 /// Position of a symbol against an amount
-#[derive(Debug, PartialOrd, PartialEq, Serialize, Deserialize)]
+#[derive(Debug, PartialOrd, PartialEq, Serialize, Deserialize, Copy, Clone)]
 pub enum Pos {
     Before,
     After,
@@ -124,7 +125,7 @@ impl<'a, 'c, 'r> ConversionError<'a, 'c, 'r> {
 
 /// Represent a currency like US Dollar or Euro, with its symbols
 // TODO Improve serialization/deserialization
-#[derive(Debug, Default, PartialOrd, PartialEq, Serialize, Deserialize)]
+#[derive(Debug, Default, PartialOrd, PartialEq, Serialize, Deserialize, Clone)]
 pub struct Currency {
     /// Symbols, like ₿, ฿ or Ƀ for Bitcoin. Slice must not be empty
     #[serde(skip)]
