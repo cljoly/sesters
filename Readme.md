@@ -1,3 +1,7 @@
+<div id="home-anchor"></div>
+
+*************************************
+
 <div align="center">
 
 <h1>Sesters</h1>
@@ -9,7 +13,7 @@ Fast and offline currency converter.
 <a href="https://travis-ci.com/cljoly/sesters"><img src="https://img.shields.io/travis/com/cljoly/sesters.svg" alt="Travis CI" /></a> <a href="./LICENSE"><img src="https://img.shields.io/github/license/cljoly/sesters.svg" alt="LICENCE" /></a> <a href="https://crates.io/crates/sesters"><img src="https://img.shields.io/crates/v/sesters.svg" alt="Crates.io" /></a> <a href="https://crates.io/crates/sesters"><img alt="undefined" src="https://img.shields.io/crates/d/sesters.svg"></a> <a href="https://deps.rs/repo/github/cljoly/sesters"><img src="https://deps.rs/repo/github/cljoly/sesters/status.svg" alt="dependency status" /></a>
 </p>
 
-
+******************************************
 
 ## Features
 
