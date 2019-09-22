@@ -148,7 +148,7 @@ impl<'c> Engine<'c> {
 
         // let pricetag_matches = Vec::new();
         for (currency_main_iso, currency_match) in &self.currency_matches {
-            // Look forward and backward for the price, and record the thus obtained PriceTagMatch in pricetag_matches
+            // TODO Look forward and backward for the price, and record the thus obtained PriceTagMatch in pricetag_matches
             unimplemented!();
         }
 
@@ -201,15 +201,17 @@ impl<'c> EngineBuilder<'c> {
         let mut currency_matches = HashMap::new();
         for currency in self.0.currencies {
             let mut currency_match_string = String::new();
-            if self.0.by_iso {
-                for iso in currency.isos() {
-                    currency_match_string.push_str(iso);
+            let mut add_regex_altenative = |alternatives: &'static [&'static str]| {
+                use itertools::Itertools;
+                for alternative in alternatives.iter().intersperse(&"|") {
+                    currency_match_string.push_str(alternative);
                 }
+            };
+            if self.0.by_iso {
+                add_regex_altenative(currency.isos());
             }
             if self.0.by_symbol {
-                for symb in currency.symbols() {
-                    currency_match_string.push_str(symb);
-                }
+                add_regex_altenative(currency.symbols())
             }
             let currency_match_err = Regex::new(currency_match_string.as_str());
             match currency_match_err {
