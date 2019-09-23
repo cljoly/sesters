@@ -285,10 +285,12 @@ impl<'c> EngineBuilder<'c> {
         for currency in self.0.currencies {
             let mut currency_match_string = String::new();
             let mut add_regex_altenative = |alternatives: &'static [&'static str]| {
+                trace!("add_regex_altenative: currency_match_string (before): {}", &currency_match_string);
                 use itertools::Itertools;
                 for alternative in alternatives.iter().intersperse(&"|") {
                     currency_match_string.push_str(alternative);
                 }
+                trace!("add_regex_altenative: currency_match_string (after): {}", &currency_match_string);
             };
             if self.0.by_iso {
                 add_regex_altenative(currency.isos());
