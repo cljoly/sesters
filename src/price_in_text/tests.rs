@@ -159,7 +159,7 @@ mod price_tag_match {
     use crate::currency::{EUR, USD, BTC};
 
     #[test]
-    fn price_tag_match_right_partial_order() {
+    fn right_partial_order() {
         let a1 = PriceTagMatch::new(1.0, &EUR, 0, true);
         let a2 = PriceTagMatch::new(1.0, &USD, 0, true);
         let a3 = PriceTagMatch::new(3.0, &USD, 0, true);

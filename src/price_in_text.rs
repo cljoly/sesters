@@ -162,8 +162,9 @@ impl<'c> Engine<'c> {
         EngineBuilder::new().fire()
     }
 
-    /// Return all price tag found in plain_text
-    pub fn all_price_tags<'txt>(&self, plain_text: &'txt str) -> Vec<PriceTag> {
+    // TODO Return an iterator to lazily cut evaluation
+    /// Return all price tag matches found in plain_text
+    fn find<'txt>(&self, plain_text: &'txt str) -> Vec<PriceTagMatch> {
         // Record locations of price ends in price tags
         let price_locations = || {
             trace!("price_locations");
@@ -211,18 +212,23 @@ impl<'c> Engine<'c> {
                 // Idem, but with the start of the number when looking forward
                 for (&location, &price_str) in price_loc_start.range((Excluded(&end), Included(&(end+win)))) {
                     // TODO Idem
+                    // unimplemented!();
                 }
             }
-            unimplemented!();
         }
 
-        // TODO Sort the PriceTagMatch (custom sort (distance, direction))
-        unimplemented!();
+        pricetag_matches.sort_by_key(|ptm| (ptm.distance, ptm.correct_symbol_order));
+        pricetag_matches
+    }
+
+    /// Return all price tag found in plain_text
+    pub fn all_price_tags<'txt>(&self, plain_text: &'txt str) -> Vec<PriceTag> {
+        self.find(plain_text).into_iter().map(|ptm| ptm.into()).collect()
     }
 
     /// Return the top `n` price tags 
     pub fn top_price_tags(&self, n: usize, plain_text: &str) -> Vec<PriceTag> {
-        self.all_price_tags(plain_text).into_iter().take(n).collect()
+        self.find(plain_text).into_iter().take(n).map(|ptm| ptm.into()).collect()
     }
 }
 
