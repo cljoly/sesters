@@ -198,16 +198,13 @@ impl<'c> Engine<'c> {
         let mut pricetag_matches = Vec::new();
         for (currency_main_iso, currency_match) in &self.currency_matches {
             debug!("Matches for {}", currency_main_iso);
+            let currency = currency::existing_from_iso(currency_main_iso).unwrap();
             for cap in currency_match.captures_iter(plain_text) {
                 let m = cap.get(0);
                 trace!("m, before unwrapping: {:?}", m);
                 let m = cap.get(0).unwrap(); // 0 is the whole pattern, always present
-                let start = m.start();
-                let end = m.end();
-                let win = self.options.window_size;
-                trace!("start: {}", start);
-                trace!("end: {}", end);
-                trace!("win: {}", win);
+                let (start, end, win) = (m.start(), m.end(), self.options.window_size);
+                trace!("start, end, win: {}, {}, {}", start, end, win);
                 let win_before_start = if win>start { 0 } else { start - win };
                 // Look backward, for the end of the price. If we were looking
                 // from the start of the price, we would miss some corner
@@ -218,7 +215,6 @@ impl<'c> Engine<'c> {
                 trace!("before forward look, pricetag_matches: {:?}", pricetag_matches);
                 for (&location, &price_str) in price_loc_end.range((Included(&win_before_start), Excluded(&start))) {
                     trace!("&location, &price_str: {:?}, {:?}", &location, &price_str);
-                    let currency = currency::existing_from_iso(currency_main_iso).unwrap();
                     let ptm = PriceTagMatch::new(
                         price_str.parse().expect("Float impossible to parse"),
                         currency,
@@ -233,7 +229,7 @@ impl<'c> Engine<'c> {
                     // TODO Idem
                     // unimplemented!();
                 }
-                debug!("after backward look, pricetag_matches: {:?}", pricetag_matches);
+                debug!("after forward and backward look, pricetag_matches: {:?}", pricetag_matches);
             }
         }
 
