@@ -21,6 +21,7 @@ use std::ops::Bound::{Included, Excluded};
 use std::convert::TryInto;
 use std::cmp::Ordering;
 use log::{trace, debug};
+use itertools::Itertools;
 use serde_derive::Serialize;
 
 use crate::currency::{Currency, PriceTag};
@@ -188,7 +189,7 @@ impl<'c> Engine<'c> {
                 }
             }
             debug!("price_loc_start: {:?}", price_loc_start);
-            debug!("price_loc_end: {:?}", price_loc_end);
+            trace!("price_loc_end: {:?}", price_loc_end);
             (price_loc_start, price_loc_end)
         };
 
@@ -198,32 +199,41 @@ impl<'c> Engine<'c> {
         for (currency_main_iso, currency_match) in &self.currency_matches {
             debug!("Matches for {}", currency_main_iso);
             for cap in currency_match.captures_iter(plain_text) {
+                let m = cap.get(0);
+                trace!("m, before unwrapping: {:?}", m);
                 let m = cap.get(0).unwrap(); // 0 is the whole pattern, always present
                 let start = m.start();
                 let end = m.end();
                 let win = self.options.window_size;
+                trace!("start: {}", start);
+                trace!("end: {}", end);
+                trace!("win: {}", win);
+                let win_before_start = if win>start { 0 } else { start - win };
                 // Look backward, for the end of the price. If we were looking
                 // from the start of the price, we would miss some corner
                 // cases, like this one:
                 //     window_size
                 //   /-------------\
                 //133  Lorem ipsumm USD
-                for (&location, &price_str) in price_loc_end.range((Included(&(start-win)), Excluded(&start))) {
+                trace!("before forward look, pricetag_matches: {:?}", pricetag_matches);
+                for (&location, &price_str) in price_loc_end.range((Included(&win_before_start), Excluded(&start))) {
                     trace!("&location, &price_str: {:?}, {:?}", &location, &price_str);
                     let currency = currency::existing_from_iso(currency_main_iso).unwrap();
                     let ptm = PriceTagMatch::new(
                         price_str.parse().expect("Float impossible to parse"),
                         currency,
-                        ((location-start) as i32).try_into().unwrap(),
+                        ((start-location) as i32).try_into().unwrap(),
                         currency.pos() == currency::Pos::Before,
                         );
                     pricetag_matches.push(ptm);
                 }
+                trace!("after forward look, pricetag_matches: {:?}", pricetag_matches);
                 // Idem, but with the start of the number when looking forward
                 for (&location, &price_str) in price_loc_start.range((Excluded(&end), Included(&(end+win)))) {
                     // TODO Idem
                     // unimplemented!();
                 }
+                debug!("after backward look, pricetag_matches: {:?}", pricetag_matches);
             }
         }
 
@@ -283,20 +293,24 @@ impl<'c> EngineBuilder<'c> {
 
         let mut currency_matches = HashMap::new();
         for currency in self.0.currencies {
+            let mut alternatives_slices = Vec::new();
             let mut currency_match_string = String::new();
-            let mut add_regex_altenative = |alternatives: &'static [&'static str]| {
-                trace!("add_regex_altenative: currency_match_string (before): {}", &currency_match_string);
-                use itertools::Itertools;
-                for alternative in alternatives.iter().intersperse(&"|") {
-                    currency_match_string.push_str(alternative);
-                }
-                trace!("add_regex_altenative: currency_match_string (after): {}", &currency_match_string);
+            let mut add_regex_altenatives = |new_alternatives: &'static [&'static str]| {
+                trace!("add_regex_altenatives: alternatives (before): {:?}", &alternatives_slices);
+                trace!("add_regex_altenatives: new_alternatives (after): {:?}", &new_alternatives);
+                alternatives_slices.push(new_alternatives);
+                trace!("add_regex_altenatives: alternatives (after): {:?}", &alternatives_slices);
             };
             if self.0.by_iso {
-                add_regex_altenative(currency.isos());
+                add_regex_altenatives(currency.isos());
             }
             if self.0.by_symbol {
-                add_regex_altenative(currency.symbols())
+                add_regex_altenatives(currency.symbols());
+            }
+            for alternative in alternatives_slices.into_iter().flatten().intersperse(&"|") {
+                // for alternative in alternatives.iter().intersperse(&"|") {
+                    currency_match_string.push_str(alternative);
+                // }
             }
             let currency_match_err = Regex::new(currency_match_string.as_str());
             match currency_match_err {
