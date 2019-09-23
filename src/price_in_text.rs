@@ -138,13 +138,18 @@ fn iso_for_currency<'c>(c: &'c Currency, text: &str) -> Vec<PriceTagMatch<'c>> {
 
 /// Find price with iso symbol for all given currency
 /// For price before and after the iso symbol
-pub fn iso<'c>(currencies: &'c [Currency], text: &str) -> Vec<PriceTag<'c>> {
-    // TODO Configure the engine to use only iso symbol, only given currencies…
-    let engine = Engine::new().unwrap();
+pub fn iso<'t>(currencies: &'static [Currency], text: &'t str) -> Vec<PriceTag<'static>> {
+    unimplemented!();
+    let mut engineb = EngineBuilder::new();
+    engineb
+        .by_symbol(false)
+        .currencies(currencies);
+    let engine = engineb.fire().unwrap();
     let pricetags = engine.all_price_tags(text);
-    dbg!(pricetags);
+    dbg!(&pricetags);
     // TODO Return pricetags computed above
     vec![]
+    // pricetags
 }
 
 /// Price tag engine, used to extract price tags in plain text
@@ -335,6 +340,12 @@ impl<'c> EngineBuilder<'c> {
     /// currency unit when looking for price tag
     fn window(&mut self, size: usize) -> &mut EngineBuilder<'c> {
         self.0.window_size = size;
+        self
+    }
+
+    /// Set the currency set to look for
+    fn currencies(&mut self, currencies: &'c [Currency]) -> &mut EngineBuilder<'c> {
+        self.0.currencies = currencies;
         self
     }
 
