@@ -113,9 +113,10 @@ fn main() {
         txt = String::new();
     }
 
-    let currency_amounts = price_in_text::iso(&currency::ALL_CURRENCIES, &txt);
-    if let Some(currency_amount) = currency_amounts.get(0) {
-        let src_currency = currency_amount.currency();
+    let engine: crate::price_in_text::Engine = crate::price_in_text::Engine::new().unwrap();
+    let price_tags = engine.all_price_tags(&txt);
+    if let Some(price_tag) = price_tags.get(0) {
+        let src_currency = price_tag.currency();
         trace!("src_currency: {}", &src_currency);
 
         // Get rate
@@ -180,8 +181,8 @@ fn main() {
                 if let Some(rate) = rate {
                     println!(
                         "{} ➜ {}",
-                        &currency_amount,
-                        &currency_amount.convert(&rate).unwrap()
+                        &price_tag,
+                        &price_tag.convert(&rate).unwrap()
                     );
                 }
             }

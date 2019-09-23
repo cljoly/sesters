@@ -139,6 +139,7 @@ fn iso_for_currency<'c>(c: &'c Currency, text: &str) -> Vec<PriceTagMatch<'c>> {
 /// Find price with iso symbol for all given currency
 /// For price before and after the iso symbol
 pub fn iso<'t>(currencies: &'static [Currency], text: &'t str) -> Vec<PriceTag<'static>> {
+    // TODO Use EngineBuilder instead
     unimplemented!();
     let mut engineb = EngineBuilder::new();
     engineb
@@ -169,7 +170,7 @@ pub struct Engine<'c> {
 }
 
 impl<'c> Engine<'c> {
-    fn new() -> Result<Engine<'c>, EngineError> {
+    pub fn new() -> Result<Engine<'c>, EngineError> {
         let e = EngineBuilder::new().fire();
         trace!("Engine::new {:?}", e);
         e
