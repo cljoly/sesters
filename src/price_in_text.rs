@@ -19,6 +19,7 @@ along with this program.  If not, see <https://www.gnu.org/licenses/>.
 use std::collections::{BTreeMap, HashMap};
 use std::ops::Bound::{Included, Excluded};
 use std::convert::TryInto;
+use std::cmp::Ordering;
 use log::trace;
 use serde_derive::Serialize;
 
@@ -27,12 +28,13 @@ use crate::currency;
 /// A module to find currency unit with amount (a **price tag**) in raw text
 use regex::Regex;
 
+#[cfg(test)]
 mod tests;
 
 // Information about a price tag match, will be used to compute the probability
 // of assocation between an amount and a currency
-#[derive(Debug, PartialEq, Clone, Serialize)]
-struct PriceTagMatch<'c> {
+#[derive(Debug, Clone, Serialize)]
+pub struct PriceTagMatch<'c> {
     // Amount of the currency
     amount: f64,
     // Currency matching
@@ -41,6 +43,38 @@ struct PriceTagMatch<'c> {
     distance: i32,
     // Whether the order between amount and symbol is conform to currency property
     correct_symbol_order: bool,
+}
+
+/// A PriceTagMatch is better than another if the distance between amount and
+/// symbol is shorter. In case where the distances are the same, the
+/// PriceTagMatch which has the correct_symbol_order is better.
+///
+/// With this ordering, we try to make the best match the smallest: as the best
+/// match would have a distance of 0 with the right order, it is the minimum of
+/// the set of all PriceTagMatch.
+///
+/// It should be noted that we can’t say that two PriceTagMatch are equal if
+/// they have different PriceTag. Thus, we only define partial ordering.
+impl<'c> PartialOrd for PriceTagMatch<'c> {
+    fn partial_cmp(&self, other: &Self) -> Option<Ordering> {
+        let o = self.distance.cmp(&other.distance);
+        match o {
+            Ordering::Less | Ordering::Greater => Some(o),
+            Ordering::Equal => match (self.correct_symbol_order, other.correct_symbol_order) {
+                (true, true) | (false, false) => if self == other { Some(Ordering::Equal) } else { None },
+                (true, false) => Some(Ordering::Less),
+                (false, true) => Some(Ordering::Greater),
+            }
+        }
+    }
+}
+
+/// PartialEq consistent with the PartialOrd we defined
+impl<'c> PartialEq for PriceTagMatch<'c> {
+    fn eq(&self, other: &Self) -> bool {
+        self.amount == other.amount && *self.currency == *other.currency &&
+            self.distance == other.distance && self.correct_symbol_order == self.correct_symbol_order
+    }
 }
 
 impl<'c> PriceTagMatch<'c> {
@@ -182,6 +216,7 @@ impl<'c> Engine<'c> {
             unimplemented!();
         }
 
+        // TODO Sort the PriceTagMatch (custom sort (distance, direction))
         unimplemented!();
     }
 

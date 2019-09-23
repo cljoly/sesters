@@ -153,3 +153,47 @@ mod iso {
     }
     */
 }
+
+mod price_tag_match {
+    use super::super::PriceTagMatch;
+    use crate::currency::{EUR, USD, BTC};
+
+    #[test]
+    fn price_tag_match_right_partial_order() {
+        let a1 = PriceTagMatch::new(1.0, &EUR, 0, true);
+        let a2 = PriceTagMatch::new(1.0, &USD, 0, true);
+        let a3 = PriceTagMatch::new(3.0, &USD, 0, true);
+        let a4 = PriceTagMatch::new(3.0, &EUR, 0, true);
+        let a5 = PriceTagMatch::new(-1.0, &EUR, 0, true);
+        let a6 = PriceTagMatch::new(-1.0, &BTC, 0, true);
+        let b1 = PriceTagMatch::new(1.0, &EUR, 0, false);
+        let b2 = PriceTagMatch::new(1.0, &USD, 0, false);
+        let b3 = PriceTagMatch::new(3.0, &USD, 0, false);
+        let b4 = PriceTagMatch::new(3.0, &EUR, 0, false);
+        let b5 = PriceTagMatch::new(-1.0, &EUR, 0, false);
+        let b6 = PriceTagMatch::new(-1.0, &BTC, 0, false);
+        let c1 = PriceTagMatch::new(1.0, &EUR, 1, true);
+        let c2 = PriceTagMatch::new(1.0, &USD, 1, true);
+        let c3 = PriceTagMatch::new(3.0, &USD, 1, true);
+        let c4 = PriceTagMatch::new(3.0, &EUR, 1, true);
+        let c5 = PriceTagMatch::new(-1.0, &EUR, 1, true);
+        let c6 = PriceTagMatch::new(-1.0, &BTC, 1, true);
+        let d1 = PriceTagMatch::new(1.0, &EUR, 1, false);
+        let d2 = PriceTagMatch::new(1.0, &USD, 1, false);
+        let d3 = PriceTagMatch::new(3.0, &USD, 1, false);
+        let d4 = PriceTagMatch::new(3.0, &EUR, 1, false);
+        let d5 = PriceTagMatch::new(-1.0, &EUR, 1, false);
+        let d6 = PriceTagMatch::new(-1.0, &BTC, 1, false);
+
+        let v = vec![
+            a1, a2, a3, a4, a5, a6,
+            b1, b2, b3, b4, b5, b6,
+            c1, c2, c3, c4, c5, c6,
+            d1, d2, d3, d4, d5, d6,
+        ];
+        // TODO Use assert!(v.is_sorted()); once in stable
+        for i in 0..v.len()-1 {
+            assert!(v[i]<v[i+1] || (!(v[i] > v[i+1] && v[i] != v[i+1])));
+        }
+    }
+}
