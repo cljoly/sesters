@@ -213,21 +213,30 @@ impl<'c> Engine<'c> {
                 //   /-------------\
                 //133  Lorem ipsumm USD
                 trace!("before forward look, pricetag_matches: {:?}", pricetag_matches);
-                for (&location, &price_str) in price_loc_end.range((Included(&win_before_start), Excluded(&start))) {
+                // Perform backward or forward look, depending of the parameters
+                use currency::Pos;
+                let mut look = |location: usize, price_str: &str, expected_position: Pos| {
                     trace!("&location, &price_str: {:?}, {:?}", &location, &price_str);
+                    let distance = if expected_position == Pos::Before {
+                        ((start-location) as i32)
+                    } else {
+                        ((location-end) as i32)
+                    };
                     let ptm = PriceTagMatch::new(
                         price_str.parse().expect("Float impossible to parse"),
                         currency,
-                        ((start-location) as i32).try_into().unwrap(),
-                        currency.pos() == currency::Pos::Before,
+                        distance.try_into().unwrap(),
+                        currency.pos() == expected_position,
                         );
                     pricetag_matches.push(ptm);
+                };
+                for (&location, &price_str) in price_loc_end.range((Included(&win_before_start), Excluded(&start))) {
+                    look(location, price_str, Pos::Before);
                 }
-                trace!("after forward look, pricetag_matches: {:?}", pricetag_matches);
+                trace!("Looking backward now…");
                 // Idem, but with the start of the number when looking forward
                 for (&location, &price_str) in price_loc_start.range((Excluded(&end), Included(&(end+win)))) {
-                    // TODO Idem
-                    // unimplemented!();
+                    look(location, price_str, Pos::After);
                 }
                 debug!("after forward and backward look, pricetag_matches: {:?}", pricetag_matches);
             }
