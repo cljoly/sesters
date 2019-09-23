@@ -20,7 +20,7 @@ use std::collections::{BTreeMap, HashMap};
 use std::ops::Bound::{Included, Excluded};
 use std::convert::TryInto;
 use std::cmp::Ordering;
-use log::trace;
+use log::{trace, debug};
 use serde_derive::Serialize;
 
 use crate::currency::{Currency, PriceTag};
@@ -136,10 +136,14 @@ fn iso_for_currency<'c>(c: &'c Currency, text: &str) -> Vec<PriceTagMatch<'c>> {
 }
 
 /// Find price with iso symbol for all given currency
-/// For price before and TODO after the iso symbol
+/// For price before and after the iso symbol
 pub fn iso<'c>(currencies: &'c [Currency], text: &str) -> Vec<PriceTag<'c>> {
-    let engine = Engine::new();
-    engine.all_price_tags(text)
+    // TODO Configure the engine to use only iso symbol, only given currencies…
+    let engine = Engine::new().unwrap();
+    let pricetags = engine.all_price_tags(text);
+    dbg!(pricetags);
+    // TODO Return pricetags computed above
+    vec![]
 }
 
 /// Price tag engine, used to extract price tags in plain text
@@ -149,6 +153,7 @@ pub fn iso<'c>(currencies: &'c [Currency], text: &str) -> Vec<PriceTag<'c>> {
 ///    forward and backward in a certain distance (name *window*). A
 ///    probability of “matching” is computed for each.
 /// 3. Return N topmost matches or all of them
+#[derive(Debug)]
 pub struct Engine<'c> {
     options: EngineOptions<'c>,
     /// Regular expression to match prices in plain text format
@@ -159,7 +164,9 @@ pub struct Engine<'c> {
 
 impl<'c> Engine<'c> {
     fn new() -> Result<Engine<'c>, EngineError> {
-        EngineBuilder::new().fire()
+        let e = EngineBuilder::new().fire();
+        trace!("Engine::new {:?}", e);
+        e
     }
 
     // TODO Return an iterator to lazily cut evaluation
@@ -167,7 +174,7 @@ impl<'c> Engine<'c> {
     fn find<'txt>(&self, plain_text: &'txt str) -> Vec<PriceTagMatch> {
         // Record locations of price ends in price tags
         let price_locations = || {
-            trace!("price_locations");
+            debug!("computing price_locations…");
             let mut price_loc_start = BTreeMap::new();
             let mut price_loc_end = BTreeMap::new();
 
@@ -180,6 +187,8 @@ impl<'c> Engine<'c> {
                     None => unreachable!(), // Normally, get(0) gives the whole pattern, which always exist
                 }
             }
+            debug!("price_loc_start: {:?}", price_loc_start);
+            debug!("price_loc_end: {:?}", price_loc_end);
             (price_loc_start, price_loc_end)
         };
 
@@ -187,7 +196,7 @@ impl<'c> Engine<'c> {
 
         let mut pricetag_matches = Vec::new();
         for (currency_main_iso, currency_match) in &self.currency_matches {
-            trace!("Matches for {}", currency_main_iso);
+            debug!("Matches for {}", currency_main_iso);
             for cap in currency_match.captures_iter(plain_text) {
                 let m = cap.get(0).unwrap(); // 0 is the whole pattern, always present
                 let start = m.start();
@@ -200,6 +209,7 @@ impl<'c> Engine<'c> {
                 //   /-------------\
                 //133  Lorem ipsumm USD
                 for (&location, &price_str) in price_loc_end.range((Included(&(start-win)), Excluded(&start))) {
+                    trace!("&location, &price_str: {:?}, {:?}", &location, &price_str);
                     let currency = currency::existing_from_iso(currency_main_iso).unwrap();
                     let ptm = PriceTagMatch::new(
                         price_str.parse().expect("Float impossible to parse"),
@@ -232,6 +242,7 @@ impl<'c> Engine<'c> {
     }
 }
 
+#[derive(Debug)]
 pub struct EngineOptions<'c> {
     window_size: usize,
     currencies: &'c [Currency],
@@ -254,6 +265,7 @@ impl<'c> Default for EngineOptions<'c> {
     }
 }
 
+#[derive(Debug)]
 pub struct EngineBuilder<'c>(EngineOptions<'c>);
 
 impl<'c> EngineBuilder<'c> {
@@ -326,6 +338,7 @@ impl<'c> EngineBuilder<'c> {
 }
 
 /// Error that occured while building and firing the engine
+#[derive(Clone, PartialEq, Debug)]
 pub enum EngineError {
     /// Invalid regex for price_match
     PriceMatchRegex(regex::Error),
