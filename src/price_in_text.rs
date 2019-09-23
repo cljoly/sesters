@@ -293,7 +293,7 @@ impl<'c> EngineBuilder<'c> {
 
         let mut currency_matches = HashMap::new();
         for currency in self.0.currencies {
-            let mut alternatives_slices = Vec::new();
+            let mut alternatives_slices: Vec<&[&str]> = Vec::new();
             let mut currency_match_string = String::new();
             let mut add_regex_altenatives = |new_alternatives: &'static [&'static str]| {
                 trace!("add_regex_altenatives: alternatives (before): {:?}", &alternatives_slices);
@@ -307,10 +307,10 @@ impl<'c> EngineBuilder<'c> {
             if self.0.by_symbol {
                 add_regex_altenatives(currency.symbols());
             }
-            for alternative in alternatives_slices.into_iter().flatten().intersperse(&"|") {
-                // for alternative in alternatives.iter().intersperse(&"|") {
-                    currency_match_string.push_str(alternative);
-                // }
+            // Escape currency symbols and iso by inserting litteral unicode in the regex
+            let alternatives_unicode_escaped = alternatives_slices.into_iter().map(|a| a.into_iter().map(|s| format!("{}", s.escape_unicode())));
+            for s in alternatives_unicode_escaped.flatten().intersperse("|".to_owned()) {
+                currency_match_string.push_str(&s);
             }
             let currency_match_err = Regex::new(currency_match_string.as_str());
             match currency_match_err {
