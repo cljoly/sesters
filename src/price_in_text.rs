@@ -138,8 +138,8 @@ fn iso_for_currency<'c>(c: &'c Currency, text: &str) -> Vec<PriceTagMatch<'c>> {
 /// Find price with iso symbol for all given currency
 /// For price before and TODO after the iso symbol
 pub fn iso<'c>(currencies: &'c [Currency], text: &str) -> Vec<PriceTag<'c>> {
-    let matches_iterator = currencies.iter().map(|c| iso_for_currency(c, text));
-    matches_iterator.flatten().map(|cm| cm.into()).collect()
+    let engine = Engine::new();
+    engine.all_price_tags(text)
 }
 
 /// Price tag engine, used to extract price tags in plain text
