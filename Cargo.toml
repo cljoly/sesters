@@ -2,7 +2,7 @@
 name = "sesters"
 description = "💱 Fast, offline currency converter 💴 💷 💶 💵"
 homepage = "https://seste.rs"
-repository = "https://github.com/leowzukw/sesters"
+repository = "https://github.com/cljoly/sesters"
 readme = "Readme.md"
 keywords = ["currency_converter", "cli"]
 categories = ["command-line-utilities", "text-processing"]
@@ -13,7 +13,7 @@ license = "GPL-3.0-or-later"
 
 [badges]
 maintenance = { status = "experimental" }
-travis-ci = { repository = "leowzukw/sesters", branch = "master" }
+travis-ci = { repository = "cljoly/sesters", branch = "master" }
 
 [dependencies]
 reqwest = "0.9"
