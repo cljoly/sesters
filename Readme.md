@@ -23,12 +23,12 @@
 
 Install the latest version:
 
-``` sh
+```
 $ cargo install sesters
 ```
 
 Exemple of plain text conversion:
-``` sh
+```
 $ sesters convert a price burried 1 USD in text
 USD 1.00 ➜ EUR 0.89
 $ sesters convert -- -1 €
