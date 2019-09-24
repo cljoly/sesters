@@ -10,13 +10,32 @@
 </div>
 
 <p align="center">
-<a href="https://crates.io/crates/sesters"><img src="https://img.shields.io/badge/getting-started-yellow?style=flat-square" alt="Crates.io" /></a> </a><a href="./LICENSE"><img src="https://img.shields.io/github/license/cljoly/sesters.svg?color=blueviolet&style=flat-square" alt="LICENCE" /></a> <a href="https://crates.io/crates/sesters"><img src="https://img.shields.io/crates/v/sesters.svg?color=blue&style=flat-square" alt="Crates.io" /></a> <a href="https://crates.io/crates/sesters"><img alt="undefined" src="https://img.shields.io/crates/d/sesters.svg?color=brightgreen&style=flat-square"></a>
+<a href="https://crates.io/crates/sesters"><img src="https://img.shields.io/badge/🚀 getting-started-yellow?style=flat-square" alt="Crates.io" /></a> </a><a href="./LICENSE"><img src="https://img.shields.io/github/license/cljoly/sesters.svg?color=blueviolet&label=contribute&style=flat-square" alt="LICENCE" /></a> <a href="https://crates.io/crates/sesters"><img src="https://img.shields.io/crates/v/sesters.svg?color=blue&style=flat-square" alt="Crates.io" /></a> <a href="https://crates.io/crates/sesters"><img alt="undefined" src="https://img.shields.io/crates/d/sesters.svg?color=brightgreen&style=flat-square"></a>
 </p>
 <p align="center">
 <a href="https://travis-ci.com/cljoly/sesters/master"><img src="https://img.shields.io/travis/com/cljoly/sesters.svg" alt="Travis CI" /></a> <a href="https://deps.rs/repo/github/cljoly/sesters"><img src="https://deps.rs/repo/github/cljoly/sesters/status.svg" alt="dependency status" /></a>
 </p>
 
 ******************************************
+
+## Getting started
+
+Install the latest version:
+
+``` sh
+$ cargo install sesters
+```
+
+Exemple of plain text conversion:
+``` sh
+$ sesters convert a price burried 1 USD in text
+USD 1.00 ➜ EUR 0.89
+$ sesters convert -- -1 €
+EUR -1.00 ➜ USD -1.10
+$ sesters convert
+I can type my price and press enter EUR lorem ipsum 2356
+EUR 2345.00 ➜ USD 2586.53
+```
 
 ## Features
 
