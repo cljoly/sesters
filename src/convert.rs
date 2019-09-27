@@ -52,6 +52,13 @@ pub fn run(ctxt: MainContext, txt: String) {
                     dst_currency,
                     &endpoint.provider_id(),
                 );
+
+                // Remove outdated_rates
+                let mut txnw = sh.write_txn().unwrap();
+                for rate in outdated_rates {
+                    ctxt.db.del_rate(&mut txnw, &sh, &bucket, rate);
+                }
+
                 let rate = uptodate_rates.last();
                 trace!("rate_from_db: {:?}", rate);
                 rate.map(|r| r.clone())

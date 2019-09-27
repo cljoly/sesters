@@ -394,6 +394,26 @@ impl super::Db {
         )
         .unwrap();
     }
+
+    /// Remove rate from a currency to another
+    // TODO Return error type
+    pub fn del_rate<'t, 'd>(
+        &'d self,
+        txn: &mut Txn<'t>,
+        store: &Store,
+        bucket: &RateBucket<'t>,
+        rate: Rate,
+    ) where
+        'd: 't,
+    {
+        trace!("Remove rate {:?} from databse.", rate);
+        let ri: RateInternal = rate.into();
+        txn.del(
+            bucket.as_bucket(),
+            ri.key,
+        )
+        .unwrap();
+    }
 }
 
 /// Type mainly forcing to register in the db
