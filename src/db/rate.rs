@@ -344,15 +344,10 @@ impl super::Db {
 
         // TODO Place this in a function
         trace!("Iterating over key compatible with {:?}", partial_key);
-        let iter = cursor.iter();
-        // Skip key that are not starting with right thing, if any
+        let iter = cursor.iter_from(&partial_key);
         let iter_key = iter
-            .skip_while(|(k, v)| {
-                trace!("Skip {:?}?", k);
-                !partial.is_compatible_with(k)
-            })
-            // Take key that are starting with right thing, if any
-            .take_while(|(k, v)| {
+            .take_while(|(k, _)| {
+                // Take key that are starting with right thing, if any
                 trace!("Take {:?}?", k);
                 partial.is_compatible_with(k)
             });
