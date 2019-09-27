@@ -18,7 +18,7 @@ along with this program.  If not, see <https://www.gnu.org/licenses/>.
 
 //! Structs related to rate and rate storage
 
-use chrono::offset::Local as LocalTime;
+use chrono::offset::{Local as LocalTime, Utc};
 use chrono::prelude::*;
 use kv::bincode::Bincode;
 use kv::{Bucket, Config as KvConfig, Serde, Store, Txn, ValueBuf};
@@ -318,20 +318,21 @@ impl PartialRateKey {
 }
 
 impl super::Db {
-    /// Retrieve rate from a currency to another
-    pub fn get_rate<'c>(
+    /// Retrieve rates from a currency to another. First member of the tuple
+    /// contains up-to-date rates and the second member outdated ones
+    pub fn get_rates<'c>(
         &self,
         txn: &Txn,
         store: &Store,
         src: &'c Currency,
         dst: &Currency,
         provider: &str,
-    ) -> Option<Rate<'c>> {
-        trace!("get_rate({}, {}, {:?})", src, dst, provider);
+    ) -> (Vec<Rate<'c>>, Vec<Rate<'c>>) {
+        trace!("get_rates({}, {}, {:?})", src, dst, provider);
         // Hard code this to limit storage overhead
         if src == dst {
             warn!("Same source and destination currency, don’t store");
-            return Some(Rate::parity(src));
+            return (vec![Rate::parity(src)], vec![]);
         }
         // TODO Have this by argument
         let bucket = self.bucket_rate(store);
@@ -342,26 +343,32 @@ impl super::Db {
         let cursor = txn.read_cursor(&bucket.as_bucket());
         let mut cursor = cursor.unwrap();
 
+        let now = Local::now();
+
         // TODO Place this in a function
         trace!("Iterating over key compatible with {:?}", partial_key);
-        let iter = cursor.iter_from(&partial_key);
-        let iter_key = iter
+        let (uptodate_rates, outdated_rates): (Vec<Rate>, Vec<Rate>) =
+            cursor.iter_from(&partial_key)
             .take_while(|(k, _)| {
                 // Take key that are starting with right thing, if any
                 trace!("Take {:?}?", k);
                 partial.is_compatible_with(k)
-            });
-
-        trace!("Compute most_recent");
-        let most_recent = iter_key.last();
-        trace!("most_recent: {:?}", most_recent);
-
-        most_recent.map(|(rk, rv_buf)| {
+            })
+        .map(|(rk, rv_buf)| {
             trace!("key: {:?}, value_buf: {:?}", rk, rv_buf);
             let rv = rv_buf.inner().unwrap().to_serde();
             trace!("value: {:?}", rv);
             RateInternal::new(rk, rv).into()
         })
+        .partition(|rate: &Rate| {
+            if let Some(dt) = rate.cache_until() { return dt > &now }
+            // Consider outdated the one without cache_limit (shouldn’t be in the database in the fist place)
+            else { return false }
+            })
+        ;
+        trace!("uptodate_rates: {:?}", uptodate_rates);
+        trace!("outdated_rates: {:?}", outdated_rates);
+        (uptodate_rates, outdated_rates)
     }
 
     /// Set rate from a currency to another

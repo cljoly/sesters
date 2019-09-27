@@ -132,15 +132,16 @@ fn main() {
                 debug!("Create read transaction");
                 let txn = sh.read_txn().unwrap();
                 trace!("Get rate from db");
-                let rate = db.get_rate(
+                let (uptodate_rates, outdated_rates) = db.get_rates(
                     &txn,
                     &sh,
                     src_currency,
                     dst_currency,
                     &endpoint.provider_id(),
                 );
+                let rate = uptodate_rates.last();
                 trace!("rate_from_db: {:?}", rate);
-                rate
+                rate.map(|r| r.clone())
             };
 
             let add_to_db = |rate: Rate| {
