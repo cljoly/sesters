@@ -17,22 +17,30 @@ along with this program.  If not, see <https://www.gnu.org/licenses/>.
  */
 
 use kv::{Config as KvConfig, Manager};
-use log::{debug, error, info, log_enabled, trace};
+use log::{error, info, trace};
 use std::io::{self, BufRead};
 use clap::{clap_app,crate_version,crate_authors,crate_description};
 use itertools::Itertools;
 
 mod api;
 mod config;
+mod convert;
 mod currency;
 mod db;
 mod price_in_text;
 mod rate;
 
-use crate::api::RateApi;
 use crate::config::Config;
 use crate::db::Db;
-use crate::rate::Rate;
+use crate::currency::Currency;
+
+/// Main context to pass what is initiliazed in this module and what is parsed
+/// in global tags
+pub struct MainContext<'mc> {
+    db: Db,
+    destination_currencies: Vec<&'mc Currency>,
+    cfg: Config,
+}
 
 /// Concat the args with spaces, if args are not `None`. Read text from stdin
 /// otherwise.
@@ -103,93 +111,15 @@ fn main() {
             );
             None
         })
-    });
-    let mut txt;
+    }).collect();
+
+    let ctxt = MainContext { db, cfg, destination_currencies };
+
     if let Some(matches) = matches.subcommand_matches("convert") {
-        txt = concat_or_stdin(matches.values_of("PLAIN_TXT"));
+        let txt = concat_or_stdin(matches.values_of("PLAIN_TXT"));
         trace!("plain text: {}", &txt);
-    } else {
-        // TODO This is available here only because the rest of the code is dependant of the text to convert and becase it is executed whether the convert subcommand is used or not. Thus, to actually use subcommand, the code below should be called in the if branch of this else, allowing to remove the else.
-        txt = String::new();
+        crate::convert::run(ctxt, txt);
     }
 
-    let engine: crate::price_in_text::Engine = crate::price_in_text::Engine::new().unwrap();
-    let price_tags = engine.all_price_tags(&txt);
-    if let Some(price_tag) = price_tags.get(0) {
-        let src_currency = price_tag.currency();
-        trace!("src_currency: {}", &src_currency);
-
-        // Get rate
-        trace!("Get db handler");
-        let sh = db.store_handle().write().unwrap();
-        trace!("Get rate bucket");
-        let bucket = db.bucket_rate(&sh);
-        trace!("Got bucket");
-        let endpoint = api::ExchangeRatesApiIo::new(&cfg);
-        trace!("Got API Endpoint");
-        {
-            let rate_from_db = |dst_currency| -> Option<Rate> {
-                debug!("Create read transaction");
-                let txn = sh.read_txn().unwrap();
-                trace!("Get rate from db");
-                let (uptodate_rates, outdated_rates) = db.get_rates(
-                    &txn,
-                    &sh,
-                    src_currency,
-                    dst_currency,
-                    &endpoint.provider_id(),
-                );
-                let rate = uptodate_rates.last();
-                trace!("rate_from_db: {:?}", rate);
-                rate.map(|r| r.clone())
-            };
-
-            let add_to_db = |rate: Rate| {
-                debug!("Get write transaction");
-                let mut txn = sh.write_txn().unwrap();
-                trace!("Set rate to db");
-                let r = db.set_rate(&mut txn, &sh, &bucket, rate);
-                trace!("Rate set, result: {:?}", &r);
-                txn.commit().unwrap();
-            };
-
-            let rate_from_api = |dst_currency| -> Option<Rate> {
-                info!("Retrieve rate online");
-                let client = reqwest::Client::new();
-                endpoint.rate(&client, &src_currency, dst_currency)
-            };
-
-            let rates = destination_currencies.map(|dst| {
-                rate_from_db(&dst).or_else(|| {
-                    let rate = rate_from_api(&dst);
-                    if let Some(rate) = &rate {
-                        info!("Set rate to db");
-                        add_to_db(rate.clone());
-                    }
-                    rate
-                })
-            });
-
-            for rate in rates {
-                if log_enabled!(log::Level::Info) {
-                    if let Some(rate) = &rate {
-                        info!("Rate retrieved: {}", &rate);
-                    } else {
-                        info!("No rate retrieved");
-                    }
-                }
-                trace!("Final rate: {:?}", &rate);
-                if let Some(rate) = rate {
-                    println!(
-                        "{} ➜ {}",
-                        &price_tag,
-                        &price_tag.convert(&rate).unwrap()
-                    );
-                }
-            }
-        }
-    } else {
-        println!("No currency found.")
-    }
     info!("Exiting");
 }
