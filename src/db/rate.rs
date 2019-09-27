@@ -18,17 +18,17 @@ along with this program.  If not, see <https://www.gnu.org/licenses/>.
 
 //! Structs related to rate and rate storage
 
-use chrono::offset::{Local as LocalTime, Utc};
+use chrono::offset::{Local as LocalTime};
 use chrono::prelude::*;
 use kv::bincode::Bincode;
 use kv::{Bucket, Config as KvConfig, Serde, Store, Txn, ValueBuf};
 use lazy_static::lazy_static;
-use log::{debug, error, info, trace, warn};
+use log::{debug, error, trace, warn};
 use regex::Regex;
 use serde_derive::{Deserialize, Serialize};
 
 use crate::currency;
-use crate::currency::{Currency, USD};
+use crate::currency::{Currency};
 use crate::rate::Rate;
 
 #[cfg(test)]

@@ -19,7 +19,7 @@ along with this program.  If not, see <https://www.gnu.org/licenses/>.
 //! Access several API used by Sesters
 
 use chrono::Duration;
-use log::{debug, error, info, trace};
+use log::{debug, error, trace};
 use reqwest;
 use std::error::Error;
 

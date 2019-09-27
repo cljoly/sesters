@@ -18,8 +18,8 @@ along with this program.  If not, see <https://www.gnu.org/licenses/>.
 
 //! Module grouping all db related concern
 
-use kv::{Config as KvConfig, Manager, Store, Txn};
-use log::{debug, info, trace};
+use kv::{Config as KvConfig, Manager, Store};
+use log::trace;
 
 mod rate;
 
