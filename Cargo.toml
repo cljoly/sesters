@@ -32,3 +32,6 @@ dirs = "2.0"
 encoding = "0.2"
 clap = "2"
 itertools = "0.8"
+
+[profile.release]
+debug = true
