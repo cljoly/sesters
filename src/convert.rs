@@ -134,6 +134,10 @@ pub fn run(ctxt: MainContext, matches: &ArgMatches) {
                 }
                 trace!("Final rate: {:?}", &rate);
                 if let Some(rate) = rate {
+                    // Skip conversion that wouldn’t change currency (like 1 BTC -> 1 BTC)
+                    if price_tag.currency() == rate.dst() {
+                        continue;
+                    }
                     println!(
                         "{} ➜ {}",
                         &price_tag,
