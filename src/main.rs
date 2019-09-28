@@ -20,7 +20,7 @@ along with this program.  If not, see <https://www.gnu.org/licenses/>.
 
 
 use kv::{Config as KvConfig, Manager};
-use log::{error, info, trace};
+use log::{error, info};
 
 mod api;
 mod config;

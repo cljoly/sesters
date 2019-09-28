@@ -22,9 +22,7 @@ use chrono::offset::{Local as LocalTime};
 use chrono::prelude::*;
 use kv::bincode::Bincode;
 use kv::{Bucket, Config as KvConfig, Serde, Store, Txn, ValueBuf};
-use lazy_static::lazy_static;
 use log::{debug, error, trace, warn};
-use regex::Regex;
 use serde_derive::{Deserialize, Serialize};
 
 use crate::currency;
@@ -164,12 +162,8 @@ mod tests {
     mod bench_key_extract_db {
         use chrono::offset::{Local as LocalTime};
         use chrono::prelude::*;
-        use kv::bincode::Bincode;
-        use kv::{Bucket, Config as KvConfig, Serde, Store, Txn, ValueBuf};
         use lazy_static::lazy_static;
-        use log::{debug, error, trace, warn};
         use regex::Regex;
-        use serde_derive::{Deserialize, Serialize};
 
         use super::super::RateKey;
         use crate::currency;
