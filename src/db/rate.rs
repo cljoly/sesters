@@ -31,6 +31,7 @@ use crate::rate::Rate;
 
 #[cfg(test)]
 mod tests {
+
     use chrono::Duration;
 
     use super::*;
@@ -160,6 +161,8 @@ mod tests {
 
     // Some benchmark to compare fonction extraction from key in db
     mod bench_key_extract_db {
+        #![feature(test)]
+
         use chrono::offset::{Local as LocalTime};
         use chrono::prelude::*;
         use lazy_static::lazy_static;
