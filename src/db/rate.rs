@@ -160,6 +160,7 @@ mod tests {
 
 
     // Some benchmark to compare fonction extraction from key in db
+    #[cfg(all(feature = "unstable", test))]
     mod bench_key_extract_db {
         #![feature(test)]
 
