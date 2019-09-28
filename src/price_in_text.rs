@@ -100,59 +100,6 @@ impl<'c> From<PriceTagMatch<'c>> for PriceTag<'c> {
     }
 }
 
-// Find iso symbol with price tag in text. Before and TODO after
-// Return a currency match
-fn iso_for_currency<'c>(c: &'c Currency, text: &str) -> Vec<PriceTagMatch<'c>> {
-    let mut formatted_regexes = Vec::new();
-    for iso in c.isos() {
-        // TODO Use lazy_static here
-        formatted_regexes.push(format!(
-            r"(?x)
-            (?P<sym_before>{})
-            (?P<length_before>.*?)
-            (?P<amount>-?\d+(\.\d*)?)
-            ",
-            iso
-        ));
-    }
-    let mut currency_matches = Vec::new();
-    for formatted_regex in formatted_regexes {
-        let r = Regex::new(formatted_regex.as_str()).unwrap();
-        for cap in r.captures_iter(text) {
-            // TODO Implement distance, symbol order
-            // Unwrap should not be an issue as we only have numbers and a dot
-            currency_matches.push(PriceTagMatch::new(
-                cap.name("amount")
-                    .unwrap()
-                    .as_str()
-                    .parse()
-                    .expect("Float impossible to parse"),
-                c,
-                1,
-                true,
-            ));
-        }
-    }
-    currency_matches
-}
-
-/// Find price with iso symbol for all given currency
-/// For price before and after the iso symbol
-pub fn iso<'t>(currencies: &'static [Currency], text: &'t str) -> Vec<PriceTag<'static>> {
-    // TODO Use EngineBuilder instead
-    unimplemented!();
-    let mut engineb = EngineBuilder::new();
-    engineb
-        .by_symbol(false)
-        .currencies(currencies);
-    let engine = engineb.fire().unwrap();
-    let pricetags = engine.all_price_tags(text);
-    dbg!(&pricetags);
-    // TODO Return pricetags computed above
-    vec![]
-    // pricetags
-}
-
 /// Price tag engine, used to extract price tags in plain text
 /// It proceeds in 3 steps:
 /// 1. Find positions of all number (possibly with various separator)
@@ -263,7 +210,7 @@ impl<'c> Engine<'c> {
     }
 }
 
-#[derive(Debug)]
+#[derive(Debug, Clone)]
 pub struct EngineOptions<'c> {
     window_size: usize,
     currencies: &'c [Currency],
@@ -286,7 +233,7 @@ impl<'c> Default for EngineOptions<'c> {
     }
 }
 
-#[derive(Debug)]
+#[derive(Debug, Clone)]
 pub struct EngineBuilder<'c>(EngineOptions<'c>);
 
 impl<'c> EngineBuilder<'c> {

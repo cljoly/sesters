@@ -21,7 +21,7 @@ const SHORT_TXT: &str = "short";
 const LONG_TXT: &str = "some quite loooooooooooooooooooooooooooong text";
 
 mod iso {
-    use super::super::iso;
+    use super::super::{Engine, EngineBuilder};
     use crate::currency::*;
 
     fn test_iso_usd_then_with_other(
@@ -42,14 +42,19 @@ mod iso {
             (None, None, None) => None,
             _ => panic!("More than one value is Some"),
         };
+        let mut engine_builder = EngineBuilder::new();
+        engine_builder.by_iso(true).by_symbol(true);
+        fn iso_engine(engine_builder: &EngineBuilder<'static>, currencies: &'static [Currency]) -> Engine<'static> {
+            engine_builder.clone().currencies(currencies).clone().fire().unwrap()
+        };
         println!("===============================");
-        assert_eq!(&iso(&[USD], txt).first(), exp1_usd);
+        assert_eq!(&iso_engine(&engine_builder, &[USD]).all_price_tags(txt).first(), exp1_usd);
         println!("usd ok");
-        assert_eq!(&iso(&[EUR], txt).first(), exp2_eur);
+        assert_eq!(&iso_engine(&engine_builder, &[EUR]).all_price_tags(txt).first(), exp2_eur);
         println!("eur ok");
-        assert_eq!(&iso(&[BTC], txt).first(), exp3_btc);
+        assert_eq!(&iso_engine(&engine_builder, &[BTC]).all_price_tags(txt).first(), exp3_btc);
         println!("btc ok");
-        assert_eq!(&iso(&[USD, EUR, BTC], txt).first(), &exp.cloned());
+        assert_eq!(&iso_engine(&engine_builder, &[USD, EUR, BTC]).all_price_tags(txt).first(), &exp.cloned());
         println!("usd, eur, btc ok");
         println!("===============================");
     }

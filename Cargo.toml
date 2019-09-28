@@ -32,6 +32,7 @@ dirs = "2.0"
 encoding = "0.2"
 clap = "2"
 itertools = "0.8"
+test-case = "0.3"
 
 [profile.release]
 debug = true
