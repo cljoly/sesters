@@ -246,7 +246,7 @@ mod tests {
                     cache_until: &DateTime<LocalTime>,
                 ) -> RateKey {
                     RateKey(
-                        (&[src.get_main_iso(), dst.get_main_iso(), provider, cache_until.timestamp().to_string().as_str()]).join(SEPARATOR!("str")),
+                        [src.get_main_iso(), dst.get_main_iso(), provider, cache_until.timestamp().to_string().as_str()].join(SEPARATOR!("str")),
                     )
                 }
 
@@ -329,6 +329,12 @@ mod tests {
 #[derive(Clone, Debug, PartialOrd, PartialEq)]
 struct RateKey(String);
 
+/// Separator in RateKey
+macro_rules! SEPARATOR {
+    () => { '\0' };
+    ("str") => { "\0" };
+}
+
 impl RateKey {
     // New rate key
     fn new(
@@ -337,13 +343,9 @@ impl RateKey {
         provider: &str,
         cache_until: &DateTime<LocalTime>,
     ) -> RateKey {
-        RateKey(format!(
-            "{}:{}:{}:{}",
-            src.get_main_iso(),
-            dst.get_main_iso(),
-            provider,
-            cache_until.timestamp()
-        ))
+        RateKey(
+            [src.get_main_iso(), dst.get_main_iso(), provider, cache_until.timestamp().to_string().as_str()].join(SEPARATOR!("str")),
+        )
     }
 
     // Get data stored in the rate key. Panics if a rate is malformed.
@@ -355,16 +357,11 @@ impl RateKey {
         String,
         DateTime<LocalTime>,
     ) {
-        lazy_static! {
-            static ref KEY: Regex =
-                Regex::new(r"^(?P<src>[A-Z]{3}):(?P<dst>[A-Z]{3}):(?P<prov>.+):(?P<until>\d+)$")
-                    .unwrap();
-        }
-        let cap = KEY.captures(&self.0).unwrap();
-        let src_iso = cap.name("src").unwrap().as_str();
-        let dst_iso = cap.name("dst").unwrap().as_str();
-        let provider_str = cap.name("prov").unwrap().as_str();
-        let timestamp_str = cap.name("until").unwrap().as_str();
+        let mut split = self.0.split(SEPARATOR!());
+        let src_iso = split.next().unwrap();
+        let dst_iso = split.next().unwrap();
+        let provider_str = split.next().unwrap();
+        let timestamp_str = split.next().unwrap();
         let src = currency::existing_from_iso(src_iso).unwrap();
         let dst = currency::existing_from_iso(dst_iso).unwrap();
         let provider = String::from(provider_str);
@@ -453,20 +450,19 @@ impl PartialRateKey {
     /// Create a partial key before all key with the given src currency, dst
     /// currency and provider
     fn src_dst_provider(src: &Currency, dst: &Currency, provider: &str) -> Self {
-        // TODO store ":" separator in a const
-        PartialRateKey(format!("{}:{}:{}", src, dst, provider))
+        PartialRateKey([src.get_main_iso(), dst.get_main_iso(), provider].join(SEPARATOR!("str")))
     }
 
     /// Create a partial key before all key with the given src currency and dst
     /// currency
     fn src_dst(src: &Currency, dst: &Currency) -> Self {
-        PartialRateKey(format!("{}:{}", src, dst))
+        PartialRateKey([src.get_main_iso(), dst.get_main_iso()].join(SEPARATOR!("str")))
     }
 
     /// Create a partial key before all key with the given src currency and dst
     /// currency
     fn src(src: &Currency) -> Self {
-        PartialRateKey(format!("{}", src))
+        PartialRateKey(format!("{}{}", src, SEPARATOR!()))
     }
 
     /// Treat as key
