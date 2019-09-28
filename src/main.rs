@@ -17,9 +17,9 @@ along with this program.  If not, see <https://www.gnu.org/licenses/>.
  */
 
 use kv::{Config as KvConfig, Manager};
+use ::clap::Values as ClapValues;
 use log::{error, info, trace};
 use std::io::{self, BufRead};
-use clap::{clap_app,crate_version,crate_authors,crate_description};
 use itertools::Itertools;
 
 mod api;
@@ -29,6 +29,7 @@ mod currency;
 mod db;
 mod price_in_text;
 mod rate;
+mod clap;
 
 use crate::config::Config;
 use crate::db::Db;
@@ -44,7 +45,7 @@ pub struct MainContext<'mc> {
 
 /// Concat the args with spaces, if args are not `None`. Read text from stdin
 /// otherwise.
-fn concat_or_stdin(arg_text: Option<clap::Values>) -> String {
+fn concat_or_stdin(arg_text: Option<ClapValues>) -> String {
     fn read_stdin() -> String {
         info!("Reading stdin…");
         eprintln!("Enter the plain text on the first line");
@@ -58,7 +59,7 @@ fn concat_or_stdin(arg_text: Option<clap::Values>) -> String {
         trace!("txt: {}", txt);
         txt
     }
-    fn space_join(values: clap::Values) -> String {
+    fn space_join(values: ClapValues) -> String {
         let mut txt = String::new();
         let spaced_values = values.intersperse(" ");
         for s in spaced_values {
@@ -74,23 +75,7 @@ fn main() {
     env_logger::init();
     info!("Starting up");
 
-    let matches = clap_app!(sesters =>
-        // (@setting DontCollapseArgsInUsage)
-        (version: crate_version!())
-        (author: crate_authors!())
-        (about: concat!(crate_description!(), "\n", "https://seste.rs"))
-        // TODO Implement -c
-        // (@arg CONFIG: -c --config +global +takes_value "Sets a custom config file")
-        // TODO Add flag for verbosity, for preferred currency
-        (@arg TO: -t --to +takes_value +global +multiple "Currency to convert to, uses defaults from the configuration file if not set")
-        (@subcommand convert =>
-            (@setting TrailingVarArg)
-            // (@setting DontDelimitTrailingValues)
-            (about: "Perform currency conversion to your preferred currency, from a price tag found in plain text")
-            (visible_alias: "c")
-            (@arg PLAIN_TXT: +multiple !use_delimiter "Plain text to extract a price tag from. If not set, plain text will be read from stdin")
-        )
-    ).get_matches();
+    let matches = crate::clap::get_app().get_matches();
 
     let cfg = Config::get();
 
