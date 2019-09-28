@@ -178,7 +178,9 @@ mod tests {
         extern crate test;
         use test::Bencher;
 
-        const SEPARATOR: char = '\0';
+        macro_rules! SEPARATOR {
+            () => { '\0'};
+        }
 
         impl RateKey {
             fn data_with_regex(
@@ -228,12 +230,11 @@ mod tests {
                     cache_until: &DateTime<LocalTime>,
                 ) -> RateKey {
                     RateKey(format!(
-                        "{}{sep}{}{sep}{}{sep}{}",
+                        concat!("{}", SEPARATOR!(), "{}", SEPARATOR!(), "{}", SEPARATOR!(), "{}"),
                         src.get_main_iso(),
                         dst.get_main_iso(),
                         provider,
                         cache_until.timestamp(),
-                        sep=SEPARATOR,
                     ))
                 }
 
@@ -245,7 +246,7 @@ mod tests {
                         String,
                         DateTime<LocalTime>,
                         ) {
-                        let mut split = self.0.split(SEPARATOR);
+                        let mut split = self.0.split(SEPARATOR!());
                         let src_iso = split.next().unwrap();
                         let dst_iso = split.next().unwrap();
                         let provider_str = split.next().unwrap();
