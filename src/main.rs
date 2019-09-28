@@ -17,10 +17,7 @@ along with this program.  If not, see <https://www.gnu.org/licenses/>.
  */
 
 use kv::{Config as KvConfig, Manager};
-use ::clap::Values as ClapValues;
 use log::{error, info, trace};
-use std::io::{self, BufRead};
-use itertools::Itertools;
 
 mod api;
 mod config;
@@ -41,33 +38,6 @@ pub struct MainContext<'mc> {
     db: Db,
     destination_currencies: Vec<&'mc Currency>,
     cfg: Config,
-}
-
-/// Concat the args with spaces, if args are not `None`. Read text from stdin
-/// otherwise.
-fn concat_or_stdin(arg_text: Option<ClapValues>) -> String {
-    fn read_stdin() -> String {
-        info!("Reading stdin…");
-        eprintln!("Enter the plain text on the first line");
-        let stdin = io::stdin();
-        let txt = stdin
-            .lock()
-            .lines()
-            .next()
-            .expect("Please provide some text on stdin")
-            .unwrap();
-        trace!("txt: {}", txt);
-        txt
-    }
-    fn space_join(values: ClapValues) -> String {
-        let mut txt = String::new();
-        let spaced_values = values.intersperse(" ");
-        for s in spaced_values {
-            txt.push_str(s);
-        }
-        txt
-    }
-    arg_text.map_or_else(read_stdin, space_join)
 }
 
 fn main() {
@@ -100,10 +70,9 @@ fn main() {
 
     let ctxt = MainContext { db, cfg, destination_currencies };
 
-    if let Some(matches) = matches.subcommand_matches("convert") {
-        let txt = concat_or_stdin(matches.values_of("PLAIN_TXT"));
-        trace!("plain text: {}", &txt);
-        crate::convert::run(ctxt, txt);
+    match matches.subcommand() {
+        ("convert", Some(m)) => crate::convert::run(ctxt, m),
+        (_, _) => unreachable!(), // Guarded by clap when parsing arguments
     }
 
     info!("Exiting");

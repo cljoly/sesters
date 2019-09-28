@@ -19,13 +19,47 @@ along with this program.  If not, see <https://www.gnu.org/licenses/>.
 //! Module for the convert subcommand
 
 use log::{trace, debug, info, log_enabled};
+use clap::ArgMatches;
+use clap::Values as ClapValues;
+use std::io::{self, BufRead};
+use itertools::Itertools;
 
 use crate::api;
 use crate::api::RateApi;
 use crate::rate::Rate;
 use crate::MainContext;
+
+/// Concat the args with spaces, if args are not `None`. Read text from stdin
+/// otherwise.
+fn concat_or_stdin(arg_text: Option<ClapValues>) -> String {
+    fn read_stdin() -> String {
+        info!("Reading stdin…");
+        eprintln!("Enter the plain text on the first line");
+        let stdin = io::stdin();
+        let txt = stdin
+            .lock()
+            .lines()
+            .next()
+            .expect("Please provide some text on stdin")
+            .unwrap();
+        trace!("txt: {}", txt);
+        txt
+    }
+    fn space_join(values: ClapValues) -> String {
+        let mut txt = String::new();
+        let spaced_values = values.intersperse(" ");
+        for s in spaced_values {
+            txt.push_str(s);
+        }
+        txt
+    }
+    arg_text.map_or_else(read_stdin, space_join)
+}
  
-pub fn run(ctxt: MainContext, txt: String) {
+/// Parse arguments for convert subcommand and run it
+pub fn run(ctxt: MainContext, matches: &ArgMatches) {
+    let txt = concat_or_stdin(matches.values_of("PLAIN_TXT"));
+    trace!("plain text: {}", &txt);
     let engine: crate::price_in_text::Engine = crate::price_in_text::Engine::new().unwrap();
     let price_tags = engine.all_price_tags(&txt);
     if let Some(price_tag) = price_tags.get(0) {
