@@ -286,32 +286,32 @@ impl<'c> EngineBuilder<'c> {
 
     /// Set the size of the window used as the distance between a price and a
     /// currency unit when looking for price tag
-    fn window(&mut self, size: usize) -> &mut EngineBuilder<'c> {
+    pub fn window(&mut self, size: usize) -> &mut EngineBuilder<'c> {
         self.0.window_size = size;
         self
     }
 
     /// Set the currency set to look for
-    fn currencies(&mut self, currencies: &'c [Currency]) -> &mut EngineBuilder<'c> {
+    pub fn currencies(&mut self, currencies: &'c [Currency]) -> &mut EngineBuilder<'c> {
         self.0.currencies = currencies;
         self
     }
 
     /// Find price tag using the symbol of the currency, like “€” or “$”
-    fn by_symbol(&mut self, yes: bool) -> &mut EngineBuilder<'c> {
+    pub fn by_symbol(&mut self, yes: bool) -> &mut EngineBuilder<'c> {
         self.0.by_symbol = yes;
         self
     }
 
     /// Find price tag using the iso of the currency, like “EUR” or “USD”
-    fn by_iso(&mut self, yes: bool) -> &mut EngineBuilder<'c> {
+    pub fn by_iso(&mut self, yes: bool) -> &mut EngineBuilder<'c> {
         self.0.by_iso = yes;
         self
     }
 
     /// Set the regular expression used to match prices in plain text
     /// If set to None, will be inferred from the currency list
-    fn price(&mut self, format: Option<Regex>) -> &mut EngineBuilder<'c> {
+    pub fn price(&mut self, format: Option<Regex>) -> &mut EngineBuilder<'c> {
         self.0.price_format = format;
         self
     }

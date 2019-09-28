@@ -57,7 +57,7 @@ fn concat_or_stdin(arg_text: Option<ClapValues>) -> String {
 }
  
 /// Parse arguments for convert subcommand and run it
-pub fn run(ctxt: MainContext, matches: &ArgMatches) {
+pub(crate) fn run(ctxt: MainContext, matches: &ArgMatches) {
     let txt = concat_or_stdin(matches.values_of("PLAIN_TXT"));
     trace!("plain text: {}", &txt);
     let engine: crate::price_in_text::Engine = crate::price_in_text::Engine::new().unwrap();

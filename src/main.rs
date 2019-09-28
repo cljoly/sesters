@@ -35,7 +35,7 @@ use crate::currency::Currency;
 
 /// Main context to pass what is initiliazed in this module and what is parsed
 /// in global tags
-pub struct MainContext<'mc> {
+pub(crate) struct MainContext<'mc> {
     db: Db,
     destination_currencies: Vec<&'mc Currency>,
     cfg: Config,
