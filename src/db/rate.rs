@@ -179,7 +179,8 @@ mod tests {
         use test::Bencher;
 
         macro_rules! SEPARATOR {
-            () => { '\0'};
+            () => { '\0' };
+            ("str") => { "\0" };
         }
 
         impl RateKey {
@@ -236,6 +237,17 @@ mod tests {
                         provider,
                         cache_until.timestamp(),
                     ))
+                }
+
+                fn new_with_null_split_array_join(
+                    src: &Currency,
+                    dst: &Currency,
+                    provider: &str,
+                    cache_until: &DateTime<LocalTime>,
+                ) -> RateKey {
+                    RateKey(
+                        (&[src.get_main_iso(), dst.get_main_iso(), provider, cache_until.timestamp().to_string().as_str()]).join(SEPARATOR!("str")),
+                    )
                 }
 
                 fn data_with_null_split(
@@ -296,6 +308,12 @@ mod tests {
         fn bench_create_data_null_split(b: &mut Bencher) {
             let kd = key_data();
             b.iter(|| RateKey::new_with_null_split(kd.0, kd.1, kd.2, &kd.3))
+        }
+
+        #[bench]
+        fn bench_create_data_null_split_array_join(b: &mut Bencher) {
+            let kd = key_data();
+            b.iter(|| RateKey::new_with_null_split_array_join(kd.0, kd.1, kd.2, &kd.3))
         }
 
         #[bench]
