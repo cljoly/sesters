@@ -16,6 +16,8 @@ You should have received a copy of the GNU General Public License
 along with this program.  If not, see <https://www.gnu.org/licenses/>.
 */
 
+//! A module to find currency unit with amount (a **price tag**) in raw text
+
 use std::collections::{BTreeMap, HashMap};
 use std::ops::Bound::{Included, Excluded};
 use std::convert::TryInto;
@@ -26,7 +28,7 @@ use serde_derive::Serialize;
 
 use crate::currency::{Currency, PriceTag};
 use crate::currency;
-/// A module to find currency unit with amount (a **price tag**) in raw text
+use crate::price_format::PriceFormat;
 use regex::Regex;
 
 #[cfg(test)]
@@ -110,8 +112,8 @@ impl<'c> From<PriceTagMatch<'c>> for PriceTag<'c> {
 #[derive(Debug)]
 pub struct Engine<'c> {
     options: EngineOptions<'c>,
-    /// Regular expression to match prices in plain text format
-    price_match: Regex,
+    /// To match and extract prices in plain text format
+    price_match: PriceFormat,
     /// Regular expression to match currency symbol or iso in plain text format, by currency main iso
     currency_matches: HashMap<&'c str, Regex>,
 }
@@ -132,14 +134,9 @@ impl<'c> Engine<'c> {
             let mut price_loc_start = BTreeMap::new();
             let mut price_loc_end = BTreeMap::new();
 
-            for cap in self.price_match.captures_iter(plain_text) {
-                match cap.get(0) {
-                    Some(m) => {
-                        price_loc_start.insert(m.start(), m.as_str());
-                        price_loc_end.insert(m.end(), m.as_str());
-                    },
-                    None => unreachable!(), // Normally, get(0) gives the whole pattern, which always exist
-                }
+            for price_match in &self.price_match.captures_iter(plain_text) {
+                price_loc_start.insert(price_match.start(), price_match.price());
+                price_loc_end.insert(price_match.end(), price_match.price());
             }
             debug!("price_loc_start: {:?}", price_loc_start);
             trace!("price_loc_end: {:?}", price_loc_end);
@@ -165,31 +162,31 @@ impl<'c> Engine<'c> {
                 //     window_size
                 //   /-------------\
                 //133  Lorem ipsumm USD
-                trace!("before forward look, pricetag_matches: {:?}", pricetag_matches);
                 // Perform backward or forward look, depending of the parameters
                 use currency::Pos;
-                let mut look = |location: usize, price_str: &str, expected_position: Pos| {
-                    trace!("&location, &price_str: {:?}, {:?}", &location, &price_str);
+                trace!("before forward look, pricetag_matches: {:?}", pricetag_matches);
+                let mut look = |location: usize, price: f64, expected_position: Pos| {
+                    trace!("&location, &price: {:?}, {:?}", &location, &price);
                     let distance = if expected_position == Pos::Before {
                         ((start-location) as i32)
                     } else {
                         ((location-end) as i32)
                     };
                     let ptm = PriceTagMatch::new(
-                        price_str.parse().expect("Float impossible to parse"),
+                        price,
                         currency,
                         distance.try_into().unwrap(),
                         currency.pos() == expected_position,
                         );
                     pricetag_matches.push(ptm);
                 };
-                for (&location, &price_str) in price_loc_end.range((Included(&win_before_start), Excluded(&start))) {
-                    look(location, price_str, Pos::Before);
+                for (location, price) in price_loc_end.range((Included(&win_before_start), Excluded(&start))) {
+                    look(*location, *price, Pos::Before);
                 }
                 trace!("Looking backward now…");
                 // Idem, but with the start of the number when looking forward
-                for (&location, &price_str) in price_loc_start.range((Excluded(&end), Included(&(end+win)))) {
-                    look(location, price_str, Pos::After);
+                for (location, price) in price_loc_start.range((Excluded(&end), Included(&(end+win)))) {
+                    look(*location, *price, Pos::After);
                 }
                 debug!("after forward and backward look, pricetag_matches: {:?}", pricetag_matches);
             }
@@ -216,7 +213,7 @@ pub struct EngineOptions<'c> {
     currencies: &'c [Currency],
     by_symbol: bool,
     by_iso: bool,
-    price_format: Option<Regex>,
+    price_format: Option<PriceFormat>,
 }
 
 impl<'c> Default for EngineOptions<'c> {
@@ -228,7 +225,7 @@ impl<'c> Default for EngineOptions<'c> {
             by_symbol: true,
             by_iso: true,
             // TODO Try to avoid clone call here
-            price_format: Some((*currency::PRICE_FORMAT_COMMON).clone()),
+            price_format: Some((*crate::price_format::COMMON).clone()),
         }
     }
 }
@@ -238,12 +235,12 @@ pub struct EngineBuilder<'c>(EngineOptions<'c>);
 
 impl<'c> EngineBuilder<'c> {
     /// Create a builder with default option, to be custumized
-    fn new() -> EngineBuilder<'c> {
+    pub fn new() -> EngineBuilder<'c> {
         EngineBuilder(Default::default())
     }
 
     /// Consume Builder and fire the Engine, so that it be used to match text
-    fn fire(self) -> Result<Engine<'c>, EngineError> {
+    pub fn fire(self) -> Result<Engine<'c>, EngineError> {
         // TODO Build a regex from formats in currency used in case
         // price_format is None, instead of panicking as unwrap() does here
         // TODO Return EngineError.PriceMatchRegex
@@ -275,6 +272,7 @@ impl<'c> EngineBuilder<'c> {
                 Ok(currency_match) => currency_matches.insert(currency.get_main_iso(), currency_match),
                 Err(err) => return Err(EngineError::CurrencyMatchRegex(err)),
             };
+            debug!("currency_matches: {:?}", currency_matches)
         }
 
         Ok(Engine {
@@ -309,9 +307,9 @@ impl<'c> EngineBuilder<'c> {
         self
     }
 
-    /// Set the regular expression used to match prices in plain text
+    /// Set the PriceFormat used to match and extract prices in plain text
     /// If set to None, will be inferred from the currency list
-    pub fn price(&mut self, format: Option<Regex>) -> &mut EngineBuilder<'c> {
+    pub fn price(&mut self, format: Option<PriceFormat>) -> &mut EngineBuilder<'c> {
         self.0.price_format = format;
         self
     }

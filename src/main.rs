@@ -26,6 +26,7 @@ mod convert;
 mod currency;
 mod db;
 mod price_in_text;
+mod price_format;
 mod rate;
 mod clap;
 
