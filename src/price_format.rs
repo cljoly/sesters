@@ -42,11 +42,13 @@ mod tests {
         for samples in price_format_samples {
             for s in *samples {
                 println!("price sample: {}", s);
+                dbg!(&price_format.regex);
                 assert!(price_format.regex.is_match(s));
             }
         }
     }
 
+    #[test_case("1000" => 1000. ; "Simple 1000")]
     #[test_case("100" => 100. ; "Simple 100")]
     #[test_case("10" => 10. ; "Simple 10")]
     #[test_case("1" => 1. ; "Simple 1")]
@@ -118,9 +120,9 @@ impl PriceFormat {
 
         let regex = Regex::new(
             [
-            "(?P<sign>-?",
-            // escaped_tsep.as_str(), // Allow thousand separators between sign and price
-            ")(?P<int>",
+            "(?P<sign>(-([",
+            escaped_tsep.as_str(), // Allow thousand separators between sign and price
+            "])?)?)(?P<int>",
             number_and_separator.as_str(),
             ")(",
             dec_sep.as_str(),
@@ -129,6 +131,7 @@ impl PriceFormat {
             "))?",
             ].join("").as_str()
             ).unwrap(); // unwrap() is safe because we are not building invalid regexes
+        debug!("PriceFormat.regex (before construction): {:?}", regex);
         PriceFormat { decimal_separators, thousand_separators, regex }
     }
 
