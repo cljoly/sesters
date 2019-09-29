@@ -19,7 +19,7 @@ along with this program.  If not, see <https://www.gnu.org/licenses/>.
 //! A module to find currency unit with amount (a **price tag**) in raw text
 
 use std::collections::{BTreeMap, HashMap};
-use std::ops::Bound::{Included, Excluded};
+use std::ops::Bound::Included;
 use std::convert::TryInto;
 use std::cmp::Ordering;
 use log::{trace, debug};
@@ -180,12 +180,12 @@ impl<'c> Engine<'c> {
                         );
                     pricetag_matches.push(ptm);
                 };
-                for (location, price) in price_loc_end.range((Included(&win_before_start), Excluded(&start))) {
+                for (location, price) in price_loc_end.range((Included(&win_before_start), Included(&start))) {
                     look(*location, *price, Pos::Before);
                 }
                 trace!("Looking backward now…");
                 // Idem, but with the start of the number when looking forward
-                for (location, price) in price_loc_start.range((Excluded(&end), Included(&(end+win)))) {
+                for (location, price) in price_loc_start.range((Included(&end), Included(&(end+win)))) {
                     look(*location, *price, Pos::After);
                 }
                 debug!("after forward and backward look, pricetag_matches: {:?}", pricetag_matches);
