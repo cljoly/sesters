@@ -24,6 +24,8 @@ mod iso {
     use super::super::{Engine, EngineBuilder};
     use crate::currency::*;
 
+    use test_case::test_case;
+
     fn test_iso_usd_then_with_other(
         txt: &str,
         exp1_usd: &Option<PriceTag>,
@@ -43,7 +45,7 @@ mod iso {
             _ => panic!("More than one value is Some"),
         };
         let mut engine_builder = EngineBuilder::new();
-        engine_builder.by_iso(true).by_symbol(true);
+        engine_builder.by_iso(true).by_symbol(false);
         fn iso_engine(engine_builder: &EngineBuilder<'static>, currencies: &'static [Currency]) -> Engine<'static> {
             engine_builder.clone().currencies(currencies).clone().fire().unwrap()
         };
@@ -83,6 +85,34 @@ mod iso {
     fn iso_eur_before() {
         let currency_amount = Some(PriceTag::new(&EUR, 15.));
         test_iso_usd_then_with_other("EUR 15", &None, &currency_amount, &None);
+    }
+
+    #[test_case("1234 EUR")]
+    #[test_case("EUR 1234")]
+    #[test_case("1234%EUR" ; "Price before, percent")]
+    #[test_case("EUR%1234" ; "Price after, percent")]
+    #[test_case("1234EUR")]
+    #[test_case("EUR1234")]
+    #[test_case("1234 €" ; "Spaced symbol")]
+    #[test_case("1234€" ; "Symbol, no space")]
+    fn spaces(txt: &str) {
+        let pt = PriceTag::new(&EUR, 1234.);
+        let engine = Engine::new().unwrap();
+        assert_eq!(*engine.all_price_tags(txt).first().unwrap(), pt);
+    }
+
+    #[test_case("1234,5678 EUR")]
+    #[test_case("EUR 1234,5678")]
+    #[test_case("1234,5678%EUR" ; "Price before, percent")]
+    #[test_case("EUR%1234,5678" ; "Price after, percent")]
+    #[test_case("1234,5678EUR")]
+    #[test_case("EUR1234,5678")]
+    #[test_case("1234,5678 €" ; "Spaced symbol")]
+    #[test_case("1234,5678€" ; "Symbol, no space")]
+    fn spaces_comma(txt: &str) {
+        let pt = PriceTag::new(&EUR, 1234.5678);
+        let engine = Engine::new().unwrap();
+        assert_eq!(*engine.all_price_tags(txt).first().unwrap(), pt);
     }
 
     /* TODO , Separator
