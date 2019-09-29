@@ -213,7 +213,7 @@ pub struct EngineOptions<'c> {
     currencies: &'c [Currency],
     by_symbol: bool,
     by_iso: bool,
-    price_format: Option<PriceFormat>,
+    price_format: PriceFormat,
 }
 
 impl<'c> Default for EngineOptions<'c> {
@@ -225,7 +225,7 @@ impl<'c> Default for EngineOptions<'c> {
             by_symbol: true,
             by_iso: true,
             // TODO Try to avoid clone call here
-            price_format: Some((*crate::price_format::COMMON).clone()),
+            price_format: crate::price_format::COMMON.clone(),
         }
     }
 }
@@ -241,10 +241,7 @@ impl<'c> EngineBuilder<'c> {
 
     /// Consume Builder and fire the Engine, so that it be used to match text
     pub fn fire(self) -> Result<Engine<'c>, EngineError> {
-        // TODO Build a regex from formats in currency used in case
-        // price_format is None, instead of panicking as unwrap() does here
-        // TODO Return EngineError.PriceMatchRegex
-        let price_match = self.0.price_format.clone().unwrap();
+        let price_match = self.0.price_format.clone();
 
         let mut currency_matches = HashMap::new();
         for currency in self.0.currencies {
@@ -308,8 +305,7 @@ impl<'c> EngineBuilder<'c> {
     }
 
     /// Set the PriceFormat used to match and extract prices in plain text
-    /// If set to None, will be inferred from the currency list
-    pub fn price(&mut self, format: Option<PriceFormat>) -> &mut EngineBuilder<'c> {
+    pub fn price(&mut self, format: PriceFormat) -> &mut EngineBuilder<'c> {
         self.0.price_format = format;
         self
     }
@@ -318,9 +314,6 @@ impl<'c> EngineBuilder<'c> {
 /// Error that occured while building and firing the engine
 #[derive(Clone, PartialEq, Debug)]
 pub enum EngineError {
-    /// Invalid regex for price_match
-    PriceMatchRegex(regex::Error),
-
     /// Invalid regex for currency_match
     CurrencyMatchRegex(regex::Error),
 
