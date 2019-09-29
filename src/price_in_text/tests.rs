@@ -115,6 +115,24 @@ mod iso {
         assert_eq!(*engine.all_price_tags(txt).first().unwrap(), pt);
     }
 
+    // https://github.com/cljoly/sesters/issues/1
+    #[test_case("12 USD", PriceTag::new(&USD, 12.))]
+    #[test_case("12 €", PriceTag::new(&EUR, 12.))]
+    #[test_case("€ 32", PriceTag::new(&EUR, 32.))]
+    #[test_case("EUR 4", PriceTag::new(&EUR, 4.))]
+    fn gh_issue1_various_format(txt: &str, pt: PriceTag) {
+        let engine = Engine::new().unwrap();
+        assert_eq!(*engine.all_price_tags(txt).first().unwrap(), pt);
+    }
+
+    // https://github.com/cljoly/sesters/issues/2
+    #[test]
+    fn gh_issue1_ambiguous() {
+        let pts = vec![PriceTag::new(&EUR, 12.), PriceTag::new(&USD, 12.)];
+        let engine = Engine::new().unwrap();
+        assert_eq!(engine.all_price_tags("$ 12 €"), pts);
+    }
+
     /* TODO , Separator
     #[test]
     fn iso_eur_before_float() {
