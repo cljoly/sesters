@@ -83,7 +83,6 @@ mod tests {
         let provider = "TEST1";
         let fut = Local::now() + Duration::days(11);
         let key = RateKey::new(src, dst, provider, &fut);
-        let key_str = key.0.as_str();
 
         let partial3 = PartialRateKey::src_dst_provider(src, dst, provider);
         assert!(partial3.is_compatible_with(&key));
@@ -155,7 +154,7 @@ mod tests {
             "RateInternalNoCache".to_string(),
             None,
         );
-        let ri2: RateInternal = r2.clone().into();
+        let _ri2: RateInternal = r2.clone().into();
     }
 
 
@@ -424,12 +423,6 @@ impl RateInternal {
     }
 }
 
-/// Store and retrieve exchange rate in LMDB database
-/// Note that rate from a currency to itself are not stored
-pub struct RateDb<'a> {
-    bucket: Bucket<'a, RateKey, ValueBuf<Bincode<RateVal>>>,
-}
-
 impl std::convert::AsRef<[u8]> for RateKey {
     fn as_ref(&self) -> &[u8] {
         &self.0.as_ref()
@@ -533,7 +526,6 @@ impl super::Db {
     pub fn set_rate<'t, 'd>(
         &'d self,
         txn: &mut Txn<'t>,
-        store: &Store,
         bucket: &RateBucket<'t>,
         rate: Rate,
     ) where
@@ -557,7 +549,6 @@ impl super::Db {
     pub fn del_rate<'t, 'd>(
         &'d self,
         txn: &mut Txn<'t>,
-        store: &Store,
         bucket: &RateBucket<'t>,
         rate: Rate,
     ) where

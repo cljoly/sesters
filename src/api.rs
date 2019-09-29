@@ -148,7 +148,7 @@ impl RateApi for ExchangeRatesApiIo {
         &self,
         client: &Client,
         src: &'c Currency,
-        dst: &'c Currency,
+        _dst: &'c Currency,
     ) -> RequestBuilder {
         client
             .get("https://api.exchangeratesapi.io/latest")

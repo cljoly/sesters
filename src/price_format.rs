@@ -65,6 +65,13 @@ mod tests {
     fn extract_number_common(price_sample: &str) -> usize {
         COMMON.captures_iter(price_sample).get(0).unwrap().price()
     }
+
+    #[test]
+    #[should_panic]
+    fn separator_duplicated_thousand_decimal() {
+        PriceFormat::new(vec![',', '.'], vec!['.', ' ']);
+    }
+
 }
 
 /// Match string representing price and converting them to number

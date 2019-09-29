@@ -90,7 +90,7 @@ pub(crate) fn run(ctxt: MainContext, matches: &ArgMatches) {
                 // Remove outdated_rates
                 let mut txnw = sh.write_txn().unwrap();
                 for rate in outdated_rates {
-                    ctxt.db.del_rate(&mut txnw, &sh, &bucket, rate);
+                    ctxt.db.del_rate(&mut txnw, &bucket, rate);
                 }
 
                 let rate = uptodate_rates.last();
@@ -102,7 +102,7 @@ pub(crate) fn run(ctxt: MainContext, matches: &ArgMatches) {
                 debug!("Get write transaction");
                 let mut txn = sh.write_txn().unwrap();
                 trace!("Set rate to db");
-                let r = ctxt.db.set_rate(&mut txn, &sh, &bucket, rate);
+                let r = ctxt.db.set_rate(&mut txn, &bucket, rate);
                 trace!("Rate set, result: {:?}", &r);
                 txn.commit().unwrap();
             };

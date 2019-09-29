@@ -34,11 +34,6 @@ pub struct Db {
     rbr: RateBucketRegistered,
 }
 
-/// All supported bucket
-enum BucketList {
-    RateBucket,
-}
-
 impl Db {
     /// Initialize the rate database
     pub fn new(mut kcfg: KvConfig, mgr: &mut Manager) -> Self {
