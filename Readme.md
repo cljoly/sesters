@@ -42,7 +42,7 @@ EUR 2345.00 ➜ USD 2586.53
 
 🏗️ This is a work in progress, only checked features are implemented yet.
 
-- [X] Find prices in free text with several currencies
+- [X] Find prices in plain text with several currencies
 - [X] Store exchange rates locally
 - [X] Retrieve exchange rate (partial)
   - [X] Cache retrieved rate
