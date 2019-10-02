@@ -19,7 +19,7 @@ along with this program.  If not, see <https://www.gnu.org/licenses/>.
 //! Access several API used by Sesters
 
 use chrono::Duration;
-use log::{debug, error, info, trace};
+use log::{debug, error, trace};
 use reqwest;
 use std::error::Error;
 
@@ -60,7 +60,7 @@ pub trait RateApi {
     fn rate<'c>(&self, client: &Client, src: &'c Currency, dst: &'c Currency) -> Option<Rate<'c>> {
         let rate_err = || -> Result<Rate, Box<dyn Error>> {
             debug!("Performing conversion request for {} -> {}", src, dst);
-            let mut res = self.rate_query(client, src, dst).send()?;
+            let res = self.rate_query(client, src, dst).send()?;
             debug!("Conversion request for {} -> {} done", src, dst);
             trace!("Conversion request result: {:?}", &res);
             self.treat_result(res, src, dst)
@@ -148,7 +148,7 @@ impl RateApi for ExchangeRatesApiIo {
         &self,
         client: &Client,
         src: &'c Currency,
-        dst: &'c Currency,
+        _dst: &'c Currency,
     ) -> RequestBuilder {
         client
             .get("https://api.exchangeratesapi.io/latest")

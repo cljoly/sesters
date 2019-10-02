@@ -45,7 +45,7 @@ mod tests {
 }
 
 /// Position of a symbol against an amount
-#[derive(Debug, PartialOrd, PartialEq, Serialize, Deserialize)]
+#[derive(Debug, PartialOrd, PartialEq, Serialize, Deserialize, Copy, Clone)]
 pub enum Pos {
     Before,
     After,
@@ -59,14 +59,14 @@ impl Default for Pos {
 
 /// An association between currency & amount, TODO with a position
 #[derive(Debug, Clone, PartialEq, Serialize)]
-pub struct CurrencyAmount<'c> {
+pub struct PriceTag<'c> {
     currency: &'c Currency,
     amount: f64,
     // TODO /// Position of the currency indicator against amount
     // position: Pos,
 }
 
-impl<'c> CurrencyAmount<'c> {
+impl<'c> PriceTag<'c> {
     /// Create new amount associated to a currency
     pub fn new(currency: &'c Currency, amount: f64) -> Self {
         Self { currency, amount }
@@ -83,16 +83,16 @@ impl<'c> CurrencyAmount<'c> {
     pub fn convert<'a, 'r>(
         &'a self,
         rate: &'r Rate<'c>,
-    ) -> Result<CurrencyAmount<'r>, ConversionError<'a, 'c, 'r>> {
+    ) -> Result<PriceTag<'r>, ConversionError<'a, 'c, 'r>> {
         if self.currency != rate.src() {
             Err(ConversionError::new(rate, &self))
         } else {
-            Ok(CurrencyAmount::new(rate.dst(), rate.rate() * self.amount))
+            Ok(PriceTag::new(rate.dst(), rate.rate() * self.amount))
         }
     }
 }
 
-impl<'c> fmt::Display for CurrencyAmount<'c> {
+impl<'c> fmt::Display for PriceTag<'c> {
     fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
         // TODO Use symbol, proper separator (, or .), proper number of cents (usually 2 or 3)
         write!(f, "{} {:.*}", self.currency.get_main_iso(), 2, self.amount)
@@ -103,19 +103,19 @@ impl<'c> fmt::Display for CurrencyAmount<'c> {
 #[derive(Debug, Clone)]
 pub struct ConversionError<'a, 'c, 'r> {
     rate: &'r Rate<'c>,
-    amount: &'a CurrencyAmount<'c>,
+    amount: &'a PriceTag<'c>,
 }
 
 impl<'a, 'c, 'r> ConversionError<'a, 'c, 'r> {
     /// New conversion error
-    pub fn new(rate: &'r Rate<'c>, amount: &'a CurrencyAmount<'c>) -> Self {
+    pub fn new(rate: &'r Rate<'c>, amount: &'a PriceTag<'c>) -> Self {
         ConversionError { rate, amount }
     }
 }
 
 /// Represent a currency like US Dollar or Euro, with its symbols
 // TODO Improve serialization/deserialization
-#[derive(Debug, Default, PartialOrd, PartialEq, Serialize, Deserialize)]
+#[derive(Debug, Default, PartialOrd, PartialEq, Serialize, Deserialize, Clone)]
 pub struct Currency {
     /// Symbols, like ₿, ฿ or Ƀ for Bitcoin. Slice must not be empty
     #[serde(skip)]
@@ -146,6 +146,10 @@ impl Currency {
 
     pub fn symbols(&self) -> &'static [&'static str] {
         &self.symbols
+    }
+
+    pub fn pos(&self) -> Pos {
+        self.pos
     }
 
     /// Constructor, copies the &str given. Panics if vectors are empty TODO Use Result type instead
@@ -249,3 +253,4 @@ pub fn existing_from_iso(code: &str) -> Option<&'static Currency> {
         _ => None,
     }
 }
+
