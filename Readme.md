@@ -19,14 +19,16 @@
 
 🏗️ This is a work in progress, only checked features are implemented yet.
 
-- [X] Find prices in free text with currency (partial)
-  - More to come ![GitHub issues by-label](https://img.shields.io/github/issues/cljoly/sesters/text-extraction.svg)
+- [X] Find prices in free text with several currencies
 - [X] Store exchange rates locally
 - [X] Retrieve exchange rate (partial)
-  - [ ] More to come ![GitHub issues by-label](https://img.shields.io/github/issues/cljoly/sesters/rate-source.svg)
   - [X] Cache retrieved rate
+  - [ ] More sources to be added ![GitHub issues by-label](https://img.shields.io/github/issues/cljoly/sesters/rate-source.svg)
 - [ ] Save recent searches
   - [ ] Display this history in a table
+
+### Maybe
+
 - [ ] GUI with [azul.rs](https://azul.rs/)
 
 ## About the name
