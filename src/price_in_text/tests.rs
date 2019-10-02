@@ -17,14 +17,14 @@ along with this program.  If not, see <https://www.gnu.org/licenses/>.
  */
 
 #[cfg(test)]
-const SHORT_TXT: &str = "short";
-const LONG_TXT: &str = "some quite loooooooooooooooooooooooooooong text";
-
 mod iso {
     use super::super::{Engine, EngineBuilder};
     use crate::currency::*;
 
     use test_case::test_case;
+
+    const SHORT_TXT: &str = "short";
+    const LONG_TXT: &str = "some quite loooooooooooooooooooooooooooong text";
 
     fn test_iso_usd_then_with_other(
         txt: &str,
