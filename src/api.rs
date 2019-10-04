@@ -35,7 +35,8 @@ pub trait RateApi {
     /// Initialise the rate API struct with config, as it may contain API key
     fn new(config: &Config) -> Self;
 
-    // TODO Add method to get possible conversion and store it in initial struct. This requires passing client to new
+    // TODO Add method to get possible conversion and store it in initial
+    // struct. This requires passing client to new
 
     /// Provider identifier, should be based on provider url
     fn provider_id(&self) -> String;
@@ -155,7 +156,7 @@ impl RateApi for ExchangeRatesApiIo {
             .query(&[("base", src.get_main_iso())])
     }
 
-    // TODO Use other rate given
+    // TODO Use other rates given
     fn treat_result<'c>(
         &self,
         mut res: Response,
