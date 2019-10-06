@@ -18,11 +18,11 @@ along with this program.  If not, see <https://www.gnu.org/licenses/>.
 
 //! Module for the convert subcommand
 
-use log::{trace, debug, info, log_enabled};
 use clap::ArgMatches;
 use clap::Values as ClapValues;
-use std::io::{self, BufRead};
 use itertools::Itertools;
+use log::{debug, info, log_enabled, trace};
+use std::io::{self, BufRead};
 
 use crate::api;
 use crate::api::RateApi;
@@ -55,7 +55,7 @@ fn concat_or_stdin(arg_text: Option<ClapValues>) -> String {
     }
     arg_text.map_or_else(read_stdin, space_join)
 }
- 
+
 /// Parse arguments for convert subcommand and run it
 pub(crate) fn run(ctxt: MainContext, matches: &ArgMatches) {
     let txt = concat_or_stdin(matches.values_of("PLAIN_TXT"));
@@ -138,11 +138,7 @@ pub(crate) fn run(ctxt: MainContext, matches: &ArgMatches) {
                     if price_tag.currency() == rate.dst() {
                         continue;
                     }
-                    println!(
-                        "{} ➜ {}",
-                        &price_tag,
-                        &price_tag.convert(&rate).unwrap()
-                    );
+                    println!("{} ➜ {}", &price_tag, &price_tag.convert(&rate).unwrap());
                 }
             }
         }
@@ -150,4 +146,3 @@ pub(crate) fn run(ctxt: MainContext, matches: &ArgMatches) {
         println!("No currency found.")
     }
 }
-

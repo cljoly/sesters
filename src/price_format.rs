@@ -19,7 +19,7 @@ along with this program.  If not, see <https://www.gnu.org/licenses/>.
 //! Module for price formats, like "1,000.00" or "1.000,00"
 
 use lazy_static::lazy_static;
-use log::{error, trace, debug};
+use log::{debug, error, trace};
 use regex::Regex;
 
 #[cfg(test)]
@@ -29,9 +29,12 @@ mod tests {
     use super::*;
 
     lazy_static! {
-        static ref FR_PRICE_FORMATS: Vec<&'static str> = vec!["1000", "345,12", "-10000", "-10 000,87", "189.13487"];
-        static ref US_PRICE_FORMATS: Vec<&'static str> = vec!["1000", "345.12", "10000", "10,000.87", "189.13487"];
-        static ref OTHER_PRICE_FORMATS: Vec<&'static str> = vec!["10 00", "3.4.5,12", "-10 0 00", "10 000,87", "189.13487"];
+        static ref FR_PRICE_FORMATS: Vec<&'static str> =
+            vec!["1000", "345,12", "-10000", "-10 000,87", "189.13487"];
+        static ref US_PRICE_FORMATS: Vec<&'static str> =
+            vec!["1000", "345.12", "10000", "10,000.87", "189.13487"];
+        static ref OTHER_PRICE_FORMATS: Vec<&'static str> =
+            vec!["10 00", "3.4.5,12", "-10 0 00", "10 000,87", "189.13487"];
     }
 
     // Test static currencies
@@ -92,7 +95,9 @@ impl PriceFormat {
     /// conform to what regex() method guaranties is built.
     fn new(thousand_separators: Vec<char>, decimal_separators: Vec<char>) -> PriceFormat {
         fn unicode_escape(vec: &Vec<char>) -> String {
-             vec.into_iter().map(|c| format!("{}", c.escape_unicode())).collect()
+            vec.into_iter()
+                .map(|c| format!("{}", c.escape_unicode()))
+                .collect()
         }
 
         // TODO Support caracters in both set of separator. Should be doable using the position and the fact that one is present at most once
@@ -127,52 +132,64 @@ impl PriceFormat {
 
         let regex = Regex::new(
             [
-            "(?P<sign>(-([",
-            escaped_tsep.as_str(), // Allow thousand separators between sign and price
-            "])?)?)(?P<int>",
-            number_and_separator.as_str(),
-            ")(",
-            dec_sep.as_str(),
-            "(?P<dec>",
-            number_and_separator.as_str(),
-            "))?",
-            ].join("").as_str()
-            ).unwrap(); // unwrap() is safe because we are not building invalid regexes
+                "(?P<sign>(-([",
+                escaped_tsep.as_str(), // Allow thousand separators between sign and price
+                "])?)?)(?P<int>",
+                number_and_separator.as_str(),
+                ")(",
+                dec_sep.as_str(),
+                "(?P<dec>",
+                number_and_separator.as_str(),
+                "))?",
+            ]
+            .join("")
+            .as_str(),
+        )
+        .unwrap(); // unwrap() is safe because we are not building invalid regexes
         debug!("PriceFormat.regex (before construction): {:?}", regex);
-        PriceFormat { decimal_separators, thousand_separators, regex }
+        PriceFormat {
+            decimal_separators,
+            thousand_separators,
+            regex,
+        }
     }
 
     // TODO Use an iterator here
     pub fn captures_iter(&self, txt: &str) -> Vec<PriceFormatMatch> {
-        self.regex.captures_iter(txt).filter_map(|cap: regex::Captures | -> Option<PriceFormatMatch> {
-            debug!("cap: {:?}", cap);
-            cap.get(0).and_then(|m: regex::Match| -> Option<PriceFormatMatch> {
-                    let cap_or_empty = |cap_name| {cap.name(cap_name).map(|m| m.as_str()).unwrap_or("")};
-                    let remove_separator = |cap_name| -> String {
-                        cap_or_empty(cap_name).chars()
-                            .filter(|c| !self.thousand_separators.contains(c))
-                            .collect()
+        self.regex
+            .captures_iter(txt)
+            .filter_map(|cap: regex::Captures| -> Option<PriceFormatMatch> {
+                debug!("cap: {:?}", cap);
+                cap.get(0)
+                    .and_then(|m: regex::Match| -> Option<PriceFormatMatch> {
+                        let cap_or_empty =
+                            |cap_name| cap.name(cap_name).map(|m| m.as_str()).unwrap_or("");
+                        let remove_separator = |cap_name| -> String {
+                            cap_or_empty(cap_name)
+                                .chars()
+                                .filter(|c| !self.thousand_separators.contains(c))
+                                .collect()
                         };
-                    let sign = remove_separator("sign");
-                    let integer = remove_separator("int");
-                    let dec = remove_separator("dec");
-                    trace!("sign: {}, integer: {}, dec: {}", sign, integer, dec);
-                    let price_str = [&sign, &integer, ".", &dec].join("");
-                    let price = price_str.parse();
-                    trace!("price_str: '{}' => price: '{:?}'", price_str, price);
-                    match price {
-                        Ok(price) => return Some(
-                            PriceFormatMatch::new(m.start(), m.end(), price)
-                            ),
-                        Err(e) => {
-                            error!("Unable to parse '{}': {}", price_str, e);
-                            return None;
-                        },
-                    }
-                })
-        }).collect()
+                        let sign = remove_separator("sign");
+                        let integer = remove_separator("int");
+                        let dec = remove_separator("dec");
+                        trace!("sign: {}, integer: {}, dec: {}", sign, integer, dec);
+                        let price_str = [&sign, &integer, ".", &dec].join("");
+                        let price = price_str.parse();
+                        trace!("price_str: '{}' => price: '{:?}'", price_str, price);
+                        match price {
+                            Ok(price) => {
+                                return Some(PriceFormatMatch::new(m.start(), m.end(), price))
+                            }
+                            Err(e) => {
+                                error!("Unable to parse '{}': {}", price_str, e);
+                                return None;
+                            }
+                        }
+                    })
+            })
+            .collect()
     }
-
 }
 
 // TODO Complete this, with more than just the most common common format

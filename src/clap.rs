@@ -18,9 +18,9 @@ along with this program.  If not, see <https://www.gnu.org/licenses/>.
 
 //! Define clap subcommand
 
-use clap::{clap_app,crate_version,crate_authors,crate_description, App};
+use clap::{clap_app, crate_authors, crate_description, crate_version, App};
 
-pub fn get_app() -> App<'static, 'static> { 
+pub fn get_app() -> App<'static, 'static> {
     clap_app!(sesters =>
         // (@setting DontCollapseArgsInUsage)
         (version: crate_version!())

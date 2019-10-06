@@ -253,4 +253,3 @@ pub fn existing_from_iso(code: &str) -> Option<&'static Currency> {
         _ => None,
     }
 }
-

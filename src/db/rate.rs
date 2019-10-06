@@ -18,7 +18,7 @@ along with this program.  If not, see <https://www.gnu.org/licenses/>.
 
 //! Structs related to rate and rate storage
 
-use chrono::offset::{Local as LocalTime};
+use chrono::offset::Local as LocalTime;
 use chrono::prelude::*;
 use kv::bincode::Bincode;
 use kv::{Bucket, Config as KvConfig, Serde, Store, Txn, ValueBuf};
@@ -26,7 +26,7 @@ use log::{debug, error, trace, warn};
 use serde_derive::{Deserialize, Serialize};
 
 use crate::currency;
-use crate::currency::{Currency};
+use crate::currency::Currency;
 use crate::rate::Rate;
 
 #[cfg(test)]
@@ -157,11 +157,10 @@ mod tests {
         let _ri2: RateInternal = r2.clone().into();
     }
 
-
     // Some benchmark to compare fonction extraction from key in db
     #[cfg(all(feature = "unstable", test))]
     mod bench_key_extract_db {
-        use chrono::offset::{Local as LocalTime};
+        use chrono::offset::Local as LocalTime;
         use chrono::prelude::*;
         use lazy_static::lazy_static;
         use regex::Regex;
@@ -174,101 +173,129 @@ mod tests {
         use test::Bencher;
 
         macro_rules! SEPARATOR {
-            () => { '\0' };
-            ("str") => { "\0" };
+            () => {
+                '\0'
+            };
+            ("str") => {
+                "\0"
+            };
         }
 
         impl RateKey {
             fn data_with_regex(
                 &self,
-                ) -> (
-                    &'static Currency,
-                    &'static Currency,
-                    String,
-                    DateTime<LocalTime>,
-                    ) {
-                    lazy_static! {
-                        static ref KEY: Regex =
-                            dbg!(Regex::new(r"^(?P<src>[A-Z]{3}):(?P<dst>[A-Z]{3}):(?P<prov>.+):(?P<until>\d+)$"))
-                            .unwrap();
-                    }
-                    let cap = KEY.captures(&self.0).unwrap();
-                    let src_iso = cap.name("src").unwrap().as_str();
-                    let dst_iso = cap.name("dst").unwrap().as_str();
-                    let provider_str = cap.name("prov").unwrap().as_str();
-                    let timestamp_str = cap.name("until").unwrap().as_str();
-                    let src = currency::existing_from_iso(src_iso).unwrap();
-                    let dst = currency::existing_from_iso(dst_iso).unwrap();
-                    let provider = String::from(provider_str);
-                    let cache_until = Local.timestamp(timestamp_str.parse().unwrap(), 0);
-                    (src, dst, provider, cache_until)
+            ) -> (
+                &'static Currency,
+                &'static Currency,
+                String,
+                DateTime<LocalTime>,
+            ) {
+                lazy_static! {
+                    static ref KEY: Regex = dbg!(Regex::new(
+                        r"^(?P<src>[A-Z]{3}):(?P<dst>[A-Z]{3}):(?P<prov>.+):(?P<until>\d+)$"
+                    ))
+                    .unwrap();
                 }
+                let cap = KEY.captures(&self.0).unwrap();
+                let src_iso = cap.name("src").unwrap().as_str();
+                let dst_iso = cap.name("dst").unwrap().as_str();
+                let provider_str = cap.name("prov").unwrap().as_str();
+                let timestamp_str = cap.name("until").unwrap().as_str();
+                let src = currency::existing_from_iso(src_iso).unwrap();
+                let dst = currency::existing_from_iso(dst_iso).unwrap();
+                let provider = String::from(provider_str);
+                let cache_until = Local.timestamp(timestamp_str.parse().unwrap(), 0);
+                (src, dst, provider, cache_until)
+            }
 
-                fn new_with_regex(
-                    src: &Currency,
-                    dst: &Currency,
-                    provider: &str,
-                    cache_until: &DateTime<LocalTime>,
-                ) -> RateKey {
-                    RateKey(format!(
-                        "{}:{}:{}:{}",
+            fn new_with_regex(
+                src: &Currency,
+                dst: &Currency,
+                provider: &str,
+                cache_until: &DateTime<LocalTime>,
+            ) -> RateKey {
+                RateKey(format!(
+                    "{}:{}:{}:{}",
+                    src.get_main_iso(),
+                    dst.get_main_iso(),
+                    provider,
+                    cache_until.timestamp()
+                ))
+            }
+
+            fn new_with_null_split(
+                src: &Currency,
+                dst: &Currency,
+                provider: &str,
+                cache_until: &DateTime<LocalTime>,
+            ) -> RateKey {
+                RateKey(format!(
+                    concat!(
+                        "{}",
+                        SEPARATOR!(),
+                        "{}",
+                        SEPARATOR!(),
+                        "{}",
+                        SEPARATOR!(),
+                        "{}"
+                    ),
+                    src.get_main_iso(),
+                    dst.get_main_iso(),
+                    provider,
+                    cache_until.timestamp(),
+                ))
+            }
+
+            fn new_with_null_split_array_join(
+                src: &Currency,
+                dst: &Currency,
+                provider: &str,
+                cache_until: &DateTime<LocalTime>,
+            ) -> RateKey {
+                RateKey(
+                    [
                         src.get_main_iso(),
                         dst.get_main_iso(),
                         provider,
-                        cache_until.timestamp()
-                    ))
-                }
+                        cache_until.timestamp().to_string().as_str(),
+                    ]
+                    .join(SEPARATOR!("str")),
+                )
+            }
 
-                fn new_with_null_split(
-                    src: &Currency,
-                    dst: &Currency,
-                    provider: &str,
-                    cache_until: &DateTime<LocalTime>,
-                ) -> RateKey {
-                    RateKey(format!(
-                        concat!("{}", SEPARATOR!(), "{}", SEPARATOR!(), "{}", SEPARATOR!(), "{}"),
-                        src.get_main_iso(),
-                        dst.get_main_iso(),
-                        provider,
-                        cache_until.timestamp(),
-                    ))
-                }
-
-                fn new_with_null_split_array_join(
-                    src: &Currency,
-                    dst: &Currency,
-                    provider: &str,
-                    cache_until: &DateTime<LocalTime>,
-                ) -> RateKey {
-                    RateKey(
-                        [src.get_main_iso(), dst.get_main_iso(), provider, cache_until.timestamp().to_string().as_str()].join(SEPARATOR!("str")),
-                    )
-                }
-
-                fn data_with_null_split(
-                    &self,
-                    ) -> (
-                        &'static Currency,
-                        &'static Currency,
-                        String,
-                        DateTime<LocalTime>,
-                        ) {
-                        let mut split = self.0.split(SEPARATOR!());
-                        let src_iso = split.next().unwrap();
-                        let dst_iso = split.next().unwrap();
-                        let provider_str = split.next().unwrap();
-                        let timestamp_str = split.next().unwrap();
-                        let src = currency::existing_from_iso(src_iso).unwrap();
-                        let dst = currency::existing_from_iso(dst_iso).unwrap();
-                        let provider = String::from(provider_str);
-                        let cache_until = Local.timestamp(timestamp_str.parse().unwrap(), 0);
-                        (src, dst, provider, cache_until)
-                    }
-
+            fn data_with_null_split(
+                &self,
+            ) -> (
+                &'static Currency,
+                &'static Currency,
+                String,
+                DateTime<LocalTime>,
+            ) {
+                let mut split = self.0.split(SEPARATOR!());
+                let src_iso = split.next().unwrap();
+                let dst_iso = split.next().unwrap();
+                let provider_str = split.next().unwrap();
+                let timestamp_str = split.next().unwrap();
+                let src = currency::existing_from_iso(src_iso).unwrap();
+                let dst = currency::existing_from_iso(dst_iso).unwrap();
+                let provider = String::from(provider_str);
+                let cache_until = Local.timestamp(timestamp_str.parse().unwrap(), 0);
+                (src, dst, provider, cache_until)
+            }
         }
 
-        fn key_data() -> (&'static Currency, &'static Currency, &'static str, DateTime<Local>) {
-            (&currency::EUR, &currency::USD, "dummy_provider", Local::now())
+        fn key_data() -> (
+            &'static Currency,
+            &'static Currency,
+            &'static str,
+            DateTime<Local>,
+        ) {
+            (
+                &currency::EUR,
+                &currency::USD,
+                "dummy_provider",
+                Local::now(),
+            )
         }
 
         #[bench]
@@ -291,7 +318,6 @@ mod tests {
             let rk = RateKey::new(kd.0, kd.1, kd.2, &kd.3);
             b.iter(|| rk.data());
         }
-
 
         #[bench]
         fn bench_create_data_regex(b: &mut Bencher) {
@@ -326,8 +352,12 @@ struct RateKey(String);
 
 /// Separator in RateKey
 macro_rules! SEPARATOR {
-    () => { '\0' };
-    ("str") => { "\0" };
+    () => {
+        '\0'
+    };
+    ("str") => {
+        "\0"
+    };
 }
 
 impl RateKey {
@@ -339,7 +369,13 @@ impl RateKey {
         cache_until: &DateTime<LocalTime>,
     ) -> RateKey {
         RateKey(
-            [src.get_main_iso(), dst.get_main_iso(), provider, cache_until.timestamp().to_string().as_str()].join(SEPARATOR!("str")),
+            [
+                src.get_main_iso(),
+                dst.get_main_iso(),
+                provider,
+                cache_until.timestamp().to_string().as_str(),
+            ]
+            .join(SEPARATOR!("str")),
         )
     }
 
@@ -497,25 +533,28 @@ impl super::Db {
 
         // TODO Place this in a function
         trace!("Iterating over key compatible with {:?}", partial_key);
-        let (uptodate_rates, outdated_rates): (Vec<Rate>, Vec<Rate>) =
-            cursor.iter_from(&partial_key)
+        let (uptodate_rates, outdated_rates): (Vec<Rate>, Vec<Rate>) = cursor
+            .iter_from(&partial_key)
             .take_while(|(k, _)| {
                 // Take key that are starting with right thing, if any
                 trace!("Take {:?}?", k);
                 partial.is_compatible_with(k)
             })
-        .map(|(rk, rv_buf)| {
-            trace!("key: {:?}, value_buf: {:?}", rk, rv_buf);
-            let rv = rv_buf.inner().unwrap().to_serde();
-            trace!("value: {:?}", rv);
-            RateInternal::new(rk, rv).into()
-        })
-        .partition(|rate: &Rate| {
-            if let Some(dt) = rate.cache_until() { return dt > &now }
-            // Consider outdated the one without cache_limit (shouldn’t be in the database in the fist place)
-            else { return false }
+            .map(|(rk, rv_buf)| {
+                trace!("key: {:?}, value_buf: {:?}", rk, rv_buf);
+                let rv = rv_buf.inner().unwrap().to_serde();
+                trace!("value: {:?}", rv);
+                RateInternal::new(rk, rv).into()
             })
-        ;
+            .partition(|rate: &Rate| {
+                if let Some(dt) = rate.cache_until() {
+                    return dt > &now;
+                }
+                // Consider outdated the one without cache_limit (shouldn’t be in the database in the fist place)
+                else {
+                    return false;
+                }
+            });
         trace!("uptodate_rates: {:?}", uptodate_rates);
         trace!("outdated_rates: {:?}", outdated_rates);
         (uptodate_rates, outdated_rates)
@@ -523,12 +562,8 @@ impl super::Db {
 
     /// Set rate from a currency to another
     // TODO Return error type
-    pub fn set_rate<'t, 'd>(
-        &'d self,
-        txn: &mut Txn<'t>,
-        bucket: &RateBucket<'t>,
-        rate: Rate,
-    ) where
+    pub fn set_rate<'t, 'd>(&'d self, txn: &mut Txn<'t>, bucket: &RateBucket<'t>, rate: Rate)
+    where
         'd: 't,
     {
         if rate.src() == rate.dst() {
@@ -546,21 +581,13 @@ impl super::Db {
 
     /// Remove rate from a currency to another
     // TODO Return error type
-    pub fn del_rate<'t, 'd>(
-        &'d self,
-        txn: &mut Txn<'t>,
-        bucket: &RateBucket<'t>,
-        rate: Rate,
-    ) where
+    pub fn del_rate<'t, 'd>(&'d self, txn: &mut Txn<'t>, bucket: &RateBucket<'t>, rate: Rate)
+    where
         'd: 't,
     {
         trace!("Remove rate {:?} from databse.", rate);
         let ri: RateInternal = rate.into();
-        txn.del(
-            bucket.as_bucket(),
-            ri.key,
-        )
-        .unwrap();
+        txn.del(bucket.as_bucket(), ri.key).unwrap();
     }
 }
 

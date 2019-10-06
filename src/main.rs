@@ -16,23 +16,22 @@ You should have received a copy of the GNU General Public License
 along with this program.  If not, see <https://www.gnu.org/licenses/>.
  */
 
-
 use kv::{Config as KvConfig, Manager};
 use log::{error, info};
 
 mod api;
+mod clap;
 mod config;
 mod convert;
 mod currency;
 mod db;
-mod price_in_text;
 mod price_format;
+mod price_in_text;
 mod rate;
-mod clap;
 
 use crate::config::Config;
-use crate::db::Db;
 use crate::currency::Currency;
+use crate::db::Db;
 
 /// Main context to pass what is initiliazed in this module and what is parsed
 /// in global tags
@@ -59,18 +58,24 @@ fn main() {
 
     // Argument parsing
     let currency_iso_names_cfg: Vec<&str> = cfg.currencies.iter().map(|s| s.as_str()).collect();
-    let currency_iso_names: Vec<&str> = matches.values_of("TO").map_or(currency_iso_names_cfg, |to| to.collect());
-    let destination_currencies = currency_iso_names.iter().filter_map(|iso_name| {
-        currency::existing_from_iso(&iso_name).or_else(|| {
-            error!(
-                "Invalid currency iso symbol '{}', ignored",
-                iso_name
-            );
-            None
+    let currency_iso_names: Vec<&str> = matches
+        .values_of("TO")
+        .map_or(currency_iso_names_cfg, |to| to.collect());
+    let destination_currencies = currency_iso_names
+        .iter()
+        .filter_map(|iso_name| {
+            currency::existing_from_iso(&iso_name).or_else(|| {
+                error!("Invalid currency iso symbol '{}', ignored", iso_name);
+                None
+            })
         })
-    }).collect();
+        .collect();
 
-    let ctxt = MainContext { db, cfg, destination_currencies };
+    let ctxt = MainContext {
+        db,
+        cfg,
+        destination_currencies,
+    };
 
     match matches.subcommand() {
         ("convert", Some(m)) => crate::convert::run(ctxt, m),

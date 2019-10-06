@@ -46,17 +46,45 @@ mod iso {
         };
         let mut engine_builder = EngineBuilder::new();
         engine_builder.by_iso(true).by_symbol(false);
-        fn iso_engine(engine_builder: &EngineBuilder<'static>, currencies: &'static [Currency]) -> Engine<'static> {
-            engine_builder.clone().currencies(currencies).clone().fire().unwrap()
+        fn iso_engine(
+            engine_builder: &EngineBuilder<'static>,
+            currencies: &'static [Currency],
+        ) -> Engine<'static> {
+            engine_builder
+                .clone()
+                .currencies(currencies)
+                .clone()
+                .fire()
+                .unwrap()
         };
         println!("===============================");
-        assert_eq!(&iso_engine(&engine_builder, &[USD]).all_price_tags(txt).first(), exp1_usd);
+        assert_eq!(
+            &iso_engine(&engine_builder, &[USD])
+                .all_price_tags(txt)
+                .first(),
+            exp1_usd
+        );
         println!("usd ok");
-        assert_eq!(&iso_engine(&engine_builder, &[EUR]).all_price_tags(txt).first(), exp2_eur);
+        assert_eq!(
+            &iso_engine(&engine_builder, &[EUR])
+                .all_price_tags(txt)
+                .first(),
+            exp2_eur
+        );
         println!("eur ok");
-        assert_eq!(&iso_engine(&engine_builder, &[BTC]).all_price_tags(txt).first(), exp3_btc);
+        assert_eq!(
+            &iso_engine(&engine_builder, &[BTC])
+                .all_price_tags(txt)
+                .first(),
+            exp3_btc
+        );
         println!("btc ok");
-        assert_eq!(&iso_engine(&engine_builder, &[USD, EUR, BTC]).all_price_tags(txt).first(), &exp.cloned());
+        assert_eq!(
+            &iso_engine(&engine_builder, &[USD, EUR, BTC])
+                .all_price_tags(txt)
+                .first(),
+            &exp.cloned()
+        );
         println!("usd, eur, btc ok");
         println!("===============================");
     }
@@ -209,7 +237,7 @@ mod iso {
 
 mod price_tag_match {
     use super::super::PriceTagMatch;
-    use crate::currency::{EUR, USD, BTC};
+    use crate::currency::{BTC, EUR, USD};
 
     #[test]
     fn right_partial_order() {
@@ -239,14 +267,12 @@ mod price_tag_match {
         let d6 = PriceTagMatch::new(-1.0, &BTC, 1, false);
 
         let v = vec![
-            a1, a2, a3, a4, a5, a6,
-            b1, b2, b3, b4, b5, b6,
-            c1, c2, c3, c4, c5, c6,
-            d1, d2, d3, d4, d5, d6,
+            a1, a2, a3, a4, a5, a6, b1, b2, b3, b4, b5, b6, c1, c2, c3, c4, c5, c6, d1, d2, d3, d4,
+            d5, d6,
         ];
         // TODO Use assert!(v.is_sorted()); once in stable
-        for i in 0..v.len()-1 {
-            assert!(v[i]<v[i+1] || (!(v[i] > v[i+1] && v[i] != v[i+1])));
+        for i in 0..v.len() - 1 {
+            assert!(v[i] < v[i + 1] || (!(v[i] > v[i + 1] && v[i] != v[i + 1])));
         }
     }
 }

@@ -18,16 +18,16 @@ along with this program.  If not, see <https://www.gnu.org/licenses/>.
 
 //! A module to find currency unit with amount (a **price tag**) in raw text
 
-use std::collections::{BTreeMap, HashMap};
-use std::ops::Bound::Included;
-use std::convert::TryInto;
-use std::cmp::Ordering;
-use log::{trace, debug};
 use itertools::Itertools;
+use log::{debug, trace};
 use serde_derive::Serialize;
+use std::cmp::Ordering;
+use std::collections::{BTreeMap, HashMap};
+use std::convert::TryInto;
+use std::ops::Bound::Included;
 
-use crate::currency::{Currency, PriceTag};
 use crate::currency;
+use crate::currency::{Currency, PriceTag};
 use crate::price_format::PriceFormat;
 use regex::Regex;
 
@@ -64,10 +64,16 @@ impl<'c> PartialOrd for PriceTagMatch<'c> {
         match o {
             Ordering::Less | Ordering::Greater => Some(o),
             Ordering::Equal => match (self.correct_symbol_order, other.correct_symbol_order) {
-                (true, true) | (false, false) => if self == other { Some(Ordering::Equal) } else { None },
+                (true, true) | (false, false) => {
+                    if self == other {
+                        Some(Ordering::Equal)
+                    } else {
+                        None
+                    }
+                }
                 (true, false) => Some(Ordering::Less),
                 (false, true) => Some(Ordering::Greater),
-            }
+            },
         }
     }
 }
@@ -75,8 +81,10 @@ impl<'c> PartialOrd for PriceTagMatch<'c> {
 /// PartialEq consistent with the PartialOrd we defined
 impl<'c> PartialEq for PriceTagMatch<'c> {
     fn eq(&self, other: &Self) -> bool {
-        self.amount == other.amount && *self.currency == *other.currency &&
-            self.distance == other.distance && self.correct_symbol_order == self.correct_symbol_order
+        self.amount == other.amount
+            && *self.currency == *other.currency
+            && self.distance == other.distance
+            && self.correct_symbol_order == self.correct_symbol_order
     }
 }
 
@@ -155,7 +163,7 @@ impl<'c> Engine<'c> {
                 let m = cap.get(0).unwrap(); // 0 is the whole pattern, always present
                 let (start, end, win) = (m.start(), m.end(), self.options.window_size);
                 trace!("start, end, win: {}, {}, {}", start, end, win);
-                let win_before_start = if win>start { 0 } else { start - win };
+                let win_before_start = if win > start { 0 } else { start - win };
                 // Look backward, for the end of the price. If we were looking
                 // from the start of the price, we would miss some corner
                 // cases, like this one:
@@ -164,31 +172,41 @@ impl<'c> Engine<'c> {
                 //133  Lorem ipsumm USD
                 // Perform backward or forward look, depending of the parameters
                 use currency::Pos;
-                trace!("before forward look, pricetag_matches: {:?}", pricetag_matches);
+                trace!(
+                    "before forward look, pricetag_matches: {:?}",
+                    pricetag_matches
+                );
                 let mut look = |location: usize, price: f64, expected_position: Pos| {
                     trace!("&location, &price: {:?}, {:?}", &location, &price);
                     let distance = if expected_position == Pos::Before {
-                        ((start-location) as i32)
+                        ((start - location) as i32)
                     } else {
-                        ((location-end) as i32)
+                        ((location - end) as i32)
                     };
                     let ptm = PriceTagMatch::new(
                         price,
                         currency,
                         distance.try_into().unwrap(),
                         currency.pos() == expected_position,
-                        );
+                    );
                     pricetag_matches.push(ptm);
                 };
-                for (location, price) in price_loc_end.range((Included(&win_before_start), Included(&start))) {
+                for (location, price) in
+                    price_loc_end.range((Included(&win_before_start), Included(&start)))
+                {
                     look(*location, *price, Pos::Before);
                 }
                 trace!("Looking backward now…");
                 // Idem, but with the start of the number when looking forward
-                for (location, price) in price_loc_start.range((Included(&end), Included(&(end+win)))) {
+                for (location, price) in
+                    price_loc_start.range((Included(&end), Included(&(end + win))))
+                {
                     look(*location, *price, Pos::After);
                 }
-                debug!("after forward and backward look, pricetag_matches: {:?}", pricetag_matches);
+                debug!(
+                    "after forward and backward look, pricetag_matches: {:?}",
+                    pricetag_matches
+                );
             }
         }
 
@@ -198,12 +216,19 @@ impl<'c> Engine<'c> {
 
     /// Return all price tag found in plain_text
     pub fn all_price_tags<'txt>(&self, plain_text: &'txt str) -> Vec<PriceTag> {
-        self.find(plain_text).into_iter().map(|ptm| ptm.into()).collect()
+        self.find(plain_text)
+            .into_iter()
+            .map(|ptm| ptm.into())
+            .collect()
     }
 
-    /// Return the top `n` price tags 
+    /// Return the top `n` price tags
     pub fn top_price_tags(&self, n: usize, plain_text: &str) -> Vec<PriceTag> {
-        self.find(plain_text).into_iter().take(n).map(|ptm| ptm.into()).collect()
+        self.find(plain_text)
+            .into_iter()
+            .take(n)
+            .map(|ptm| ptm.into())
+            .collect()
     }
 }
 
@@ -248,10 +273,19 @@ impl<'c> EngineBuilder<'c> {
             let mut alternatives_slices: Vec<&[&str]> = Vec::new();
             let mut currency_match_string = String::new();
             let mut add_regex_altenatives = |new_alternatives: &'static [&'static str]| {
-                trace!("add_regex_altenatives: alternatives (before): {:?}", &alternatives_slices);
-                trace!("add_regex_altenatives: new_alternatives (after): {:?}", &new_alternatives);
+                trace!(
+                    "add_regex_altenatives: alternatives (before): {:?}",
+                    &alternatives_slices
+                );
+                trace!(
+                    "add_regex_altenatives: new_alternatives (after): {:?}",
+                    &new_alternatives
+                );
                 alternatives_slices.push(new_alternatives);
-                trace!("add_regex_altenatives: alternatives (after): {:?}", &alternatives_slices);
+                trace!(
+                    "add_regex_altenatives: alternatives (after): {:?}",
+                    &alternatives_slices
+                );
             };
             if self.0.by_iso {
                 add_regex_altenatives(currency.isos());
@@ -260,13 +294,20 @@ impl<'c> EngineBuilder<'c> {
                 add_regex_altenatives(currency.symbols());
             }
             // Escape currency symbols and iso by inserting litteral unicode in the regex
-            let alternatives_unicode_escaped = alternatives_slices.into_iter().map(|a| a.into_iter().map(|s| format!("{}", s.escape_unicode())));
-            for s in alternatives_unicode_escaped.flatten().intersperse("|".to_owned()) {
+            let alternatives_unicode_escaped = alternatives_slices
+                .into_iter()
+                .map(|a| a.into_iter().map(|s| format!("{}", s.escape_unicode())));
+            for s in alternatives_unicode_escaped
+                .flatten()
+                .intersperse("|".to_owned())
+            {
                 currency_match_string.push_str(&s);
             }
             let currency_match_err = Regex::new(currency_match_string.as_str());
             match currency_match_err {
-                Ok(currency_match) => currency_matches.insert(currency.get_main_iso(), currency_match),
+                Ok(currency_match) => {
+                    currency_matches.insert(currency.get_main_iso(), currency_match)
+                }
                 Err(err) => return Err(EngineError::CurrencyMatchRegex(err)),
             };
             debug!("currency_matches: {:?}", currency_matches)
