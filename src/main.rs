@@ -18,6 +18,7 @@ along with this program.  If not, see <https://www.gnu.org/licenses/>.
 
 use kv::{Config as KvConfig, Manager};
 use log::{error, info};
+use std::io::stdout;
 
 mod api;
 mod clap;
@@ -48,6 +49,7 @@ fn main() {
 
     let matches = crate::clap::get_app().get_matches();
 
+    let mut out = stdout();
     let cfg = Config::get();
 
     // Manager for the database
@@ -79,7 +81,9 @@ fn main() {
 
     match matches.subcommand() {
         ("convert", Some(m)) => crate::convert::run(ctxt, m),
-        (_, _) => unreachable!(), // Guarded by clap when parsing arguments
+        (_, _) => crate::clap::get_app()
+            .write_long_help(&mut out)
+            .expect("failed to write to stdout"),
     }
 
     info!("Exiting");
