@@ -84,7 +84,7 @@ impl<'c> PartialEq for PriceTagMatch<'c> {
         self.amount == other.amount
             && *self.currency == *other.currency
             && self.distance == other.distance
-            && self.correct_symbol_order == self.correct_symbol_order
+            && self.correct_symbol_order == other.correct_symbol_order
     }
 }
 
