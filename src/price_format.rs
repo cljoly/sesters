@@ -94,8 +94,8 @@ impl PriceFormat {
     /// Create PriceFormat with the given separators. A regular expression
     /// conform to what regex() method guaranties is built.
     fn new(thousand_separators: Vec<char>, decimal_separators: Vec<char>) -> PriceFormat {
-        fn unicode_escape(vec: &Vec<char>) -> String {
-            vec.into_iter()
+        fn unicode_escape(vec: &[char]) -> String {
+            vec.iter()
                 .map(|c| format!("{}", c.escape_unicode()))
                 .collect()
         }

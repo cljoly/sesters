@@ -296,7 +296,7 @@ impl<'c> EngineBuilder<'c> {
             // Escape currency symbols and iso by inserting litteral unicode in the regex
             let alternatives_unicode_escaped = alternatives_slices
                 .into_iter()
-                .map(|a| a.into_iter().map(|s| format!("{}", s.escape_unicode())));
+                .map(|a| a.iter().map(|s| format!("{}", s.escape_unicode())));
             for s in alternatives_unicode_escaped
                 .flatten()
                 .intersperse("|".to_owned())
