@@ -29,7 +29,7 @@ pub fn get_app() -> App<'static, 'static> {
         // TODO Implement -c
         // (@arg CONFIG: -c --config +global +takes_value "Sets a custom config file")
         // TODO Add flag for verbosity, for preferred currency
-        (@arg TO: -t --to +takes_value +global +multiple "Currency to convert to, uses defaults from the configuration file if not set")
+        (@arg TO: -t --to +takes_value +global +multiple "Target currency, uses defaults from the configuration file if not set")
         (@subcommand convert =>
             (@setting TrailingVarArg)
             // (@setting DontDelimitTrailingValues)
