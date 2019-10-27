@@ -8,7 +8,16 @@
 
 <div align="center">
 
-<h1>Sesters</h1>
+<h1 alig="center">
+  <sub>
+  <img
+       src="https://raw.githubusercontent.com/cljoly/sesters/master/logo.svg"
+       height="38"
+       width="38"
+       >
+  </sub>
+  Sesters
+</h1>
 
 💱 Fast, offline currency converter 💴 💷 💶 💵
 </div>
