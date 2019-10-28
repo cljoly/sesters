@@ -2,6 +2,14 @@ language: rust
 env:
   global:
     - RUST_BACKTRACE: full
+# necessary for `travis-cargo coveralls --no-sudo`
+addons:
+  apt:
+    packages:
+      - libcurl4-openssl-dev
+      - libelf-dev
+      - libdw-dev
+      - binutils-dev # optional: only required for the --verify flag of coveralls
 rust:
   - stable
   - beta
