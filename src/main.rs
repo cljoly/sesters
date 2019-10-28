@@ -16,12 +16,13 @@ You should have received a copy of the GNU General Public License
 along with this program.  If not, see <https://www.gnu.org/licenses/>.
  */
 
+use clap::ArgMatches;
 use kv::{Config as KvConfig, Manager};
 use log::{error, info};
 use std::io::stdout;
 
 mod api;
-mod clap;
+mod clap_def;
 mod config;
 mod convert;
 mod currency;
@@ -42,13 +43,7 @@ pub(crate) struct MainContext<'mc> {
     cfg: Config,
 }
 
-fn main() {
-    log::set_max_level(log::LevelFilter::Info);
-    env_logger::init();
-    info!("Starting up");
-
-    let matches = crate::clap::get_app().get_matches();
-
+fn from_args(matches: ArgMatches) {
     let mut out = stdout();
     let cfg = Config::get();
 
@@ -81,10 +76,18 @@ fn main() {
 
     match matches.subcommand() {
         ("convert", Some(m)) => crate::convert::run(ctxt, m),
-        (_, _) => crate::clap::get_app()
+        (_, _) => crate::clap_def::get_app()
             .write_long_help(&mut out)
             .expect("failed to write to stdout"),
     }
 
     info!("Exiting");
+}
+
+fn main() {
+    log::set_max_level(log::LevelFilter::Info);
+    env_logger::init();
+    info!("Starting up");
+
+    from_args(crate::clap_def::get_app().get_matches());
 }
