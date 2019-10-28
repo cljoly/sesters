@@ -14,7 +14,7 @@ license = "GPL-3.0-or-later"
 [badges]
 maintenance = { status = "experimental" }
 travis-ci = { repository = "cljoly/sesters", branch = "master" }
-codecov = { repository = "gh/cljoly/sesters"}
+codecov = { repository = "cljoly/sesters"}
 
 [dependencies]
 reqwest = "0.9"
