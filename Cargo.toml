@@ -3,11 +3,10 @@ name = "sesters"
 description = "💱 Fast, offline currency converter 💴 💷 💶 💵"
 homepage = "https://seste.rs"
 repository = "https://github.com/cljoly/sesters"
-codecov = { repository = "gh/cljoly/sesters"}
 readme = "Readme.md"
 keywords = ["currency_converter", "cli"]
 categories = ["command-line-utilities", "text-processing"]
-version = "0.2.0"
+version = "0.2.1"
 authors = ["Clément Joly <oss+sesters@131719.xyz>"]
 edition = "2018"
 license = "GPL-3.0-or-later"
@@ -15,6 +14,7 @@ license = "GPL-3.0-or-later"
 [badges]
 maintenance = { status = "experimental" }
 travis-ci = { repository = "cljoly/sesters", branch = "master" }
+codecov = { repository = "gh/cljoly/sesters"}
 
 [dependencies]
 reqwest = "0.9"
