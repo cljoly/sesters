@@ -126,6 +126,14 @@ mod iso {
     fn spaces(txt: &str) {
         let pt = PriceTag::new(&EUR, 1234.);
         let engine = Engine::new().unwrap();
+        assert_eq!(
+            *engine.all_price_tags(&txt.to_uppercase()).first().unwrap(),
+            pt
+        );
+        assert_eq!(
+            *engine.all_price_tags(&txt.to_lowercase()).first().unwrap(),
+            pt
+        );
         assert_eq!(*engine.all_price_tags(txt).first().unwrap(), pt);
     }
 
@@ -151,6 +159,19 @@ mod iso {
     fn gh_issue1_various_format(txt: &str, pt: PriceTag) {
         let engine = Engine::new().unwrap();
         assert_eq!(*engine.all_price_tags(txt).first().unwrap(), pt);
+    }
+
+    #[test_case("12 usd")]
+    #[test_case("12 eur")]
+    #[test_case("usd 38")]
+    #[test_case("eur 38")]
+    // Don’t detect iso symbol in lower case when case sensitiveness is set to
+    // true
+    fn case_sensitive_no_lowercase_iso(txt: &str) {
+        let mut engine_builder = EngineBuilder::new();
+        engine_builder.case_insensitive(false);
+        let engine = engine_builder.fire().unwrap();
+        assert_eq!(engine.all_price_tags(txt), vec![]);
     }
 
     // https://github.com/cljoly/sesters/issues/2

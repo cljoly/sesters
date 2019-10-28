@@ -29,7 +29,7 @@ use std::ops::Bound::Included;
 use crate::currency;
 use crate::currency::{Currency, PriceTag};
 use crate::price_format::PriceFormat;
-use regex::Regex;
+use regex::{Regex, RegexBuilder};
 
 #[cfg(test)]
 mod tests;
@@ -238,6 +238,7 @@ pub struct EngineOptions<'c> {
     currencies: &'c [Currency],
     by_symbol: bool,
     by_iso: bool,
+    case_insensitive: bool,
     price_format: PriceFormat,
 }
 
@@ -249,6 +250,7 @@ impl<'c> Default for EngineOptions<'c> {
             currencies,
             by_symbol: true,
             by_iso: true,
+            case_insensitive: true,
             // TODO Try to avoid clone call here
             price_format: crate::price_format::COMMON.clone(),
         }
@@ -303,7 +305,9 @@ impl<'c> EngineBuilder<'c> {
             {
                 currency_match_string.push_str(&s);
             }
-            let currency_match_err = Regex::new(currency_match_string.as_str());
+            let currency_match_err = RegexBuilder::new(currency_match_string.as_str())
+                .case_insensitive(self.0.case_insensitive)
+                .build();
             match currency_match_err {
                 Ok(currency_match) => {
                     currency_matches.insert(currency.get_main_iso(), currency_match)
@@ -336,6 +340,12 @@ impl<'c> EngineBuilder<'c> {
     /// Find price tag using the symbol of the currency, like “€” or “$”
     pub fn by_symbol(&mut self, yes: bool) -> &mut EngineBuilder<'c> {
         self.0.by_symbol = yes;
+        self
+    }
+
+    /// Find symbol case insensitively
+    pub fn case_insensitive(&mut self, yes: bool) -> &mut EngineBuilder<'c> {
+        self.0.case_insensitive = yes;
         self
     }
 
