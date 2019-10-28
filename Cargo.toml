@@ -3,6 +3,7 @@ name = "sesters"
 description = "💱 Fast, offline currency converter 💴 💷 💶 💵"
 homepage = "https://seste.rs"
 repository = "https://github.com/cljoly/sesters"
+codecov = { repository = "gh/cljoly/sesters"}
 readme = "Readme.md"
 keywords = ["currency_converter", "cli"]
 categories = ["command-line-utilities", "text-processing"]

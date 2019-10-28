@@ -1,5 +1,6 @@
 <p align="center">
 <a href="https://travis-ci.com/cljoly/sesters/master"><img src="https://img.shields.io/travis/com/cljoly/sesters.svg" alt="Travis CI" /></a> <a href="https://deps.rs/repo/github/cljoly/sesters"><img src="https://deps.rs/repo/github/cljoly/sesters/status.svg" alt="dependency status" /></a>
+<a href="https://codecov.io/gh/cljoly/sesters"><img src="https://codecov.io/gh/cljoly/sesters/branch/master/graph/badge.svg" alt="codecov" /></a>
 </p>
 
 <div id="home-anchor"></div>
