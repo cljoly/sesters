@@ -69,6 +69,13 @@ mod tests {
         COMMON.captures_iter(price_sample).get(0).unwrap().price()
     }
 
+    #[test_case("-"; "Sign only")]
+    #[test_case("" ; "Empty string")]
+    #[test_case("auie" ; "Letters")]
+    fn not_price_then_no_matches(price_sample: &str) {
+        assert_eq!(COMMON.captures_iter(price_sample).len(), 0);
+    }
+
     #[test]
     #[should_panic]
     fn separator_duplicated_thousand_decimal() {
