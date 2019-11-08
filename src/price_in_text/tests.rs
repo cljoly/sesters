@@ -23,9 +23,6 @@ mod iso {
 
     use test_case::test_case;
 
-    const SHORT_TXT: &str = "short";
-    const LONG_TXT: &str = "some quite loooooooooooooooooooooooooooong text";
-
     fn test_iso_usd_then_with_other(
         txt: &str,
         exp1_usd: &Option<PriceTag>,
@@ -261,7 +258,7 @@ mod price_tag_match {
     use crate::currency::{BTC, EUR, USD};
 
     #[test]
-    fn right_partial_order() {
+    fn right_partial_ordering_array() {
         let a1 = PriceTagMatch::new(1.0, &EUR, 0, true);
         let a2 = PriceTagMatch::new(1.0, &USD, 0, true);
         let a3 = PriceTagMatch::new(3.0, &USD, 0, true);
@@ -294,6 +291,28 @@ mod price_tag_match {
         // TODO Use assert!(v.is_sorted()); once in stable
         for i in 0..v.len() - 1 {
             assert!(v[i] < v[i + 1] || (!(v[i] > v[i + 1] && v[i] != v[i + 1])));
+            assert!(v[i] == v[i]);
         }
+    }
+
+    #[test]
+    fn right_partial_ordering() {
+        use std::cmp::Ordering;
+
+        let a1 = PriceTagMatch::new(1.0, &EUR, 0, true);
+        assert_eq!(a1.partial_cmp(&a1.clone()), Some(Ordering::Equal));
+        let a2 = PriceTagMatch::new(1.0, &EUR, 0, true);
+        let a3 = PriceTagMatch::new(3.0, &EUR, 0, true);
+        assert_eq!(a1.partial_cmp(&a1), Some(Ordering::Equal));
+        assert_eq!(a1.partial_cmp(&a2), Some(Ordering::Equal));
+        assert_eq!(a1.partial_cmp(&a3), None);
+
+        let a4 = PriceTagMatch::new(3.0, &EUR, 1, true);
+        assert_eq!(a4.partial_cmp(&a3), Some(Ordering::Greater));
+        assert_eq!(a3.partial_cmp(&a4), Some(Ordering::Less));
+
+        let a5 = PriceTagMatch::new(3.0, &EUR, 1, false);
+        assert_eq!(a4.partial_cmp(&a5), Some(Ordering::Less));
+        assert_eq!(a5.partial_cmp(&a4), Some(Ordering::Greater));
     }
 }
