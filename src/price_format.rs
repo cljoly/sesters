@@ -69,11 +69,14 @@ mod tests {
         COMMON.captures_iter(price_sample).get(0).unwrap().price()
     }
 
+    /// This also ensure that no format contains error in the regex
     #[test_case("-"; "Sign only")]
     #[test_case("" ; "Empty string")]
     #[test_case("auie" ; "Letters")]
     fn not_price_then_no_matches(price_sample: &str) {
         assert_eq!(COMMON.captures_iter(price_sample).len(), 0);
+        assert_eq!(FR.captures_iter(price_sample).len(), 0);
+        assert_eq!(US.captures_iter(price_sample).len(), 0);
     }
 
     #[test]
