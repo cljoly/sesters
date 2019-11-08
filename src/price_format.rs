@@ -75,6 +75,11 @@ mod tests {
         PriceFormat::new(vec![',', '.'], vec!['.', ' ']);
     }
 
+    #[test]
+    fn separator_some_empty() {
+        PriceFormat::new(vec![], vec!['.', ' ']);
+    }
+
 }
 
 /// Match string representing price and converting them to number
@@ -121,6 +126,16 @@ impl PriceFormat {
             }
         }
 
+        // Allow thousand separators between sign and price
+        let sign_sep;
+        {
+            if escaped_tsep != "" {
+                sign_sep = ["-([", escaped_tsep.as_str(), "])?"].join("");
+            } else {
+                sign_sep = "".to_string();
+            }
+        }
+
         {
             let escaped_dsep = unicode_escape(&decimal_separators);
             if escaped_dsep != "" {
@@ -132,9 +147,9 @@ impl PriceFormat {
 
         let regex = Regex::new(
             [
-                "(?P<sign>(-([",
-                escaped_tsep.as_str(), // Allow thousand separators between sign and price
-                "])?)?)(?P<int>",
+                "(?P<sign>(",
+                sign_sep.as_str(),
+                ")?)(?P<int>",
                 number_and_separator.as_str(),
                 ")(",
                 dec_sep.as_str(),
