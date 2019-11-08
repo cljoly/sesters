@@ -61,6 +61,8 @@ impl<'c> PartialOrd for PriceTagMatch<'c> {
     fn partial_cmp(&self, other: &Self) -> Option<Ordering> {
         let o = self.distance.cmp(&other.distance);
         match o {
+            // Best match is the smallest, so the one with the smallest
+            // distance is the smallest
             Ordering::Less | Ordering::Greater => Some(o),
             Ordering::Equal => match (self.correct_symbol_order, other.correct_symbol_order) {
                 (true, true) | (false, false) => {
