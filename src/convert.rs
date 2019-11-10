@@ -159,7 +159,7 @@ pub(crate) fn run(ctxt: MainContext, matches: &ArgMatches) {
         txt = concat_or_stdin_1_line(matches.values_of("PLAIN_TXT"));
     }
     trace!("plain text: {}", &txt);
-    let engine: crate::price_in_text::Engine = crate::price_in_text::Engine::new().unwrap();
+    let engine = crate::price_in_text::Engine::new().unwrap();
     let mut price_tags = engine.all_price_tags(&txt);
     if matches.is_present("FINDN") {
         price_tags = price_tags
