@@ -185,33 +185,27 @@ impl PriceFormat {
             .captures_iter(txt)
             .filter_map(|cap: regex::Captures| -> Option<PriceFormatMatch> {
                 debug!("cap: {:?}", cap);
-                cap.get(0)
-                    .and_then(|m: regex::Match| -> Option<PriceFormatMatch> {
-                        let cap_or_empty =
-                            |cap_name| cap.name(cap_name).map(|m| m.as_str()).unwrap_or("");
-                        let remove_separator = |cap_name| -> String {
-                            cap_or_empty(cap_name)
-                                .chars()
-                                .filter(|c| !self.thousand_separators.contains(c))
-                                .collect()
-                        };
-                        let sign = remove_separator("sign");
-                        let integer = remove_separator("int");
-                        let dec = remove_separator("dec");
-                        trace!("sign: {}, integer: {}, dec: {}", sign, integer, dec);
-                        let price_str = [&sign, &integer, ".", &dec].join("");
-                        let price = price_str.parse();
-                        trace!("price_str: '{}' => price: '{:?}'", price_str, price);
-                        match price {
-                            Ok(price) => {
-                                return Some(PriceFormatMatch::new(m.start(), m.end(), price))
-                            }
-                            Err(e) => {
-                                error!("Unable to parse '{}': {}", price_str, e);
-                                return None;
-                            }
-                        }
-                    })
+                cap.get(0).map(|m: regex::Match| -> PriceFormatMatch {
+                    let cap_or_empty =
+                        |cap_name| cap.name(cap_name).map(|m| m.as_str()).unwrap_or("");
+                    let remove_separator = |cap_name| -> String {
+                        cap_or_empty(cap_name)
+                            .chars()
+                            .filter(|c| !self.thousand_separators.contains(c))
+                            .collect()
+                    };
+                    let sign = remove_separator("sign");
+                    let integer = remove_separator("int");
+                    let dec = remove_separator("dec");
+                    trace!("sign: {}, integer: {}, dec: {}", sign, integer, dec);
+                    let price_str = [&sign, &integer, ".", &dec].join("");
+                    let price = price_str.parse();
+                    trace!("price_str: '{}' => price: '{:?}'", price_str, price);
+                    price
+                        .map(|price| PriceFormatMatch::new(m.start(), m.end(), price))
+                        // This unwrap won’t panic because the regex extracting parts of the number is producing string that parse accept
+                        .unwrap()
+                })
             })
             .collect()
     }
