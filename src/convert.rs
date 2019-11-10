@@ -29,9 +29,9 @@ use crate::api::RateApi;
 use crate::rate::Rate;
 use crate::MainContext;
 
-/// Concat the args with spaces, if args are not `None`. Read text from stdin
-/// otherwise.
-fn concat_or_stdin(arg_text: Option<ClapValues>) -> String {
+/// Concat the args with spaces, if args are not `None`. Read text from the
+/// first line of stdin otherwise.
+fn concat_or_stdin_1_line(arg_text: Option<ClapValues>) -> String {
     fn read_stdin() -> String {
         info!("Reading stdin…");
         eprintln!("Enter the plain text on the first line");
@@ -56,9 +56,24 @@ fn concat_or_stdin(arg_text: Option<ClapValues>) -> String {
     arg_text.map_or_else(read_stdin, space_join)
 }
 
+/// Return content of stdin in a buffer
+fn stdin_buf() -> String {
+    let stdin = io::stdin();
+    let mut stdin = stdin.lock();
+    stdin
+        .fill_buf()
+        .map(|bytes| String::from_utf8_lossy(bytes).into())
+        .unwrap_or(String::new())
+}
+
 /// Parse arguments for convert subcommand and run it
 pub(crate) fn run(ctxt: MainContext, matches: &ArgMatches) {
-    let txt = concat_or_stdin(matches.values_of("PLAIN_TXT"));
+    let txt;
+    if matches.is_present("STDIN") {
+        txt = stdin_buf();
+    } else {
+        txt = concat_or_stdin_1_line(matches.values_of("PLAIN_TXT"));
+    }
     trace!("plain text: {}", &txt);
     let engine: crate::price_in_text::Engine = crate::price_in_text::Engine::new().unwrap();
     let price_tags = engine.all_price_tags(&txt);
