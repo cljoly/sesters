@@ -184,6 +184,21 @@ mod iso {
         assert_eq!(engine.all_price_tags(txt), vec![]);
     }
 
+    #[test_case("$12 EUR")]
+    #[test_case("$   12        EUR" ; "More spaces")]
+    #[test_case("$\n12\n\nEUR" ; "Line return")]
+    fn multiple_pricetags(txt: &str) {
+        let engine_builder = EngineBuilder::new();
+        let engine = engine_builder.fire().unwrap();
+        // Equality without Ord
+        let tags = vec![PriceTag::new(&USD, 12.), PriceTag::new(&EUR, 12.)];
+        let tags_found = engine.all_price_tags(txt);
+        assert_eq!(tags_found.len(), tags.len());
+        for tag in tags_found {
+            assert!(&tags.contains(&tag));
+        }
+    }
+
     // https://github.com/cljoly/sesters/issues/2
     #[test]
     fn gh_issue1_ambiguous() {

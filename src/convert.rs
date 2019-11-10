@@ -26,8 +26,7 @@ use log::{info, log_enabled, trace};
 use std::io::{self, BufRead};
 use ureq::Agent;
 
-use crate::currency::PriceTag;
-use crate::rate::Rate;
+use crate::{currency::PriceTag, rate::Rate};
 use crate::MainContext;
 use crate::{api::RateApi, config::CurrencyConverterApiCom};
 
@@ -79,16 +78,19 @@ pub(crate) fn run(ctxt: MainContext, matches: &ArgMatches) -> Result<()> {
     trace!("plain text: {}", &txt);
     let engine: crate::price_in_text::Engine = crate::price_in_text::Engine::new().unwrap();
     let price_tags = engine.all_price_tags(&txt);
-    return match price_tags.get(0) {
-        Some(price_tag) => handle_pricetag(ctxt, price_tag),
-        None => {
-            println!("No currency found.");
-            Ok(())
-        }
-    };
+
+    if price_tags.len() == 0 {
+        println!("No currency found.");
+        return Ok(());
+    }
+    for price_tag in &price_tags {
+        handle_pricetag(&ctxt, price_tag)?;
+    }
+
+    Ok(())
 }
 
-fn handle_pricetag(ctxt: MainContext, price_tag: &PriceTag) -> Result<()> {
+fn handle_pricetag(ctxt: &MainContext, price_tag: &PriceTag) -> Result<()> {
     let src_currency = price_tag.currency();
     trace!("src_currency: {}", &src_currency);
 
@@ -152,7 +154,7 @@ fn handle_pricetag(ctxt: MainContext, price_tag: &PriceTag) -> Result<()> {
         }
     }
 
-    for dst in ctxt.destination_currencies {
+    for dst in ctxt.destination_currencies.clone() {
         ctxt.db
             .remove_outdated_rates(src_currency, dst, &endpoint.provider_id(), now)?;
     }
