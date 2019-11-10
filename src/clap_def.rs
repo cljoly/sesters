@@ -32,9 +32,9 @@ pub fn get_app() -> App<'static, 'static> {
         (@arg TO: -t --to +takes_value +global +multiple "Target currency, uses defaults from the configuration file if not set")
         (@subcommand convert =>
             (@setting TrailingVarArg)
-            // (@setting DontDelimitTrailingValues)
             (about: "Perform currency conversion to your preferred currency, from a price tag found in plain text")
             (visible_alias: "c")
+            (@arg STDIN: --stdin "Read text containing price tag from stdin")
             (@arg PLAIN_TXT: +multiple !use_delimiter "Plain text to extract a price tag from. If not set, plain text will be read from stdin")
         )
     )

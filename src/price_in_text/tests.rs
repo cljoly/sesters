@@ -148,6 +148,19 @@ mod iso {
         assert_eq!(*engine.all_price_tags(txt).first().unwrap(), pt);
     }
 
+    #[test_case("1234,5678\nEUR")]
+    #[test_case("EUR\n1234,5678")]
+    #[test_case("1234,5678\nEUR" ; "Price before, percent")]
+    #[test_case("EUR\n1234,5678" ; "Price after, percent")]
+    #[test_case("some long text\n Lorem ipsum dolor sit amet, consectetur adipisicing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua. Ut enim ad minim veniam, quis nostrud exercitation ullamco laboris nisi ut aliquip ex ea commodo consequat. Duis aute irure dolor in reprehenderit in voluptate velit esse cillum dolore eu fugiat nulla pariatur. Excepteur sint occaecat cupidatat non proident, sunt in culpa qui officia deserunt mollit anim id est laborum.  \n1234,5678\nEUR\n Lorem ipsum dolor sit amet, consectetur adipisicing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua. Ut enim ad minim veniam, quis nostrud exercitation ullamco laboris nisi ut aliquip ex ea commodo consequat. Duis aute irure dolor in reprehenderit in voluptate velit esse cillum dolore eu fugiat nulla pariatur. Excepteur sint occaecat cupidatat non proident, sunt in culpa qui officia deserunt mollit anim id est laborum.")]
+    #[test_case("1234,5678\n€" ; "Spaced symbol")]
+    #[test_case("€\n1234,5678" ; "Symbol, no space")]
+    fn multiline(txt: &str) {
+        let pt = PriceTag::new(&EUR, 1234.5678);
+        let engine = Engine::new().unwrap();
+        assert_eq!(*engine.all_price_tags(txt).first().unwrap(), pt);
+    }
+
     // https://github.com/cljoly/sesters/issues/1
     #[test_case("12 USD", PriceTag::new(&USD, 12.))]
     #[test_case("12 €", PriceTag::new(&EUR, 12.))]
