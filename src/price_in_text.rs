@@ -166,6 +166,7 @@ impl<'c> Engine<'c> {
                 let (start, end, win) = (m.start(), m.end(), self.options.window_size);
                 trace!("start, end, win: {}, {}, {}", start, end, win);
                 let win_before_start = if win > start { 0 } else { start - win };
+                trace!("win_before_start: {}", win_before_start);
                 // Look backward, for the end of the price. If we were looking
                 // from the start of the price, we would miss some corner
                 // cases, like this one:
