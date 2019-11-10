@@ -36,6 +36,7 @@ pub fn get_app() -> App<'static, 'static> {
             (about: "Perform currency conversion to your preferred currency, from a price tag found in plain text")
             (visible_alias: "c")
             (@arg STDIN: --stdin "Read text containing price tag from stdin")
+            (@arg FINDN: -n --findn +takes_value "Find at most n price tag in the text, i.e. 3")
             (@arg PLAIN_TXT: +multiple !use_delimiter "Plain text to extract a price tag from. If not set, plain text will be read from stdin")
         )
     )
