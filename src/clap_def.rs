@@ -28,7 +28,8 @@ pub fn get_app() -> App<'static, 'static> {
         (about: concat!(crate_description!(), "\n", "https://seste.rs"))
         // TODO Implement -c
         // (@arg CONFIG: -c --config +global +takes_value "Sets a custom config file")
-        // TODO Add flag for verbosity, for preferred currency
+        // TODO Add flag for verbosity
+        // TODO Implement tag for preferred currency
         (@arg TO: -t --to +takes_value +global +multiple "Target currency, uses defaults from the configuration file if not set")
         (@subcommand convert =>
             (@setting TrailingVarArg)
