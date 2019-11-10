@@ -184,14 +184,20 @@ mod iso {
         assert_eq!(engine.all_price_tags(txt), vec![]);
     }
 
-    #[test_case("$12 EUR")]
-    #[test_case("$   12        EUR" ; "More spaces")]
-    #[test_case("$\n12\n\nEUR" ; "Line return")]
+    #[test_case("$12 EUR 10")]
+    #[test_case("$  12   EUR 10" ; "More spaces")]
+    #[test_case("$\n12\n\nEUR 10" ; "Line return")]
     fn multiple_pricetags(txt: &str) {
-        let engine_builder = EngineBuilder::new();
+        let mut engine_builder = EngineBuilder::new();
+        engine_builder.window(30);
         let engine = engine_builder.fire().unwrap();
         // Equality without Ord
-        let tags = vec![PriceTag::new(&USD, 12.), PriceTag::new(&EUR, 12.)];
+        let tags = vec![
+            PriceTag::new(&USD, 12.),
+            PriceTag::new(&EUR, 12.),
+            PriceTag::new(&EUR, 10.),
+            PriceTag::new(&USD, 10.),
+        ];
         let tags_found = engine.all_price_tags(txt);
         assert_eq!(tags_found.len(), tags.len());
         for tag in tags_found {
