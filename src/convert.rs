@@ -18,8 +18,8 @@ along with this program.  If not, see <https://www.gnu.org/licenses/>.
 
 //! Module for the convert subcommand
 
-use clap::ArgMatches;
 use clap::Values as ClapValues;
+use clap::{value_t, ArgMatches};
 use itertools::Itertools;
 use log::{debug, info, log_enabled, trace};
 use std::io::{self, BufRead};
@@ -160,12 +160,19 @@ pub(crate) fn run(ctxt: MainContext, matches: &ArgMatches) {
     }
     trace!("plain text: {}", &txt);
     let engine: crate::price_in_text::Engine = crate::price_in_text::Engine::new().unwrap();
-    let price_tags = engine.all_price_tags(&txt);
+    let mut price_tags = engine.all_price_tags(&txt);
+    if matches.is_present("FINDN") {
+        price_tags = price_tags
+            .into_iter()
+            .take(value_t!(matches.value_of("FINDN"), usize).unwrap_or_else(|e| e.exit()))
+            .collect();
+    }
+    let price_tags_iter = price_tags.iter();
     if price_tags.len() == 0 {
         println!("No currency found.");
         return;
     }
-    for price_tag in &price_tags {
+    for price_tag in price_tags_iter {
         perform_display(&ctxt, price_tag);
     }
 }
