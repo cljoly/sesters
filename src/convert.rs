@@ -160,12 +160,12 @@ pub(crate) fn run(ctxt: MainContext, matches: &ArgMatches) {
     }
     trace!("plain text: {}", &txt);
     let engine = crate::price_in_text::Engine::new().unwrap();
-    let mut price_tags = engine.all_price_tags(&txt);
+    let price_tags;
     if matches.is_present("FINDN") {
-        price_tags = price_tags
-            .into_iter()
-            .take(value_t!(matches.value_of("FINDN"), usize).unwrap_or_else(|e| e.exit()))
-            .collect();
+        price_tags =
+            engine.top_price_tags(value_t!(matches.value_of("FINDN"), usize).unwrap(), &txt)
+    } else {
+        price_tags = engine.all_price_tags(&txt);
     }
     let price_tags_iter = price_tags.iter();
     if price_tags.len() == 0 {
