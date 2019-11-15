@@ -31,6 +31,13 @@ pub struct Config {
     pub currencies: Vec<String>,
     /// Path of the database (directory). Please note that ~ is not expanded
     pub db_path: PathBuf,
+    /// API key per provider
+    pub providers_keys: ProvidersKeys,
+}
+
+#[derive(Serialize, Deserialize)]
+pub struct ProvidersKeys {
+    pub currency_converter_api_com: Option<String>,
 }
 
 impl Default for Config {
@@ -41,6 +48,9 @@ impl Default for Config {
             version: 0,
             currencies: vec!["EUR".to_string(), "USD".to_string(), "GBP".to_string()],
             db_path,
+            providers_keys: ProvidersKeys {
+                currency_converter_api_com: None,
+            },
         }
     }
 }

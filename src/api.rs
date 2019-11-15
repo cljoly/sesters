@@ -86,10 +86,13 @@ pub struct CurrencyConverterApiCom {
 }
 
 impl RateApi for CurrencyConverterApiCom {
-    // TODO Use config to populate key field
-    fn new(_: &Config) -> Self {
+    fn new(config: &Config) -> Self {
         CurrencyConverterApiCom {
-            key: "".to_string(),
+            key: config
+                .providers_keys
+                .currency_converter_api_com
+                .clone()
+                .expect("currencyconverterapi.com requires an API key"),
         }
     }
 
@@ -105,8 +108,12 @@ impl RateApi for CurrencyConverterApiCom {
     ) -> RequestBuilder {
         let pair = format!("{0}_{1}", src.get_main_iso(), dst.get_main_iso());
         client
-            .get("https://free.currencyconverterapi.com/api/v6/convert")
-            .query(&[("q", pair.as_str()), ("compact", "ultra")])
+            .get("https://free.currconv.com/api/v7/convert")
+            .query(&[
+                ("q", pair.as_str()),
+                ("compact", "ultra"),
+                ("apiKey", &self.key),
+            ])
     }
 
     fn treat_result<'c>(
@@ -129,16 +136,11 @@ impl RateApi for CurrencyConverterApiCom {
 }
 
 /// For https://exchangeratesapi.io/
-pub struct ExchangeRatesApiIo {
-    /// API key, if any
-    key: String,
-}
+pub struct ExchangeRatesApiIo {}
 
 impl RateApi for ExchangeRatesApiIo {
     fn new(_: &Config) -> Self {
-        ExchangeRatesApiIo {
-            key: "".to_string(),
-        }
+        ExchangeRatesApiIo {}
     }
 
     fn provider_id(&self) -> String {
