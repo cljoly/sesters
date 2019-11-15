@@ -19,7 +19,7 @@ along with this program.  If not, see <https://www.gnu.org/licenses/>.
 //! Module for price formats, like "1,000.00" or "1.000,00"
 
 use lazy_static::lazy_static;
-use log::{debug, error, trace};
+use log::{debug, trace};
 use regex::Regex;
 
 #[cfg(test)]
