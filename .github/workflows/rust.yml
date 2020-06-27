@@ -22,3 +22,5 @@ jobs:
       run: cargo test --verbose
     - name: cargo-bloat
       uses: orf/cargo-bloat-action@v1
+      with:
+          token: ${{ secrets.GITHUB_TOKEN }}
