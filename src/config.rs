@@ -49,14 +49,14 @@ static APP_NAME: &'static str = "sesters";
 
 impl Config {
     /// Get current configuration. Doesn’t handle errors, panics
-    pub fn get() -> Config {
+    pub fn get() -> Result<Config, confy::ConfyError> {
         info!("Reading configuration");
-        confy::load(APP_NAME).unwrap()
+        confy::load(APP_NAME)
     }
 
     /// Change current configuration. Doesn’t handle errors, panics
-    pub fn set(c: Config) {
+    pub fn set(c: Config) -> Result<(), confy::ConfyError> {
         info!("Writing configuration");
-        confy::store(APP_NAME, c).unwrap();
+        confy::store(APP_NAME, c)
     }
 }

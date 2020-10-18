@@ -45,7 +45,7 @@ pub(crate) struct MainContext<'mc> {
 
 fn from_args(matches: ArgMatches) {
     let mut out = stdout();
-    let cfg = Config::get();
+    let cfg = Config::get().unwrap();
 
     // Manager for the database
     let mut mgr = Manager::new();

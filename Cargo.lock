@@ -195,13 +195,13 @@ dependencies = [
 
 [[package]]
 name = "confy"
-version = "0.3.1"
+version = "0.4.0"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "4b1400cd0dae7f27d2c7ced9492e1398d2e2df614570092a4936c73b416dedea"
+checksum = "2913470204e9e8498a0f31f17f90a0de801ae92c8c5ac18c49af4819e6786697"
 dependencies = [
  "directories",
  "serde",
- "toml 0.4.10",
+ "toml",
 ]
 
 [[package]]
@@ -321,11 +321,12 @@ dependencies = [
 
 [[package]]
 name = "directories"
-version = "0.10.0"
+version = "2.0.2"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "fc2561db021b6f1321d0f16b67ed28ce843ef4610dfaa432e3ffa2e8a3050ebf"
+checksum = "551a778172a450d7fc12e629ca3b0428d00f6afa9a43da1b630d54604e97371c"
 dependencies = [
- "winapi 0.3.8",
+ "cfg-if",
+ "dirs-sys",
 ]
 
 [[package]]
@@ -740,7 +741,7 @@ dependencies = [
  "failure",
  "lmdb-rkv",
  "serde",
- "toml 0.5.3",
+ "toml",
 ]
 
 [[package]]
@@ -1734,15 +1735,6 @@ dependencies = [
  "futures",
  "slab",
  "tokio-executor",
-]
-
-[[package]]
-name = "toml"
-version = "0.4.10"
-source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "758664fc71a3a69038656bee8b6be6477d2a6c315a6b81f7081f591bffa4111f"
-dependencies = [
- "serde",
 ]
 
 [[package]]
