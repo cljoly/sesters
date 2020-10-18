@@ -48,13 +48,13 @@ impl Default for Config {
 static APP_NAME: &'static str = "sesters";
 
 impl Config {
-    /// Get current configuration. Doesn’t handle errors, panics
+    /// Get current configuration
     pub fn get() -> Result<Config, confy::ConfyError> {
         info!("Reading configuration");
         confy::load(APP_NAME)
     }
 
-    /// Change current configuration. Doesn’t handle errors, panics
+    /// Change current configuration
     pub fn set(c: Config) -> Result<(), confy::ConfyError> {
         info!("Writing configuration");
         confy::store(APP_NAME, c)
