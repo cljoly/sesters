@@ -1556,15 +1556,14 @@ dependencies = [
 
 [[package]]
 name = "test-case"
-version = "0.3.1"
+version = "1.0.0"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "275c3d9047be181ba79843f5affc9030a0ce67d30ab5c4eee8981c89420ab850"
+checksum = "199464148b42bcf3da8b2a56f6ee87ca68f47402496d1268849291ec9fb463c8"
 dependencies = [
- "lazy_static",
  "proc-macro2 1.0.18",
  "quote 1.0.2",
  "syn 1.0.33",
- "version_check 0.1.5",
+ "version_check 0.9.2",
 ]
 
 [[package]]
