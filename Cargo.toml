@@ -33,6 +33,8 @@ dirs = "3.0"
 encoding = "0.2"
 clap = "2"
 itertools = "0.9"
+
+[dev-dependencies]
 test-case = "0.3"
 
 [profile.release]
