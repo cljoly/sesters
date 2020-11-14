@@ -65,7 +65,7 @@ mod tests {
     #[test_case("50 000,05" => 50_000.05)]
     #[test_case("7 00 0 00 0,0 7" => 7_000_000.07)]
     #[test_case("-5 00 0 00 0,0 5" => -5_000_000.05)]
-    fn extract_number_common(price_sample: &str) -> usize {
+    fn extract_number_common(price_sample: &str) -> f64 {
         COMMON.captures_iter(price_sample).get(0).unwrap().price()
     }
 
