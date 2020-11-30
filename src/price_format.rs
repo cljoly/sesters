@@ -74,7 +74,6 @@ mod tests {
     fn separator_duplicated_thousand_decimal() {
         PriceFormat::new(vec![',', '.'], vec!['.', ' ']);
     }
-
 }
 
 /// Match string representing price and converting them to number

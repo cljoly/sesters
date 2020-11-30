@@ -342,7 +342,6 @@ mod tests {
             let kd = key_data();
             b.iter(|| RateKey::new(kd.0, kd.1, kd.2, &kd.3))
         }
-
     }
 }
 
