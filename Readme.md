@@ -1,7 +1,6 @@
 <p align="center">
-<a href="https://github.com/cljoly/sesters/actions"><img src="https://github.com/cljoly/sesters/workflows/Rust/badge.svg" alt="Github Rust Action" /></a> 
-<a href="https://travis-ci.com/cljoly/sesters"><img src="https://img.shields.io/travis/cljoly/sesters.svg" alt="Travis CI" /></a> 
-<a href="https://codecov.io/gh/cljoly/sesters"><img src="https://codecov.io/gh/cljoly/sesters/branch/master/graph/badge.svg" alt="codecov" /></a>
+<a href="https://github.com/cljoly/sesters/actions/"><img src="https://github.com/cljoly/sesters/workflows/Continuous%20Integration/badge.svg" alt="Continuous Integration" /></a> 
+<a href='https://coveralls.io/github/cljoly/sesters?branch=master'><img src='https://coveralls.io/repos/github/cljoly/sesters/badge.svg?branch=master' alt='Coverage Status' /></a>
 <a href="https://dependabot.com"><img src="https://api.dependabot.com/badges/status?host=github&amp;repo=cljoly/sesters" alt="Dependabot Status" /></a>
 </p>
 
