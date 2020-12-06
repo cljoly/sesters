@@ -45,7 +45,7 @@ impl Default for Config {
     }
 }
 
-static APP_NAME: &'static str = "sesters";
+static APP_NAME: &str = "sesters";
 
 impl Config {
     /// Get current configuration

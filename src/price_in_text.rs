@@ -179,9 +179,9 @@ impl<'c> Engine<'c> {
                 let mut look = |location: usize, price: f64, expected_position: Pos| {
                     trace!("&location, &price: {:?}, {:?}", &location, &price);
                     let distance = if expected_position == Pos::Before {
-                        ((start - location) as i32)
+                        (start - location) as i32
                     } else {
-                        ((location - end) as i32)
+                        (location - end) as i32
                     };
                     let ptm = PriceTagMatch::new(
                         price,
@@ -364,13 +364,8 @@ impl<'c> EngineBuilder<'c> {
 
 /// Error that occured while building and firing the engine
 #[derive(Clone, PartialEq, Debug)]
+#[non_exhaustive]
 pub enum EngineError {
     /// Invalid regex for currency_match
     CurrencyMatchRegex(regex::Error),
-
-    /// This enum may grow additional variants, so this makes sure clients
-    /// don't count on exhaustive matching. (Otherwise, adding a new variant
-    /// could break existing code.)
-    #[doc(hidden)]
-    __Nonexhaustive,
 }

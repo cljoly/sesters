@@ -20,7 +20,6 @@ along with this program.  If not, see <https://www.gnu.org/licenses/>.
 
 use chrono::Duration;
 use log::{debug, error, trace};
-use reqwest;
 use std::error::Error;
 
 use crate::config::Config;
