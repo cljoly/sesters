@@ -35,7 +35,7 @@ pub struct Config {
 
 impl Default for Config {
     fn default() -> Self {
-        let mut db_path = dirs::data_dir().unwrap();
+        let mut db_path = dirs_next::data_dir().unwrap();
         db_path.push("sesters/db");
         Config {
             version: 0,

@@ -29,7 +29,7 @@ confy = "0.4.*"
 kv = { version = "0.9.*", features = ["bincode-value"] }
 chrono = { version = "0.4", features = ["serde"] }
 bincode = "1.*"
-dirs = "3.0"
+dirs-next = "2.0"
 encoding = "0.2"
 clap = "2"
 itertools = "0.9"
