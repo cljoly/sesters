@@ -32,7 +32,7 @@ bincode = "1.*"
 dirs-next = "2.0"
 encoding = "0.2"
 clap = "2"
-itertools = "0.9"
+itertools = "0.10"
 
 [dev-dependencies]
 test-case = "1.0"
