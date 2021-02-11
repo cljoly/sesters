@@ -10,14 +10,14 @@
 
 <div align="center">
 
-<h1 alig="center">
-  <sub>
   <img
        src="https://raw.githubusercontent.com/cljoly/sesters/master/logo.png"
-       height="38"
-       width="38"
+       height="76"
+       width="76"
        >
-  </sub>
+
+
+<h1 alig="center">
   Sesters
 </h1>
 
