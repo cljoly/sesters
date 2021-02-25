@@ -1,7 +1,5 @@
 <p align="center">
-<a href="https://github.com/cljoly/sesters/actions/"><img src="https://github.com/cljoly/sesters/workflows/Continuous%20Integration/badge.svg" alt="Continuous Integration" /></a> 
-<a href='https://coveralls.io/github/cljoly/sesters?branch=master'><img src='https://coveralls.io/repos/github/cljoly/sesters/badge.svg?branch=master' alt='Coverage Status' /></a>
-<a href="https://dependabot.com"><img src="https://api.dependabot.com/badges/status?host=github&amp;repo=cljoly/sesters" alt="Dependabot Status" /></a>
+<a href="https://github.com/cljoly/sesters/actions/"><img src="https://github.com/cljoly/sesters/workflows/Continuous%20Integration/badge.svg" alt="Continuous Integration" /></a>
 </p>
 
 <div id="home-anchor"></div>
