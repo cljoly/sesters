@@ -17,7 +17,7 @@
 </div>
 
 <p align="center">
-<a href="https://github.com/cljoly/sesters#getting-started"><img src="https://img.shields.io/badge/🚀 getting-started-yellow?style=flat-square" alt="Crates.io" /></a> </a><a href="#Contribute"><img src="https://img.shields.io/github/license/cljoly/sesters.svg?color=blueviolet&label=contribute&style=flat-square" alt="LICENCE" /></a> <a href="https://crates.io/crates/sesters"><img src="https://img.shields.io/crates/v/sesters.svg?color=blue&style=flat-square" alt="Crates.io" /></a> <a href="https://crates.io/crates/sesters"><img alt="undefined" src="https://img.shields.io/crates/d/sesters.svg?color=brightgreen&style=flat-square"></a>
+<a href="https://github.com/cljoly/sesters#getting-started"><img src="https://img.shields.io/badge/🚀 getting-started-yellow?style=flat-square" alt="Crates.io" /></a> </a><a href="#contribute"><img src="https://img.shields.io/github/license/cljoly/sesters.svg?color=blueviolet&label=contribute&style=flat-square" alt="LICENCE" /></a> <a href="https://crates.io/crates/sesters"><img src="https://img.shields.io/crates/v/sesters.svg?color=blue&style=flat-square" alt="Crates.io" /></a> <a href="https://crates.io/crates/sesters"><img alt="undefined" src="https://img.shields.io/crates/d/sesters.svg?color=brightgreen&style=flat-square"></a>
 </p>
 
 ******************************************
@@ -57,7 +57,7 @@ EUR 2345.00 ➜ USD 2586.53
 
 - [ ] GUI with [azul.rs](https://azul.rs/)
 
-### Contribute
+## Contribute
 
 Contributions are welcome!
 
