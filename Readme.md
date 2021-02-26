@@ -1,17 +1,11 @@
-<p align="center">
-<a href="https://github.com/cljoly/sesters/actions/"><img src="https://github.com/cljoly/sesters/workflows/Continuous%20Integration/badge.svg" alt="Continuous Integration" /></a>
-</p>
 
 <div id="home-anchor"></div>
-
-*************************************
-
 <div align="center">
 
   <img
-       src="https://raw.githubusercontent.com/cljoly/sesters/master/logo.png"
-       height="76"
-       width="76"
+       src="https://raw.githubusercontent.com/cljoly/sesters/master/logo76.png"
+       height="70"
+       width="70"
        >
 
 
@@ -23,7 +17,7 @@
 </div>
 
 <p align="center">
-<a href="https://github.com/cljoly/sesters#getting-started"><img src="https://img.shields.io/badge/🚀 getting-started-yellow?style=flat-square" alt="Crates.io" /></a> </a><a href="./LICENSE"><img src="https://img.shields.io/github/license/cljoly/sesters.svg?color=blueviolet&label=contribute&style=flat-square" alt="LICENCE" /></a> <a href="https://crates.io/crates/sesters"><img src="https://img.shields.io/crates/v/sesters.svg?color=blue&style=flat-square" alt="Crates.io" /></a> <a href="https://crates.io/crates/sesters"><img alt="undefined" src="https://img.shields.io/crates/d/sesters.svg?color=brightgreen&style=flat-square"></a>
+<a href="https://github.com/cljoly/sesters#getting-started"><img src="https://img.shields.io/badge/🚀 getting-started-yellow?style=flat-square" alt="Crates.io" /></a> </a><a href="#Contribute"><img src="https://img.shields.io/github/license/cljoly/sesters.svg?color=blueviolet&label=contribute&style=flat-square" alt="LICENCE" /></a> <a href="https://crates.io/crates/sesters"><img src="https://img.shields.io/crates/v/sesters.svg?color=blue&style=flat-square" alt="Crates.io" /></a> <a href="https://crates.io/crates/sesters"><img alt="undefined" src="https://img.shields.io/crates/d/sesters.svg?color=brightgreen&style=flat-square"></a>
 </p>
 
 ******************************************
@@ -62,6 +56,16 @@ EUR 2345.00 ➜ USD 2586.53
 ### Maybe
 
 - [ ] GUI with [azul.rs](https://azul.rs/)
+
+### Contribute
+
+Contributions are welcome!
+
+<p align="center">
+<a href="https://github.com/cljoly/sesters/issues?q=is%3Aopen+is%3Aissue+label%3A%22good+first+issue%22"><img src="https://img.shields.io/github/issues/cljoly/sesters/good%20first%20issue" alt="Good first issues" /></a>
+<a href="https://github.com/cljoly/sesters/actions/"><img src="https://github.com/cljoly/sesters/workflows/Continuous%20Integration/badge.svg" alt="Continuous Integration" /></a>
+</p>
+
 
 ## About the name
 
