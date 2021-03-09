@@ -56,7 +56,7 @@ mod iso {
                 .clone()
                 .fire()
                 .unwrap()
-        };
+        }
         println!("===============================");
         assert_eq!(
             &iso_engine(&engine_builder, &[USD])

@@ -18,13 +18,14 @@ along with this program.  If not, see <https://www.gnu.org/licenses/>.
 
 //! Store common representation for rates
 
-use chrono::offset::Local as LocalTime;
 use chrono::prelude::*;
 use chrono::Duration;
+use chrono::Utc;
 
+use std::cmp::Ordering;
 use std::fmt;
 
-use crate::currency::{Currency, USD};
+use crate::currency::{Currency, GBP, USD};
 
 #[cfg(test)]
 mod tests {}
@@ -37,21 +38,21 @@ pub struct Rate<'c> {
     /// Destination currency
     dst: &'c Currency,
     /// Date and time the rate was obtained
-    date: DateTime<LocalTime>,
+    date: DateTime<Utc>,
     /// Exchange rate
     rate: f64,
     /// Service which provided the rate
     provider: String,
     /// Cache until this date. If None, can’t be cached
-    cache_until: Option<DateTime<LocalTime>>,
+    cache_until: Option<DateTime<Utc>>,
 }
 
 impl<'c> Default for Rate<'c> {
     fn default() -> Self {
         Rate {
             src: &USD,
-            dst: &USD,
-            date: Local::now(),
+            dst: &GBP,
+            date: Utc::now(),
             rate: 0.,
             provider: String::from("DEFAULT"),
             cache_until: None,
@@ -79,10 +80,10 @@ impl<'c> Rate<'c> {
     pub fn new(
         src: &'c Currency,
         dst: &'c Currency,
-        date: DateTime<LocalTime>,
+        date: DateTime<Utc>,
         rate: f64,
         provider: String,
-        cache_until: Option<DateTime<LocalTime>>,
+        cache_until: Option<DateTime<Utc>>,
     ) -> Self {
         Rate {
             src,
@@ -102,14 +103,14 @@ impl<'c> Rate<'c> {
         provider: String,
         duration: Option<Duration>,
     ) -> Self {
-        let now = Local::now();
+        let now = Utc::now();
         let cache_until = duration.map(|d| now + d);
         Self::new(src, dst, now, rate, provider, cache_until)
     }
 
     /// A 1:1 rate for a currency and itself
     pub fn parity(c: &'c Currency) -> Self {
-        Rate::new(c, c, Local::now(), 1., String::from("PARITY"), None)
+        Rate::new(c, c, Utc::now(), 1., String::from("PARITY"), None)
     }
 
     /// Source currency
@@ -123,7 +124,7 @@ impl<'c> Rate<'c> {
     }
 
     /// Date of the rate
-    pub fn date(&self) -> &DateTime<LocalTime> {
+    pub fn date(&self) -> &DateTime<Utc> {
         &self.date
     }
 
@@ -138,7 +139,14 @@ impl<'c> Rate<'c> {
     }
 
     /// Cache until
-    pub fn cache_until(&self) -> &Option<DateTime<LocalTime>> {
+    pub fn cache_until(&self) -> &Option<DateTime<Utc>> {
         &self.cache_until
+    }
+
+    pub fn uptodate(&self, now: &DateTime<Utc>) -> bool {
+        match self.cache_until() {
+            Some(date) => date.cmp(now) == Ordering::Greater,
+            None => false,
+        }
     }
 }
