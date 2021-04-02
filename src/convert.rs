@@ -24,6 +24,7 @@ use clap::Values as ClapValues;
 use itertools::Itertools;
 use log::{info, log_enabled, trace};
 use std::io::{self, BufRead};
+use ureq::Agent;
 
 use crate::api;
 use crate::api::RateApi;
@@ -103,8 +104,8 @@ fn handle_pricetag(ctxt: MainContext, price_tag: &PriceTag) -> Result<()> {
 
     let rate_from_api = |dst_currency| -> Option<Rate> {
         info!("Retrieve rate online");
-        let client = reqwest::Client::new();
-        endpoint.rate(&client, &src_currency, dst_currency)
+        let agent = Agent::new();
+        endpoint.rate(&agent, &src_currency, dst_currency)
     };
 
     let rates = ctxt.destination_currencies.iter().map(|dst| {

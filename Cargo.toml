@@ -17,7 +17,7 @@ travis-ci = { repository = "cljoly/sesters", branch = "master" }
 codecov = { repository = "cljoly/sesters"}
 
 [dependencies]
-reqwest = "0.9"
+ureq = "2.1"
 regex = "1"
 lazy_static = "1.2"
 serde = "1"
