@@ -35,7 +35,7 @@ itertools = "0.10"
 anyhow = "1"
 rusqlite = { version = "0.24", features = ["bundled", "chrono", "trace"] }
 serde_rusqlite = "0.26"
-rusqlite_migration = "0.3"
+rusqlite_migration = "0.4"
 
 [dev-dependencies]
 test-case = "1.1"
