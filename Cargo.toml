@@ -11,11 +11,6 @@ authors = ["Clément Joly <oss+sesters@131719.xyz>"]
 edition = "2018"
 license = "GPL-3.0-or-later"
 
-[badges]
-maintenance = { status = "experimental" }
-travis-ci = { repository = "cljoly/sesters", branch = "master" }
-codecov = { repository = "cljoly/sesters"}
-
 [dependencies]
 ureq = "2.1"
 regex = "1"
