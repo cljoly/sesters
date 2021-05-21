@@ -67,7 +67,7 @@ impl Db {
 
     /// Initialize database, in particular, apply migrations for the schema
     fn init(mut conn: Connection) -> Result<Self> {
-        MIGRATIONS.latest(&mut conn)?;
+        MIGRATIONS.to_latest(&mut conn)?;
         conn.is_autocommit();
         Ok(Db { conn })
     }
