@@ -1,7 +1,7 @@
 [package]
 name = "sesters"
 description = "💱 Fast, offline currency converter 💴 💷 💶 💵"
-homepage = "https://seste.rs"
+homepage = "https://sesters.cj.rs"
 repository = "https://github.com/cljoly/sesters"
 readme = "Readme.md"
 keywords = ["currency_converter", "cli"]
