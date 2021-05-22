@@ -26,11 +26,10 @@ use log::{info, log_enabled, trace};
 use std::io::{self, BufRead};
 use ureq::Agent;
 
-use crate::api;
-use crate::api::RateApi;
 use crate::currency::PriceTag;
 use crate::rate::Rate;
 use crate::MainContext;
+use crate::{api::RateApi, config::CurrencyConverterApiCom};
 
 /// Concat the args with spaces, if args are not `None`. Read text from stdin
 /// otherwise.
@@ -81,7 +80,7 @@ fn handle_pricetag(ctxt: MainContext, price_tag: &PriceTag) -> Result<()> {
     let now = chrono::offset::Utc::now();
 
     // Get rate
-    let endpoint = api::ExchangeRatesApiIo::new(&ctxt.cfg);
+    let endpoint = CurrencyConverterApiCom::new(&ctxt.cfg);
     trace!("Got API Endpoint");
     let rate_from_db = |dst_currency| -> Option<Rate> {
         // TODO Create transaction to keep outdated rates if the update to a new rate is unsucessful?
