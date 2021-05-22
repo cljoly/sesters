@@ -38,6 +38,8 @@ pub struct Config {
     currencies: Vec<String>,
     /// Path of the database (directory). Please note that ~ is not expanded
     db_path: PathBuf,
+    /// APIs used to get exchange rates
+    pub apis: Apis,
 }
 
 impl Default for Config {
@@ -48,6 +50,7 @@ impl Default for Config {
             version: 0,
             currencies: vec!["EUR".to_string(), "USD".to_string(), "GBP".to_string()],
             db_path,
+            apis: Apis::default(),
         }
     }
 }
@@ -65,5 +68,49 @@ impl Config {
 
     pub fn currencies(&self) -> &Vec<String> {
         &self.currencies
+    }
+}
+
+#[derive(Serialize, Deserialize)]
+pub struct Apis {
+    pub currency_converter_api_com: CurrencyConverterApiCom,
+    pub exchange_rates_api_io: ExchangeRatesApiIo,
+}
+
+impl Default for Apis {
+    fn default() -> Self {
+        Apis {
+            currency_converter_api_com: CurrencyConverterApiCom::default(),
+            exchange_rates_api_io: ExchangeRatesApiIo::default(),
+        }
+    }
+}
+
+/// For https://www.currencyconverterapi.com/
+#[derive(Serialize, Deserialize)]
+pub struct CurrencyConverterApiCom {
+    pub key: String,
+}
+
+impl Default for CurrencyConverterApiCom {
+    fn default() -> Self {
+        CurrencyConverterApiCom {
+            // TODO Find a solution to distribute this. It is fine for now to provide users with a
+            // quick way to start
+            key: "B260A0F748A54D96B69E".to_lowercase().to_owned(),
+        }
+    }
+}
+
+/// For https://exchangeratesapi.io/
+#[derive(Serialize, Deserialize)]
+pub struct ExchangeRatesApiIo {
+    /// API key, if any
+    key: String,
+}
+
+impl Default for ExchangeRatesApiIo {
+    fn default() -> Self {
+        ExchangeRatesApiIo { key: String::new() }
     }
 }

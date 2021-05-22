@@ -24,7 +24,7 @@ use log::{debug, error, trace};
 use serde_json::Value;
 use std::error::Error;
 
-use crate::config::Config;
+use crate::config::{Config, CurrencyConverterApiCom, ExchangeRatesApiIo};
 use crate::currency::Currency;
 use crate::rate::Rate;
 
@@ -33,7 +33,7 @@ use ureq::{Agent, Request, Response};
 /// Trait common to all supported API endpoints
 pub trait RateApi {
     /// Initialise the rate API struct with config, as it may contain API key
-    fn new(config: &Config) -> Self;
+    fn new(config: &Config) -> &Self;
 
     // TODO Add method to get possible conversion and store it in initial
     // struct. This requires passing the agent to new
@@ -74,19 +74,9 @@ pub trait RateApi {
     }
 }
 
-/// For https://currencyconverterapi.com
-pub struct CurrencyConverterApiCom {
-    /// API key, if any
-    #[allow(dead_code)] // TODO Use the key field
-    key: String,
-}
-
 impl RateApi for CurrencyConverterApiCom {
-    // TODO Use config to populate key field
-    fn new(_: &Config) -> Self {
-        CurrencyConverterApiCom {
-            key: "".to_string(),
-        }
+    fn new(config: &Config) -> &CurrencyConverterApiCom {
+        &config.apis.currency_converter_api_com
     }
 
     fn provider_id(&self) -> String {
@@ -96,9 +86,10 @@ impl RateApi for CurrencyConverterApiCom {
     fn rate_query<'c>(&self, agent: &Agent, src: &'c Currency, dst: &'c Currency) -> Request {
         let pair = format!("{0}_{1}", src.get_main_iso(), dst.get_main_iso());
         agent
-            .get("https://free.currencyconverterapi.com/api/v6/convert")
+            .get("https://free.currconv.com/api/v7/convert")
             .query("q", &pair)
             .query("compact", "ultra")
+            .query("apiKey", &self.key)
     }
 
     fn treat_result<'c>(
@@ -133,18 +124,9 @@ impl RateApi for CurrencyConverterApiCom {
     }
 }
 
-/// For https://exchangeratesapi.io/
-pub struct ExchangeRatesApiIo {
-    /// API key, if any
-    #[allow(dead_code)] // TODO Use the key field
-    key: String,
-}
-
 impl RateApi for ExchangeRatesApiIo {
-    fn new(_: &Config) -> Self {
-        ExchangeRatesApiIo {
-            key: "".to_string(),
-        }
+    fn new(config: &Config) -> &Self {
+        &config.apis.exchange_rates_api_io
     }
 
     fn provider_id(&self) -> String {
