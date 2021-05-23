@@ -37,7 +37,7 @@ USD 1.00 ➜ EUR 0.89
 $ sesters convert -- -1 €
 EUR -1.00 ➜ USD -1.10
 $ sesters convert
-I can type my price and press enter EUR lorem ipsum 2356
+I can type my price and press enter EUR lorem 2356
 EUR 2345.00 ➜ USD 2586.53
 ```
 
