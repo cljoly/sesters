@@ -26,9 +26,9 @@ use log::{info, log_enabled, trace};
 use std::io::{self, BufRead};
 use ureq::Agent;
 
-use crate::{currency::PriceTag, rate::Rate};
 use crate::MainContext;
 use crate::{api::RateApi, config::CurrencyConverterApiCom};
+use crate::{currency::PriceTag, rate::Rate};
 
 /// Concat the args with spaces, if args are not `None`. Read text from the
 /// first line of stdin otherwise.
