@@ -1,5 +1,11 @@
 # Changelog
 
+## Version 0.3.1
+
+### Bug
+
+- Fix an example in the readme
+
 ## Version 0.3.0
 
 ### Features
