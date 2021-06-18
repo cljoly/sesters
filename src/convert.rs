@@ -93,6 +93,8 @@ pub(crate) fn run(ctxt: MainContext, matches: &ArgMatches) -> Result<()> {
         handle_pricetag(&ctxt, price_tag)?;
     }
 
+    ctxt.db.add_to_history(&txt)?;
+
     Ok(())
 }
 

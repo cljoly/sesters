@@ -27,6 +27,7 @@ mod config;
 mod convert;
 pub mod currency;
 mod db;
+mod history;
 mod price_format;
 pub mod price_in_text;
 mod rate;
@@ -79,6 +80,7 @@ fn from_args(matches: ArgMatches) -> Result<()> {
 
     match matches.subcommand() {
         ("convert", Some(m)) => crate::convert::run(ctxt, m)?,
+        ("history", Some(m)) => crate::history::run(ctxt, m)?,
         (_, _) => crate::clap_def::get_app().write_long_help(&mut out)?,
     }
 
