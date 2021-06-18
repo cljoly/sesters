@@ -31,6 +31,7 @@ anyhow = "1"
 rusqlite = { version = "0.24", features = ["bundled", "chrono", "trace"] }
 serde_rusqlite = "0.26"
 rusqlite_migration = "0.5"
+term-table = "1.3.*"
 
 [dev-dependencies]
 test-case = "1.2"
