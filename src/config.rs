@@ -18,10 +18,14 @@ along with this program.  If not, see <https://www.gnu.org/licenses/>.
 
 // Store and retrieve user configuration
 
+use anyhow::Result;
 use clap::crate_name;
 use log::info;
 use serde_derive::{Deserialize, Serialize};
-use std::path::PathBuf;
+use std::{
+    fs,
+    path::{Path, PathBuf},
+};
 
 fn data_dir() -> PathBuf {
     let mut path = dirs_next::data_dir().unwrap();
@@ -56,6 +60,16 @@ impl Default for Config {
 }
 
 impl Config {
+    /// Init the configuration folders if they don’t already exist
+    pub fn init() -> Result<()> {
+        let data_dir = data_dir();
+        if !Path::exists(&data_dir) {
+            fs::create_dir_all(data_dir)?;
+        }
+
+        Ok(())
+    }
+
     /// Get current configuration
     pub fn new() -> Result<Config, confy::ConfyError> {
         info!("Reading configuration");

@@ -57,6 +57,7 @@ impl<'mc> MainContext<'mc> {
 
 fn from_args(matches: ArgMatches) -> Result<()> {
     let mut out = stdout();
+    Config::init()?;
     let cfg = Config::new()?;
 
     // Argument parsing
