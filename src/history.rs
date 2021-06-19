@@ -20,7 +20,7 @@ along with this program.  If not, see <https://www.gnu.org/licenses/>.
 
 use anyhow::Result;
 use clap::ArgMatches;
-use term_table::{Table, row::Row, table_cell::TableCell};
+use term_table::{row::Row, table_cell::TableCell, Table};
 
 use crate::MainContext;
 
