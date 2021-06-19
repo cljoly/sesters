@@ -24,7 +24,16 @@ use term_table::{row::Row, table_cell::TableCell, Table};
 
 use crate::MainContext;
 
-pub(crate) fn run(ctxt: MainContext, _matches: &ArgMatches) -> Result<()> {
+pub(crate) fn run(ctxt: MainContext, matches: &ArgMatches) -> Result<()> {
+    match matches.subcommand() {
+        ("clear", m) => clear(ctxt, m)?,
+        ("list", m) | (_, m) => list(ctxt, m)?,
+    }
+
+    Ok(())
+}
+
+fn list(ctxt: MainContext, matches: Option<&ArgMatches>) -> Result<()> {
     // TODO
     // - expire command + auto expire
     // - delete an entry
@@ -44,3 +53,5 @@ pub(crate) fn run(ctxt: MainContext, _matches: &ArgMatches) -> Result<()> {
 
     Ok(())
 }
+
+fn clear(ctxt: MainContext, matches: Option<&ArgMatches>) -> Result<()> {todo!()}
