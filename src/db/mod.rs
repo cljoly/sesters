@@ -24,9 +24,9 @@ use anyhow::Result;
 use chrono::DateTime;
 use chrono::Utc;
 use log::{debug, trace, warn};
-use rusqlite::NO_PARAMS;
 use rusqlite::named_params;
 use rusqlite::Connection;
+use rusqlite::NO_PARAMS;
 use serde_rusqlite::columns_from_statement;
 use serde_rusqlite::from_row_with_columns;
 use serde_rusqlite::from_rows;
@@ -173,7 +173,7 @@ impl Db {
     pub fn add_to_history(&self, entry: &str) -> Result<()> {
         self.conn.execute_named(
             "INSERT INTO history (datetime, content) VALUES (:datetime, :content)",
-            named_params!{
+            named_params! {
                 ":datetime": Utc::now(),
                 ":content": entry,
             },
@@ -186,8 +186,8 @@ impl Db {
     pub fn read_from_history(&self) -> Result<Vec<History>> {
         let mut stmt = self.conn.prepare_cached("SELECT rowid, * FROM history")?;
         let rows: Vec<History> = from_rows::<History>(stmt.query(NO_PARAMS)?)
-        .map(|r| r.unwrap())
-        .collect();
+            .map(|r| r.unwrap())
+            .collect();
 
         Ok(rows)
     }
