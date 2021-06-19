@@ -41,6 +41,11 @@ I can type my price and press enter EUR lorem 2356
 EUR 2345.00 ➜ USD 2586.53
 ```
 
+A more complicated example with custom target curencies
+```
+$ sesters convert -t USD EUR -- '£12'
+```
+
 ## Features
 
 🏗️ This is a work in progress, only checked features are implemented yet.

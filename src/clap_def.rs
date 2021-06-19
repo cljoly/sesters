@@ -30,7 +30,8 @@ pub fn get_app() -> App<'static, 'static> {
         // (@arg CONFIG: -c --config +global +takes_value "Sets a custom config file")
         // TODO Add flag for verbosity
         // TODO Implement tag for preferred currency
-        (@arg TO: -t --to +takes_value +global +multiple "Target currency, uses defaults from the configuration file if not set")
+        (@arg TO: -t --to <CURRENCY> !required +takes_value +global +multiple "Target currency by ISO symbol, uses defaults from the configuration file if not set")
+
         (@subcommand convert =>
             (@setting TrailingVarArg)
             (about: "Perform currency conversion to your preferred currency, from a price tag found in plain text")
@@ -41,6 +42,14 @@ pub fn get_app() -> App<'static, 'static> {
         )
 
         (@subcommand history =>
+            (about: "Access and manage the history of price tags extracted")
+            (@arg NO_CONVERT: --no-convert "Don’t perform conversions of the history content")
+            (@arg MAX_ENTRIES: --max-entries <N> +takes_value "Show at most <N> entries")
+            (@subcommand clear =>
+                (about: "Removes entries from history")
+                (@arg ALL: --all "Removes all entries from history")
+                (@arg MAX_ENTRIES: +multiple <ID> "Removes entry with the given <ID>s")
+            )
         )
     )
 }
