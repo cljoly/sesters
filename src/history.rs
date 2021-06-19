@@ -54,4 +54,6 @@ fn list(ctxt: MainContext, matches: Option<&ArgMatches>) -> Result<()> {
     Ok(())
 }
 
-fn clear(ctxt: MainContext, matches: Option<&ArgMatches>) -> Result<()> {todo!()}
+fn clear(ctxt: MainContext, matches: Option<&ArgMatches>) -> Result<()> {
+    todo!()
+}

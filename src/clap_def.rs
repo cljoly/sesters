@@ -26,8 +26,6 @@ pub fn get_app() -> App<'static, 'static> {
         (version: crate_version!())
         (author: crate_authors!())
         (about: concat!(crate_description!(), "\n", "https://seste.rs"))
-        // TODO Implement -c
-        (@arg CONFIG: -c --conf env[SESTERS_CONF] "Sets a custom configuration file")
         // TODO Add flag for verbosity
         // TODO Implement tag for preferred currency
         (@arg TO: -t --to <CURRENCY> !required +takes_value +multiple "Target currency by ISO symbol, uses defaults from the configuration file if not set")
