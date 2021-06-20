@@ -18,9 +18,11 @@ along with this program.  If not, see <https://www.gnu.org/licenses/>.
 
 //! Module for the convert subcommand
 
+use std::str::FromStr;
+
 use anyhow::{Context, Result};
+use clap::ArgMatches;
 use clap::Values as ClapValues;
-use clap::{value_t, ArgMatches};
 use itertools::Itertools;
 use log::{info, log_enabled, trace};
 use std::io::{self, BufRead};
@@ -76,29 +78,66 @@ pub(crate) fn run(ctxt: MainContext, matches: &ArgMatches) -> Result<()> {
         txt = concat_or_stdin_1_line(matches.values_of("PLAIN_TXT"));
     }
     trace!("plain text: {}", &txt);
-    let engine = crate::price_in_text::Engine::new().unwrap();
-    let price_tags;
-    if matches.is_present("FINDN") {
-        price_tags =
-            engine.top_price_tags(value_t!(matches.value_of("FINDN"), usize).unwrap(), &txt)
-    } else {
-        price_tags = engine.all_price_tags(&txt);
-    }
-
-    if price_tags.len() == 0 {
-        println!("No currency found.");
-        return Ok(());
-    }
-    for price_tag in &price_tags {
-        handle_pricetag(&ctxt, price_tag)?;
-    }
 
     ctxt.db.add_to_history(&txt)?;
+
+    println!(
+        "{}",
+        conversions_string(
+            &ctxt,
+            &txt,
+            matches
+                .value_of("FINDN")
+                .map(|s| usize::from_str(s).unwrap())
+        )?
+    );
 
     Ok(())
 }
 
-fn handle_pricetag(ctxt: &MainContext, price_tag: &PriceTag) -> Result<()> {
+pub fn conversions_string(ctxt: &MainContext, txt: &str, limit: Option<usize>) -> Result<String> {
+    let mut string = String::new();
+
+    let all_conversions = convert(&ctxt, &txt, limit)?;
+
+    if all_conversions.len() == 0 {
+        Ok("No currency found.".to_owned())
+    } else {
+        for group_conversions in all_conversions {
+            for conversion in group_conversions {
+                string.push_str(&conversion);
+                string.push_str("\n");
+            }
+            string.push_str("\n");
+        }
+
+        Ok(string)
+    }
+}
+
+pub fn convert(ctxt: &MainContext, txt: &str, limit: Option<usize>) -> Result<Vec<Vec<String>>> {
+    let engine = crate::price_in_text::Engine::new().unwrap();
+    let price_tags;
+    if let Some(l) = limit {
+        price_tags = engine.top_price_tags(l, &txt)
+    } else {
+        price_tags = engine.all_price_tags(&txt);
+    }
+
+    let mut all_conversions = Vec::new();
+
+    if price_tags.len() == 0 {
+        return Ok(all_conversions);
+    } else {
+        for price_tag in price_tags {
+            all_conversions.push(get_conversions(&ctxt, &price_tag)?);
+        }
+    }
+
+    Ok(all_conversions)
+}
+
+fn get_conversions(ctxt: &MainContext, price_tag: &PriceTag) -> Result<Vec<String>> {
     let src_currency = price_tag.currency();
     trace!("src_currency: {}", &src_currency);
 
@@ -143,6 +182,8 @@ fn handle_pricetag(ctxt: &MainContext, price_tag: &PriceTag) -> Result<()> {
         })
     });
 
+    let mut conversions = Vec::with_capacity(rates.len());
+
     for rate in rates {
         if log_enabled!(log::Level::Info) {
             if let Some(rate) = &rate {
@@ -158,7 +199,11 @@ fn handle_pricetag(ctxt: &MainContext, price_tag: &PriceTag) -> Result<()> {
             if price_tag.currency() == rate.dst() {
                 continue;
             }
-            println!("{} ➜ {}", &price_tag, &price_tag.convert(&rate).unwrap());
+            conversions.push(format!(
+                "{} ➜ {}",
+                &price_tag,
+                &price_tag.convert(&rate).unwrap()
+            ));
         }
     }
 
@@ -167,5 +212,5 @@ fn handle_pricetag(ctxt: &MainContext, price_tag: &PriceTag) -> Result<()> {
             .remove_outdated_rates(src_currency, dst, &endpoint.provider_id(), now)?;
     }
 
-    Ok(())
+    Ok(conversions)
 }
