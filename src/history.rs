@@ -21,8 +21,9 @@ along with this program.  If not, see <https://www.gnu.org/licenses/>.
 use anyhow::Result;
 use clap::ArgMatches;
 use std::str::FromStr;
-use term_table::{row::Row, table_cell::TableCell, Table};
+use term_table::{row::Row, Table};
 
+use crate::convert::conversions_string;
 use crate::MainContext;
 
 pub(crate) fn run(ctxt: MainContext, matches: &ArgMatches) -> Result<()> {
@@ -55,7 +56,7 @@ fn list(ctxt: MainContext, matches: Option<&ArgMatches>) -> Result<()> {
         v.push(format!("{}", row.content));
 
         if !no_convert {
-            v.push(format!("{}", todo!("implement the conversion")));
+            v.push(conversions_string(&ctxt, &row.content, Some(3))?);
         }
 
         table.add_row(Row::new(v))
