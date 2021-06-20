@@ -27,6 +27,7 @@ use log::{debug, trace, warn};
 use rusqlite::named_params;
 use rusqlite::Connection;
 use rusqlite::NO_PARAMS;
+use rusqlite::params;
 use serde_rusqlite::columns_from_statement;
 use serde_rusqlite::from_row_with_columns;
 use serde_rusqlite::from_rows;
@@ -182,10 +183,11 @@ impl Db {
         Ok(())
     }
 
-    /// Read entries from history
-    pub fn read_from_history(&self) -> Result<Vec<History>> {
-        let mut stmt = self.conn.prepare_cached("SELECT rowid, * FROM history")?;
-        let rows: Vec<History> = from_rows::<History>(stmt.query(NO_PARAMS)?)
+    /// Read entries from history. Returns at most <limit> recent history entry. Note that if limit
+    /// is strictly lower than 0, then there is no limit
+    pub fn read_from_history_max(&self, limit: i32) -> Result<Vec<History>> {
+        let mut stmt = self.conn.prepare_cached("SELECT rowid, * FROM history LIMIT ?1")?;
+        let rows: Vec<History> = from_rows::<History>(stmt.query(params!{limit})?)
             .map(|r| r.unwrap())
             .collect();
 
