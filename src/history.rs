@@ -20,6 +20,7 @@ along with this program.  If not, see <https://www.gnu.org/licenses/>.
 
 use anyhow::Result;
 use clap::ArgMatches;
+use std::str::FromStr;
 use term_table::{row::Row, table_cell::TableCell, Table};
 
 use crate::MainContext;
@@ -38,15 +39,26 @@ fn list(ctxt: MainContext, matches: Option<&ArgMatches>) -> Result<()> {
     // - expire command + auto expire
     // - delete an entry
     // - display conversions
-    let rows = ctxt.db.read_from_history()?;
+    let limit = matches
+        .and_then(|m| m.value_of("MAX_ENTRIES"))
+        .map(|l| i32::from_str(l).expect("was validated by clap"))
+        .unwrap_or(-1);
+    let rows = ctxt.db.read_from_history_max(limit)?;
     let mut table = Table::new();
 
+    let no_convert = matches.map(|m| m.is_present("NO_CONVERT")).unwrap_or(false);
+
     for row in rows {
-        table.add_row(Row::new(vec![
-            TableCell::new(row.rowid),
-            TableCell::new(row.datetime),
-            TableCell::new(row.content),
-        ]))
+        let mut v = Vec::with_capacity(4);
+        v.push(format!("{}", row.rowid));
+        v.push(format!("{}", row.datetime));
+        v.push(format!("{}", row.content));
+
+        if !no_convert {
+            v.push(format!("{}", todo!("implement the conversion")));
+        }
+
+        table.add_row(Row::new(v))
     }
 
     println!("{}", table.render());

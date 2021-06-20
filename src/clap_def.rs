@@ -19,6 +19,7 @@ along with this program.  If not, see <https://www.gnu.org/licenses/>.
 //! Define clap subcommand
 
 use clap::{clap_app, crate_authors, crate_description, crate_version, App};
+use std::str::FromStr;
 
 pub fn get_app() -> App<'static, 'static> {
     clap_app!(sesters =>
@@ -39,14 +40,14 @@ pub fn get_app() -> App<'static, 'static> {
             (@arg PLAIN_TXT: +multiple !use_delimiter "Plain text to extract a price tag from. If not set, plain text will be read from stdin")
         )
 
-        // TODO Implement
         (@subcommand history =>
             (about: "Access and manage the history of price tags extracted")
             (@subcommand list =>
                 (about: "List entries in the history")
                 (@arg NO_CONVERT: --no-convert "Don’t perform conversions of the history content")
-                (@arg MAX_ENTRIES: --max-entries <N> +takes_value "Show at most <N> entries")
+                (@arg MAX_ENTRIES: -m --max <N> +takes_value validator(integer) "Show at most <N> entries")
             )
+            // TODO Implement
             (@subcommand clear =>
                 (about: "Removes entries from history")
                 (@arg ALL: --all "Removes all entries from history")
@@ -54,4 +55,8 @@ pub fn get_app() -> App<'static, 'static> {
             )
         )
     )
+}
+
+fn integer(v: String) -> Result<(), String> {
+    return i32::from_str(&v).map_err(|e| format!("{}", e)).map(|_| ());
 }
