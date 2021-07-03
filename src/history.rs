@@ -49,6 +49,11 @@ fn list(ctxt: MainContext, matches: Option<&ArgMatches>) -> Result<()> {
 
     let no_convert = matches.map(|m| m.is_present("NO_CONVERT")).unwrap_or(false);
 
+    if rows.len() == 0 {
+        println!("History is empty for now");
+        return Ok(())
+    }
+
     for row in rows {
         let mut v = Vec::with_capacity(4);
         v.push(format!("{}", row.rowid));
