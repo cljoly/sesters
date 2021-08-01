@@ -45,13 +45,12 @@ pub fn get_app() -> App<'static, 'static> {
             (@subcommand list =>
                 (about: "List entries in the history")
                 (@arg NO_CONVERT: --no-convert "Don’t perform conversions of the history content")
-                (@arg MAX_ENTRIES: -m --max <N> +takes_value validator(integer) "Show at most <N> entries")
+                (@arg MAX_ENTRIES: -m --max +takes_value validator(integer) "Show at most <N> entries")
             )
-            // TODO Implement
             (@subcommand clear =>
-                (about: "Removes entries from history")
-                (@arg ALL: --all "Removes all entries from history")
-                (@arg MAX_ENTRIES: +multiple <ID> "Removes entry with the given <ID>s")
+                (about: "Removes entries from history older than a month")
+                // TODO Implement
+                // (@arg ALL: --all "Removes all entries from history")
             )
         )
     )

@@ -19,6 +19,7 @@ along with this program.  If not, see <https://www.gnu.org/licenses/>.
 //! History subcommand
 
 use anyhow::Result;
+use chrono::{Duration, Utc};
 use clap::ArgMatches;
 use std::str::FromStr;
 use term_table::{row::Row, Table};
@@ -72,6 +73,9 @@ fn list(ctxt: MainContext, matches: Option<&ArgMatches>) -> Result<()> {
     Ok(())
 }
 
-fn clear(ctxt: MainContext, matches: Option<&ArgMatches>) -> Result<()> {
-    todo!()
+fn clear(ctxt: MainContext, _matches: Option<&ArgMatches>) -> Result<()> {
+    let now = Utc::now();
+    let remove_before = now.checked_add_signed(Duration::days(-30)).expect("overflow");
+    let n = ctxt.db.remove_from_history(&remove_before)?;
+    Ok(println!("Deleted {} entries", n))
 }
