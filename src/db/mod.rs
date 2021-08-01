@@ -188,11 +188,26 @@ impl Db {
     pub fn read_from_history_max(&self, limit: i32) -> Result<Vec<History>> {
         let mut stmt = self
             .conn
-            .prepare_cached("SELECT rowid, * FROM history LIMIT ?1")?;
+            .prepare_cached("SELECT rowid, * FROM history ORDER BY datetime ASC LIMIT ?1")?;
         let rows: Vec<History> = from_rows::<History>(stmt.query(params! {limit})?)
             .map(|r| r.unwrap())
             .collect();
 
         Ok(rows)
+    }
+
+    /// Remove old entries from history. Returns the number of deleted entries
+    pub fn remove_from_history(&self, before_date: &DateTime<Utc>) -> Result<usize> {
+        let mut stmt = self.conn.prepare_cached(
+            "DELETE FROM history \
+             WHERE datetime <= :before_date",
+        )?;
+
+        let deleted = stmt.execute_named(named_params! {
+            ":before_date": before_date,
+        })?;
+
+        trace!("deleted rates: {:?}", deleted);
+        Ok(deleted)
     }
 }
