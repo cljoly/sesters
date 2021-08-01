@@ -52,7 +52,7 @@ fn list(ctxt: MainContext, matches: Option<&ArgMatches>) -> Result<()> {
 
     if rows.len() == 0 {
         println!("History is empty for now");
-        return Ok(())
+        return Ok(());
     }
 
     for row in rows {
@@ -75,7 +75,9 @@ fn list(ctxt: MainContext, matches: Option<&ArgMatches>) -> Result<()> {
 
 fn clear(ctxt: MainContext, _matches: Option<&ArgMatches>) -> Result<()> {
     let now = Utc::now();
-    let remove_before = now.checked_add_signed(Duration::days(-30)).expect("overflow");
+    let remove_before = now
+        .checked_add_signed(Duration::days(-30))
+        .expect("overflow");
     let n = ctxt.db.remove_from_history(&remove_before)?;
     Ok(println!("Deleted {} entries", n))
 }
