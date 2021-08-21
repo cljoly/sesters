@@ -1,4 +1,10 @@
-
+<!-- insert
+---
+title: "Sesters"
+date: 2021-08-21T04:48:15
+---
+end_insert -->
+<!-- remove -->
 <div id="home-anchor"></div>
 <div align="center">
 
@@ -8,17 +14,32 @@
        width="70"
        >
 
-
 <h1 alig="center">
   Sesters
 </h1>
+<!-- end_remove -->
 
 💱 Fast, offline currency converter 💴 💷 💶 💵
+
+<!-- insert
+{{< rawhtml >}}
+<div class="badges">
+{{< github_badge >}}
+end_insert -->
+<!-- remove -->
 </div>
 
 <p align="center">
-<a href="https://github.com/cljoly/sesters#getting-started"><img src="https://img.shields.io/badge/🚀 getting-started-yellow?style=flat-square" alt="Crates.io" /></a> </a><a href="#contribute"><img src="https://img.shields.io/github/license/cljoly/sesters.svg?color=blueviolet&label=contribute&style=flat-square" alt="LICENCE" /></a> <a href="https://crates.io/crates/sesters"><img src="https://img.shields.io/crates/v/sesters.svg?color=blue&style=flat-square" alt="Crates.io" /></a> <a href="https://crates.io/crates/sesters"><img alt="undefined" src="https://img.shields.io/crates/d/sesters.svg?color=brightgreen&style=flat-square"></a>
+<!-- end_remove -->
+<a href="https://github.com/cljoly/sesters#getting-started"><img src="https://img.shields.io/badge/🚀 getting-started-yellow?style=flat-square" class="badges" alt="Crates.io" /></a> </a><a href="#contribute"><img src="https://img.shields.io/github/license/cljoly/sesters.svg?color=blueviolet&label=contribute&style=flat-square" alt="LICENCE" /></a> <a href="https://crates.io/crates/sesters"><img src="https://img.shields.io/crates/v/sesters.svg?color=blue&style=flat-square" alt="Crates.io" /></a> <a href="https://crates.io/crates/sesters"><img alt="undefined" src="https://img.shields.io/crates/d/sesters.svg?color=brightgreen&style=flat-square"></a>
+<!-- remove -->
 </p>
+<!-- end_remove -->
+
+<!-- insert
+</div>
+{{< /rawhtml >}}
+end_insert -->
 
 ******************************************
 
