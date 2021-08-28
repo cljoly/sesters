@@ -23,9 +23,10 @@ end_insert -->
 <!-- end_remove -->
 
 <!-- insert
+{{< github_badge >}}
+
 {{< rawhtml >}}
 <div class="badges">
-{{< github_badge >}}
 end_insert -->
 <!-- remove -->
 </div>
