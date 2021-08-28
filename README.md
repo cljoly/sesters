@@ -2,6 +2,7 @@
 ---
 title: "Sesters"
 date: 2021-08-21T04:48:15
+description: "💱 Fast, offline currency converter 💴 💷 💶 💵"
 ---
 end_insert -->
 <!-- remove -->
@@ -17,9 +18,9 @@ end_insert -->
 <h1 alig="center">
   Sesters
 </h1>
-<!-- end_remove -->
 
 💱 Fast, offline currency converter 💴 💷 💶 💵
+<!-- end_remove -->
 
 <!-- insert
 {{< rawhtml >}}
