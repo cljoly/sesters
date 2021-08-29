@@ -33,7 +33,7 @@ end_insert -->
 
 <p align="center">
 <!-- end_remove -->
-<a href="https://cj.rs/sesters#getting-started"><img src="https://img.shields.io/badge/🚀 getting-started-yellow?style=flat-square" class="badges" alt="Crates.io" /></a> </a><a href="#contribute"><img src="https://img.shields.io/github/license/cljoly/sesters.svg?color=blueviolet&label=contribute&style=flat-square" alt="LICENCE" /></a> <a href="https://crates.io/crates/sesters"><img src="https://img.shields.io/crates/v/sesters.svg?color=blue&style=flat-square" alt="Crates.io" /></a> <a href="https://crates.io/crates/sesters"><img alt="undefined" src="https://img.shields.io/crates/d/sesters.svg?color=brightgreen&style=flat-square"></a>
+<a href="https://cj.rs/sesters#getting-started"><img src="https://img.shields.io/badge/🚀 getting-started-yellow?style=flat-square" class="badges" alt="Crates.io" /></a> </a><a href="#contribute"><img src="https://img.shields.io/github/license/cljoly/sesters.svg?color=blueviolet&label=contribute&style=flat-square" alt="LICENCE" /></a> <a href="https://github.com/cljoly/sesters/actions/"><img src="https://github.com/cljoly/sesters/workflows/Continuous%20Integration/badge.svg" alt="Continuous Integration" /></a> <a href="https://crates.io/crates/sesters"><img src="https://img.shields.io/crates/v/sesters.svg?color=blue&style=flat-square" alt="Crates.io" /></a> <a href="https://crates.io/crates/sesters"><img alt="undefined" src="https://img.shields.io/crates/d/sesters.svg?color=brightgreen&style=flat-square"></a>
 <!-- remove -->
 </p>
 <!-- end_remove -->
@@ -80,23 +80,31 @@ EUR 2345.00 ➜ USD 2586.53
 
 - [ ] GUI with [azul.rs](https://azul.rs/)
 
-## Contribute
-
-Contributions are welcome!
-
-<p align="center">
-<a href="https://github.com/cljoly/sesters/issues?q=is%3Aopen+is%3Aissue+label%3A%22good+first+issue%22"><img src="https://img.shields.io/github/issues/cljoly/sesters/good%20first%20issue" alt="Good first issues" /></a>
-<a href="https://github.com/cljoly/sesters/actions/"><img src="https://github.com/cljoly/sesters/workflows/Continuous%20Integration/badge.svg" alt="Continuous Integration" /></a>
-</p>
-
-
 ## About the name
 
 Inspired by this [coin](https://en.wikipedia.org/wiki/Sestertius).
 
+<!-- insert
+{{< rawhtml >}}
+end_insert -->
+
 <p><a href="https://commons.wikimedia.org/wiki/File:Sestertius_Hostilian-s2771.jpg#/media/File:Sestertius_Hostilian-s2771.jpg"><img src="https://upload.wikimedia.org/wikipedia/commons/f/f3/Sestertius_Hostilian-s2771.jpg" alt="Sestertius Hostilian-s2771.jpg"></a><br>By Classical Numismatic Group, Inc. <a rel="nofollow" class="external free" href="http://www.cngcoins.com">http://www.cngcoins.com</a>, <a href="http://creativecommons.org/licenses/by-sa/3.0/" title="Creative Commons Attribution-Share Alike 3.0">CC BY-SA 3.0</a>, <a href="https://commons.wikimedia.org/w/index.php?curid=380116">Link</a></p>
 
+<!-- insert
+{{< /rawhtml >}}
+end_insert -->
+
+## Contribute
+
+Contributions are welcome!
+
+[![](https://img.shields.io/github/issues/cljoly/sesters/good%20first%20issue)](https://github.com/cljoly/sesters/issues?q=is%3Aopen+is%3Aissue+label%3A%22good+first+issue%22)
+
 ## Licence
+
+![GPLv3](https://www.gnu.org/graphics/gplv3-127x51.png)
+
+Sesters is licensed under [GNU General Public License](https://www.gnu.org/licenses/gpl.html) Version 3 or later.
 
 > Copyright (C) 2018-2019  Clément Joly <oss+sesters@131719.xyz>
 > 
