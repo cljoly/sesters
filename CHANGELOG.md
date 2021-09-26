@@ -1,5 +1,16 @@
 # Changelog
 
+## Version 0.3.2
+
+### Bug
+
+- Avoid panic when the data directory does not exist
+
+### Misc
+
+- Documentation update
+- Dependencies update
+
 ## Version 0.3.1
 
 ### Bug
