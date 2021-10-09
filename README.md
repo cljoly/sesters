@@ -54,7 +54,7 @@ $ cargo install sesters
 ```
 
 Exemple of plain text conversion:
-```
+```sh
 $ sesters convert a price burried 1 USD in text
 USD 1.00 ➜ EUR 0.89
 $ sesters convert -- -1 €
@@ -63,22 +63,33 @@ $ sesters convert
 I can type my price and press enter EUR lorem 2356
 EUR 2345.00 ➜ USD 2586.53
 ```
+It is then visible in the history:
+```
+$ sesters history list
+╔═══╦═══════════════════════════════════╦════════════════════════════════════════════════════╦═══════════════════════════╗
+║ 1 ║ 2021-10-09 22:12:04.698263580 UTC ║ a price burried 1 USD in text                      ║ USD 1.00 ➜ EUR 0.86       ║
+║   ║                                   ║                                                    ║ USD 1.00 ➜ GBP 0.73       ║
+║   ║                                   ║                                                    ║                           ║
+║   ║                                   ║                                                    ║                           ║
+╠═══╬═══════════════════════════════════╬════════════════════════════════════════════════════╬═══════════════════════════╣
+║ 2 ║ 2021-10-09 22:12:08.055331504 UTC ║ -1 €                                               ║ EUR -1.00 ➜ USD -1.16     ║
+║   ║                                   ║                                                    ║ EUR -1.00 ➜ GBP -0.85     ║
+║   ║                                   ║                                                    ║                           ║
+║   ║                                   ║                                                    ║                           ║
+╠═══╬═══════════════════════════════════╬════════════════════════════════════════════════════╬═══════════════════════════╣
+║ 3 ║ 2021-10-09 22:12:51.221071123 UTC ║ I can type my price and press enter EUR lorem 2356 ║ EUR 2356.00 ➜ USD 2727.15 ║
+║   ║                                   ║                                                    ║ EUR 2356.00 ➜ GBP 2003.27 ║
+║   ║                                   ║                                                    ║                           ║
+║   ║                                   ║                                                    ║                           ║
+╚═══╩═══════════════════════════════════╩════════════════════════════════════════════════════╩═══════════════════════════╝
+
+```
 
 ## Features
 
-🏗️ This is a work in progress, only checked features are implemented yet.
-
-- [X] Find prices in plain text with several currencies
-- [X] Store exchange rates locally
-- [X] Retrieve exchange rate (partial)
-  - [X] Cache retrieved rate
-  - [ ] More sources to be added ![GitHub issues by-label](https://img.shields.io/github/issues/cljoly/sesters/rate-source.svg)
-- [ ] Save recent searches
-  - [ ] Display this history in a table
-
-### Maybe
-
-- [ ] GUI with [azul.rs](https://azul.rs/)
+- Find prices in plain text with several currencies
+- Store exchange rates locally for a while, to speed up future conversions
+- Save recent conversion history. The history is automatically deleted after a while
 
 ## About the name
 
@@ -96,7 +107,7 @@ end_insert -->
 
 ## Contribute
 
-Contributions are welcome!
+Contributions are welcome, see this [document](https://cj.rs/docs/contribute/)!
 
 [![](https://img.shields.io/github/issues/cljoly/sesters/good%20first%20issue)](https://github.com/cljoly/sesters/issues?q=is%3Aopen+is%3Aissue+label%3A%22good+first+issue%22)
 

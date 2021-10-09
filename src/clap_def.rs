@@ -44,7 +44,7 @@ pub fn get_app() -> App<'static, 'static> {
             (about: "Access and manage the history of price tags extracted")
             (@subcommand list =>
                 (about: "List entries in the history")
-                (@arg NO_CONVERT: --noconvert "Don’t perform conversions of the history content")
+                (@arg NO_CONVERT: -n --noconvert "Don’t perform conversions of the history content")
                 (@arg MAX_ENTRIES: -m --max +takes_value validator(integer) "Show at most <N> entries")
             )
             (@subcommand expire =>
