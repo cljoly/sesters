@@ -24,7 +24,7 @@ use clap::ArgMatches;
 use std::str::FromStr;
 use term_table::{row::Row, Table};
 
-use crate::convert::conversions_string;
+use crate::convert::convert_string;
 use crate::MainContext;
 
 // Default time in days before history entries are expireed
@@ -76,7 +76,7 @@ fn list(ctxt: &MainContext, limit: i32, no_convert: bool) -> Result<()> {
         v.push(format!("{}", row.content));
 
         if !no_convert {
-            v.push(conversions_string(&ctxt, &row.content, Some(3))?);
+            v.push(convert_string(&ctxt, &row.content, Some(3))?);
         }
 
         table.add_row(Row::new(v))
@@ -95,11 +95,11 @@ fn expire(ctxt: &MainContext, expire_delay_days: usize, print_deleted: bool) -> 
     let n = ctxt.db.remove_from_history(&remove_before)?;
 
     if print_deleted {
-    match n {
-        0 => println!("No entry deleted"),
-        1 => println!("Deleted one entry"),
-        _ => println!("Deleted {} entries", n),
-    }
+        match n {
+            0 => println!("No entry deleted"),
+            1 => println!("Deleted one entry"),
+            _ => println!("Deleted {} entries", n),
+        }
     }
 
     Ok(())
