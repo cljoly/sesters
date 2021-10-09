@@ -83,7 +83,7 @@ pub(crate) fn run(ctxt: MainContext, matches: &ArgMatches) -> Result<()> {
 
     println!(
         "{}",
-        conversions_string(
+        convert_string(
             &ctxt,
             &txt,
             matches
@@ -95,24 +95,30 @@ pub(crate) fn run(ctxt: MainContext, matches: &ArgMatches) -> Result<()> {
     Ok(())
 }
 
-pub fn conversions_string(ctxt: &MainContext, txt: &str, limit: Option<usize>) -> Result<String> {
+fn conversions_to_string(all_conversions: Vec<Vec<String>>) -> Result<String> {
     let mut string = String::new();
-
-    let all_conversions = convert(&ctxt, &txt, limit)?;
 
     if all_conversions.len() == 0 {
         Ok("No currency found.".to_owned())
     } else {
-        for group_conversions in all_conversions {
-            for conversion in group_conversions {
-                string.push_str(&conversion);
+        for (i, group_conversions) in all_conversions.iter().enumerate() {
+            if i > 0 {
                 string.push_str("\n");
             }
-            string.push_str("\n");
+            for (j, conversion) in group_conversions.iter().enumerate() {
+                if j > 0 || i > 0 {
+                    string.push_str("\n");
+                }
+                string.push_str(&conversion);
+            }
         }
 
         Ok(string)
     }
+}
+
+pub fn convert_string(ctxt: &MainContext, txt: &str, limit: Option<usize>) -> Result<String> {
+    conversions_to_string(convert(ctxt, txt, limit)?)
 }
 
 pub fn convert(ctxt: &MainContext, txt: &str, limit: Option<usize>) -> Result<Vec<Vec<String>>> {
@@ -213,4 +219,27 @@ fn get_conversions(ctxt: &MainContext, price_tag: &PriceTag) -> Result<Vec<Strin
     }
 
     Ok(conversions)
+}
+
+#[test]
+fn conversions_string_test() {
+    let multiple_groups = vec![
+        vec![
+            String::from("GBP 15.00 ➜ EUR 17.64"),
+            String::from("GBP 15.00 ➜ USD 20.42"),
+        ],
+        vec![String::from("EUR 12.00 ➜ USD 13.89")],
+        vec![String::from("USD 15.00 ➜ EUR 12.96")],
+    ];
+
+    assert_eq!(
+        conversions_to_string(multiple_groups).unwrap(),
+        "\
+GBP 15.00 ➜ EUR 17.64
+GBP 15.00 ➜ USD 20.42
+
+EUR 12.00 ➜ USD 13.89
+
+USD 15.00 ➜ EUR 12.96\
+    ")
 }
