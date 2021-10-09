@@ -40,7 +40,7 @@ pub(crate) fn run(ctxt: MainContext, matches: &ArgMatches) -> Result<()> {
                 })
                 .unwrap_or(EXPIRE_DELAY);
 
-            expire(&ctxt, days)?
+            expire(&ctxt, days, true)?
         }
         ("list", m) | (_, m) => {
             let no_convert = m.map(|m| m.is_present("NO_CONVERT")).unwrap_or(false);
@@ -87,16 +87,19 @@ fn list(ctxt: &MainContext, limit: i32, no_convert: bool) -> Result<()> {
     Ok(())
 }
 
-fn expire(ctxt: &MainContext, expire_delay_days: usize) -> Result<()> {
+fn expire(ctxt: &MainContext, expire_delay_days: usize, print_deleted: bool) -> Result<()> {
     let now = Utc::now();
     let remove_before = now
         .checked_add_signed(Duration::days(-1 * expire_delay_days as i64))
         .expect("overflow");
     let n = ctxt.db.remove_from_history(&remove_before)?;
+
+    if print_deleted {
     match n {
         0 => println!("No entry deleted"),
         1 => println!("Deleted one entry"),
         _ => println!("Deleted {} entries", n),
+    }
     }
 
     Ok(())
@@ -104,5 +107,5 @@ fn expire(ctxt: &MainContext, expire_delay_days: usize) -> Result<()> {
 
 // Automatic cleaning of entries older than a default number of hours
 fn auto_expire(ctxt: &MainContext) -> Result<()> {
-    expire(ctxt, EXPIRE_DELAY)
+    expire(ctxt, EXPIRE_DELAY, false)
 }
