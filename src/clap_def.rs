@@ -44,13 +44,14 @@ pub fn get_app() -> App<'static, 'static> {
             (about: "Access and manage the history of price tags extracted")
             (@subcommand list =>
                 (about: "List entries in the history")
-                (@arg NO_CONVERT: --no-convert "Don’t perform conversions of the history content")
+                (@arg NO_CONVERT: --noconvert "Don’t perform conversions of the history content")
                 (@arg MAX_ENTRIES: -m --max +takes_value validator(integer) "Show at most <N> entries")
             )
-            (@subcommand clear =>
-                (about: "Removes entries from history older than a month")
+            (@subcommand expire =>
+                (about: "Removes older entries from history")
                 // TODO Implement
                 // (@arg ALL: --all "Removes all entries from history")
+                (@arg DAYS: -d --days +takes_value validator(integer) "Delete all entries older than the given number of days (default 30)")
             )
         )
     )
