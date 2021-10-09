@@ -27,28 +27,42 @@ use term_table::{row::Row, Table};
 use crate::convert::conversions_string;
 use crate::MainContext;
 
+// Default time in days before history entries are expireed
+static EXPIRE_DELAY: usize = 30;
+
 pub(crate) fn run(ctxt: MainContext, matches: &ArgMatches) -> Result<()> {
     match matches.subcommand() {
-        ("clear", m) => clear(ctxt, m)?,
-        ("list", m) | (_, m) => list(ctxt, m)?,
+        ("expire", m) => {
+            let days: usize = m
+                .and_then(|m| {
+                    m.value_of("DAYS")
+                        .map(|l| usize::from_str(l).expect("was validated by clap"))
+                })
+                .unwrap_or(EXPIRE_DELAY);
+
+            expire(&ctxt, days)?
+        }
+        ("list", m) | (_, m) => {
+            let no_convert = m.map(|m| m.is_present("NO_CONVERT")).unwrap_or(false);
+
+            let limit = m
+                .and_then(|m| m.value_of("MAX_ENTRIES"))
+                .map(|l| i32::from_str(l).expect("was validated by clap"))
+                .unwrap_or(-1);
+
+            list(&ctxt, limit, no_convert)?;
+            auto_expire(&ctxt)?
+        }
     }
 
     Ok(())
 }
 
-fn list(ctxt: MainContext, matches: Option<&ArgMatches>) -> Result<()> {
+fn list(ctxt: &MainContext, limit: i32, no_convert: bool) -> Result<()> {
     // TODO
-    // - expire command + auto expire
     // - delete an entry
-    // - display conversions
-    let limit = matches
-        .and_then(|m| m.value_of("MAX_ENTRIES"))
-        .map(|l| i32::from_str(l).expect("was validated by clap"))
-        .unwrap_or(-1);
     let rows = ctxt.db.read_from_history_max(limit)?;
     let mut table = Table::new();
-
-    let no_convert = matches.map(|m| m.is_present("NO_CONVERT")).unwrap_or(false);
 
     if rows.len() == 0 {
         println!("History is empty for now");
@@ -73,11 +87,22 @@ fn list(ctxt: MainContext, matches: Option<&ArgMatches>) -> Result<()> {
     Ok(())
 }
 
-fn clear(ctxt: MainContext, _matches: Option<&ArgMatches>) -> Result<()> {
+fn expire(ctxt: &MainContext, expire_delay_days: usize) -> Result<()> {
     let now = Utc::now();
     let remove_before = now
-        .checked_add_signed(Duration::days(-30))
+        .checked_add_signed(Duration::days(-1 * expire_delay_days as i64))
         .expect("overflow");
     let n = ctxt.db.remove_from_history(&remove_before)?;
-    Ok(println!("Deleted {} entries", n))
+    match n {
+        0 => println!("No entry deleted"),
+        1 => println!("Deleted one entry"),
+        _ => println!("Deleted {} entries", n),
+    }
+
+    Ok(())
+}
+
+// Automatic cleaning of entries older than a default number of hours
+fn auto_expire(ctxt: &MainContext) -> Result<()> {
+    expire(ctxt, EXPIRE_DELAY)
 }
