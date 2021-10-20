@@ -3,6 +3,9 @@
 title: "Sesters"
 date: 2021-08-21T04:48:15
 description: "💱 Fast, offline currency converter 💴 💷 💶 💵"
+tags:
+- Rust
+- Finance
 ---
 end_insert -->
 <!-- remove -->
