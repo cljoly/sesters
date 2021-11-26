@@ -38,6 +38,3 @@ test-case = "1.2"
 
 [profile.release]
 debug = true
-
-[advisories]
-ignore = [ "RUSTSEC-2020-0159" ]
