@@ -25,7 +25,7 @@ chrono = { version = "0.4", features = ["serde"] }
 bincode = "1.*"
 dirs-next = "2.0"
 encoding = "0.2"
-clap = "2"
+clap = "3"
 itertools = "0.10"
 anyhow = "1"
 rusqlite = { version = "0.24", features = ["bundled", "chrono", "trace"] }
