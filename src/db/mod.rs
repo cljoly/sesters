@@ -27,7 +27,6 @@ use log::{debug, trace, warn};
 use rusqlite::named_params;
 use rusqlite::params;
 use rusqlite::Connection;
-use rusqlite::NO_PARAMS;
 use serde_rusqlite::columns_from_statement;
 use serde_rusqlite::from_row_with_columns;
 use serde_rusqlite::from_rows;
