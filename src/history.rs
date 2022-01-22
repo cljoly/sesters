@@ -25,32 +25,19 @@ use std::str::FromStr;
 use term_table::{row::Row, Table};
 
 use crate::convert::convert_string;
-use crate::MainContext;
+use crate::{HistoryCommands, MainContext};
 
 // Default time in days before history entries are expireed
-static EXPIRE_DELAY: usize = 30;
+pub(crate) static EXPIRE_DELAY: &'static str = "30";
 
-pub(crate) fn run(ctxt: MainContext, matches: &ArgMatches) -> Result<()> {
-    match matches.subcommand() {
-        ("expire", m) => {
-            let days: usize = m
-                .and_then(|m| {
-                    m.value_of("DAYS")
-                        .map(|l| usize::from_str(l).expect("was validated by clap"))
-                })
-                .unwrap_or(EXPIRE_DELAY);
-
-            expire(&ctxt, days, true)?
-        }
-        ("list", m) | (_, m) => {
-            let no_convert = m.map(|m| m.is_present("NO_CONVERT")).unwrap_or(false);
-
-            let limit = m
-                .and_then(|m| m.value_of("MAX_ENTRIES"))
-                .map(|l| i32::from_str(l).expect("was validated by clap"))
-                .unwrap_or(-1);
-
-            list(&ctxt, limit, no_convert)?;
+pub(crate) fn run(ctxt: MainContext, subcommand: HistoryCommands) -> Result<()> {
+    match subcommand {
+        HistoryCommands::Expire { all, days } => expire(&ctxt, days, true)?,
+        HistoryCommands::List {
+            no_convert,
+            max_entries,
+        } => {
+            list(&ctxt, max_entries as i32, no_convert)?;
             auto_expire(&ctxt)?
         }
     }
@@ -107,5 +94,5 @@ fn expire(ctxt: &MainContext, expire_delay_days: usize, print_deleted: bool) -> 
 
 // Automatic cleaning of entries older than a default number of hours
 fn auto_expire(ctxt: &MainContext) -> Result<()> {
-    expire(ctxt, EXPIRE_DELAY, false)
+    expire(ctxt, EXPIRE_DELAY.parse().unwrap(), false)
 }

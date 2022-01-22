@@ -17,12 +17,10 @@ along with this program.  If not, see <https://www.gnu.org/licenses/>.
  */
 
 use anyhow::Result;
-use clap::ArgMatches;
+use clap::{crate_authors, crate_description, crate_version, AppSettings, Parser, Subcommand};
 use log::{error, info};
-use std::io::stdout;
 
 mod api;
-mod clap_def;
 mod config;
 mod convert;
 pub mod currency;
@@ -56,17 +54,92 @@ impl<'mc> MainContext<'mc> {
     }
 }
 
-fn from_args(matches: ArgMatches) -> Result<()> {
-    let mut out = stdout();
+#[derive(Parser, Debug)]
+#[clap(name = "sesters",
+  version = crate_version!(),
+  author = crate_authors!(),
+  about = concat!(crate_description!(),
+    "\n",
+    "https://cj.rs/sesters/"),
+  long_about = None)]
+#[clap(setting(AppSettings::DontCollapseArgsInUsage))]
+pub(crate) struct Cli {
+    #[clap(subcommand)]
+    command: Commands,
+
+    /// Target currency by ISO symbol, uses defaults from the configuration file if not set
+    #[clap(short = 't', value_name = "CURRENCY")]
+    to: Vec<String>,
+    // TODO Add flag for verbosity
+}
+
+#[derive(Subcommand, Debug)]
+pub(crate) enum Commands {
+    /// Perform currency conversion to your preferred currency,
+    /// from a price tag found in plain text
+    #[clap(setting(AppSettings::InferSubcommands))]
+    Convert {
+        /// Read text containing price tag from stdin
+        #[clap(long = "stdin")]
+        stdin: bool,
+
+        /// Find at most n price tag in the text, i.e. 3
+        #[clap(short = 'n')]
+        findn: Option<usize>,
+
+        /// Plain text to extract a price tag from. If not set, plain text will be read from stdin
+        plain_text: Vec<String>,
+    },
+
+    /// Access and manage the history of price tags extracted
+    #[clap(setting(AppSettings::InferSubcommands))]
+    History {
+        #[clap(subcommand)]
+        command: HistoryCommands,
+    },
+}
+
+#[derive(Subcommand, Debug)]
+pub(crate) enum HistoryCommands {
+    /// List entries in the history
+    #[clap(setting(AppSettings::InferSubcommands))]
+    List {
+        /// Don’t perform conversions of the history content
+        #[clap(short = 'n', long = "noconvert")]
+        no_convert: bool,
+        /// Show at most <N> entries
+        #[clap(short = 'm', long = "max", default_value = "50")]
+        max_entries: usize,
+    },
+
+    /// Removes older entries from history
+    #[clap(setting(AppSettings::InferSubcommands))]
+    Expire {
+        // TODO Implement
+        /// Removes all entries from history
+        #[clap(long = "all")]
+        all: bool,
+
+        /// Delete all entries older than the given number of days (default 30)
+        #[clap(default_value = crate::history::EXPIRE_DELAY)]
+        days: usize,
+    },
+}
+
+fn from_args() -> Result<()> {
     Config::init()?;
     let cfg = Config::new()?;
 
     // Argument parsing
-    let currency_iso_names_cfg: Vec<&str> = cfg.currencies().iter().map(|s| s.as_str()).collect();
-    let currency_iso_names: Vec<&str> = matches
-        .values_of("TO")
-        .map_or(currency_iso_names_cfg, |to| to.collect());
-    let destination_currencies = currency_iso_names
+    let args = Cli::parse();
+
+    let txt_destination_currencies = if args.to.len() == 0 {
+        // Use configuration currency if none are specified
+        cfg.currencies()
+    } else {
+        &args.to
+    };
+    let destination_currencies: Vec<&Currency> = txt_destination_currencies
         .iter()
         .filter_map(|iso_name| {
             currency::existing_from_iso(&iso_name).or_else(|| {
@@ -78,10 +151,13 @@ fn from_args(matches: ArgMatches) -> Result<()> {
 
     let ctxt = MainContext::new(cfg, destination_currencies)?;
 
-    match matches.subcommand() {
-        ("convert", Some(m)) => crate::convert::run(ctxt, m)?,
-        ("history", Some(m)) => crate::history::run(ctxt, m)?,
-        (_, _) => crate::clap_def::get_app().write_long_help(&mut out)?,
+    match args.command {
+        Commands::Convert {
+            stdin,
+            findn,
+            plain_text,
+        } => convert::run(ctxt, stdin, findn, plain_text)?,
+        Commands::History { command } => history::run(ctxt, command)?,
     }
 
     info!("Exiting");
@@ -93,5 +169,5 @@ fn main() {
     env_logger::init();
     info!("Starting up");
 
-    from_args(crate::clap_def::get_app().get_matches()).unwrap();
+    from_args().unwrap();
 }

@@ -18,12 +18,7 @@ along with this program.  If not, see <https://www.gnu.org/licenses/>.
 
 //! Module for the convert subcommand
 
-use std::str::FromStr;
-
 use anyhow::{Context, Result};
-use clap::ArgMatches;
-use clap::Values as ClapValues;
-use itertools::Itertools;
 use log::{info, log_enabled, trace};
 use std::io::{self, BufRead};
 use ureq::Agent;
@@ -34,7 +29,7 @@ use crate::{currency::PriceTag, rate::Rate};
 
 /// Concat the args with spaces, if args are not `None`. Read text from the
 /// first line of stdin otherwise.
-fn concat_or_stdin_1_line(arg_text: Option<ClapValues>) -> String {
+fn concat_or_stdin_1_line(arg_text: Vec<String>) -> String {
     fn read_stdin() -> String {
         info!("Reading stdin…");
         eprintln!("Enter the plain text on the first line");
@@ -48,15 +43,12 @@ fn concat_or_stdin_1_line(arg_text: Option<ClapValues>) -> String {
         trace!("txt: {}", txt);
         txt
     }
-    fn space_join(values: ClapValues) -> String {
-        let mut txt = String::new();
-        let spaced_values = Itertools::intersperse(values, " ");
-        for s in spaced_values {
-            txt.push_str(s);
-        }
-        txt
+
+    if arg_text.len() == 0 {
+        read_stdin()
+    } else {
+        arg_text.join(" ")
     }
-    arg_text.map_or_else(read_stdin, space_join)
 }
 
 /// Return content of stdin in a buffer
@@ -70,27 +62,23 @@ fn stdin_buf() -> String {
 }
 
 /// Parse arguments for convert subcommand and run it
-pub(crate) fn run(ctxt: MainContext, matches: &ArgMatches) -> Result<()> {
+pub(crate) fn run(
+    ctxt: MainContext,
+    stdin: bool,
+    findn: Option<usize>,
+    plain_text: Vec<String>,
+) -> Result<()> {
     let txt;
-    if matches.is_present("STDIN") {
+    if stdin {
         txt = stdin_buf();
     } else {
-        txt = concat_or_stdin_1_line(matches.values_of("PLAIN_TXT"));
+        txt = concat_or_stdin_1_line(plain_text);
     }
     trace!("plain text: {}", &txt);
 
     ctxt.db.add_to_history(&txt)?;
 
-    println!(
-        "{}",
-        convert_string(
-            &ctxt,
-            &txt,
-            matches
-                .value_of("FINDN")
-                .map(|s| usize::from_str(s).unwrap())
-        )?
-    );
+    println!("{}", convert_string(&ctxt, &txt, findn,)?);
 
     Ok(())
 }
