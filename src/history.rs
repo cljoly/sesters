@@ -32,7 +32,10 @@ pub(crate) static EXPIRE_DELAY: &'static str = "30";
 
 pub(crate) fn run(ctxt: MainContext, subcommand: HistoryCommands) -> Result<()> {
     match subcommand {
-        HistoryCommands::Expire { all, days } => expire(&ctxt, days, true)?,
+        HistoryCommands::Expire { all, days } => {
+            let days = if all { 0 } else { days };
+            expire(&ctxt, days, true)?
+        }
         HistoryCommands::List {
             no_convert,
             max_entries,

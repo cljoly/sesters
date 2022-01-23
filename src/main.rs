@@ -17,7 +17,7 @@ along with this program.  If not, see <https://www.gnu.org/licenses/>.
  */
 
 use anyhow::Result;
-use clap::{crate_authors, crate_description, crate_version, AppSettings, Parser, Subcommand};
+use clap::{crate_authors, crate_description, crate_version, AppSettings, ArgGroup, Parser, Subcommand};
 use log::{error, info};
 
 mod api;
@@ -114,14 +114,14 @@ pub(crate) enum HistoryCommands {
 
     /// Removes older entries from history
     #[clap(setting(AppSettings::InferSubcommands))]
+    #[clap(group(ArgGroup::new("expire").args(&["all", "days"])))]
     Expire {
-        // TODO Implement
         /// Removes all entries from history
-        #[clap(long = "all")]
+        #[clap(long)]
         all: bool,
 
-        /// Delete all entries older than the given number of days (default 30)
-        #[clap(default_value = crate::history::EXPIRE_DELAY)]
+        /// Delete all entries older than the given number of days
+        #[clap(default_value = crate::history::EXPIRE_DELAY, long)]
         days: usize,
     },
 }
