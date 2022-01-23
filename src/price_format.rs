@@ -45,7 +45,6 @@ mod tests {
         for samples in price_format_samples {
             for s in *samples {
                 println!("price sample: {}", s);
-                &price_format.regex;
                 assert!(price_format.regex.is_match(s));
             }
         }

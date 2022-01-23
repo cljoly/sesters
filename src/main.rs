@@ -17,7 +17,9 @@ along with this program.  If not, see <https://www.gnu.org/licenses/>.
  */
 
 use anyhow::Result;
-use clap::{crate_authors, crate_description, crate_version, AppSettings, ArgGroup, Parser, Subcommand};
+use clap::{
+    crate_authors, crate_description, crate_version, AppSettings, ArgGroup, Parser, Subcommand,
+};
 use log::{error, info};
 
 mod api;
@@ -29,6 +31,7 @@ mod history;
 mod price_format;
 pub mod price_in_text;
 mod rate;
+mod tools;
 
 use crate::config::Config;
 use crate::currency::Currency;
@@ -116,6 +119,10 @@ pub(crate) enum HistoryCommands {
     #[clap(setting(AppSettings::InferSubcommands))]
     #[clap(group(ArgGroup::new("expire").args(&["all", "days"])))]
     Expire {
+        /// Remove without printing or confirming
+        #[clap(short = 'y')]
+        yes: bool,
+
         /// Removes all entries from history
         #[clap(long)]
         all: bool,

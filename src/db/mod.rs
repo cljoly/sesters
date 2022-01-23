@@ -196,6 +196,21 @@ impl Db {
     }
 
     /// Remove old entries from history. Returns the number of deleted entries
+    pub fn read_from_history_before(&self, before_date: &DateTime<Utc>) -> Result<Vec<History>> {
+        let mut stmt = self.conn.prepare_cached(
+            "SELECT rowid, * \
+                FROM history \
+                WHERE datetime <= :before_date
+                ORDER BY datetime ASC",
+        )?;
+        let rows: Vec<History> = from_rows::<History>(stmt.query(params! {before_date})?)
+            .map(|r| r.unwrap())
+            .collect();
+
+        Ok(rows)
+    }
+
+    /// Remove old entries from history. Returns the number of deleted entries
     pub fn remove_from_history(&self, before_date: &DateTime<Utc>) -> Result<usize> {
         let mut stmt = self.conn.prepare_cached(
             "DELETE FROM history \
