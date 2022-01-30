@@ -100,7 +100,7 @@ impl Default for Apis {
     }
 }
 
-/// For https://www.currencyconverterapi.com/
+/// For <https://www.currencyconverterapi.com/>
 #[derive(Serialize, Deserialize)]
 pub struct CurrencyConverterApiCom {
     pub key: String,
@@ -116,7 +116,7 @@ impl Default for CurrencyConverterApiCom {
     }
 }
 
-/// For https://exchangeratesapi.io/
+/// For <https://exchangeratesapi.io/>
 #[derive(Serialize, Deserialize)]
 pub struct ExchangeRatesApiIo {
     /// API key, if any

@@ -182,7 +182,7 @@ impl fmt::Display for Currency {
 /// Symbols and ISO are from Wikipedia
 // TODO Use static instead of const
 
-/// https://en.wikipedia.org/wiki/Bitcoin
+/// <https://en.wikipedia.org/wiki/Bitcoin>
 // TODO Use Currency::new once const fn is in stable
 pub const BTC: Currency = Currency {
     symbols: &["₿", "฿", "Ƀ"],
@@ -191,7 +191,7 @@ pub const BTC: Currency = Currency {
     pos: Pos::After,
 };
 
-/// https://en.wikipedia.org/wiki/United_States_dollar
+/// <https://en.wikipedia.org/wiki/United_States_dollar>
 pub const USD: Currency = Currency {
     symbols: &["$"],
     isos: &["USD"],
@@ -199,7 +199,7 @@ pub const USD: Currency = Currency {
     pos: Pos::Before,
 };
 
-/// https://en.wikipedia.org/wiki/Euro
+/// <https://en.wikipedia.org/wiki/Euro>
 pub const EUR: Currency = Currency {
     symbols: &["€"],
     isos: &["EUR"],
@@ -207,7 +207,7 @@ pub const EUR: Currency = Currency {
     pos: Pos::After,
 };
 
-/// https://en.wikipedia.org/wiki/Pound_sterling
+/// <https://en.wikipedia.org/wiki/Pound_sterling>
 pub const GBP: Currency = Currency {
     symbols: &["£"],
     isos: &["GBP"],
@@ -215,7 +215,7 @@ pub const GBP: Currency = Currency {
     pos: Pos::Before,
 };
 
-/// https://en.wikipedia.org/wiki/Swiss_franc
+/// <https://en.wikipedia.org/wiki/Swiss_franc>
 pub const CHF: Currency = Currency {
     symbols: &["CHF", "Fr.", "SFr.", "Fr.sv.", "₣"],
     isos: &["CHF"],
@@ -223,7 +223,7 @@ pub const CHF: Currency = Currency {
     pos: Pos::Before,
 };
 
-/// https://en.wikipedia.org/wiki/Japanese_yen
+/// <https://en.wikipedia.org/wiki/Japanese_yen>
 pub const JPY: Currency = Currency {
     symbols: &["¥", "円", "圓"],
     isos: &["JPY"],
