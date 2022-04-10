@@ -18,7 +18,7 @@ along with this program.  If not, see <https://www.gnu.org/licenses/>.
 
 use anyhow::Result;
 use clap::{
-    crate_authors, crate_description, crate_version, AppSettings, ArgGroup, Parser, Subcommand,
+    crate_authors, crate_description, crate_version, ArgGroup, Parser, Subcommand,
 };
 use log::{error, info};
 
@@ -65,7 +65,7 @@ impl<'mc> MainContext<'mc> {
     "\n",
     "https://cj.rs/sesters/"),
   long_about = None)]
-#[clap(setting(AppSettings::DontCollapseArgsInUsage))]
+#[clap(dont_collapse_args_in_usage = true)]
 pub(crate) struct Cli {
     #[clap(subcommand)]
     command: Commands,
@@ -80,7 +80,7 @@ pub(crate) struct Cli {
 pub(crate) enum Commands {
     /// Perform currency conversion to your preferred currency,
     /// from a price tag found in plain text
-    #[clap(setting(AppSettings::InferSubcommands))]
+    #[clap(infer_subcommands = true)]
     Convert {
         /// Read text containing price tag from stdin
         #[clap(long = "stdin")]
@@ -95,7 +95,7 @@ pub(crate) enum Commands {
     },
 
     /// Access and manage the history of price tags extracted
-    #[clap(setting(AppSettings::InferSubcommands))]
+    #[clap(infer_subcommands = true)]
     History {
         #[clap(subcommand)]
         command: HistoryCommands,
@@ -105,7 +105,7 @@ pub(crate) enum Commands {
 #[derive(Subcommand, Debug)]
 pub(crate) enum HistoryCommands {
     /// List entries in the history
-    #[clap(setting(AppSettings::InferSubcommands))]
+    #[clap(infer_subcommands = true)]
     List {
         /// Don’t perform conversions of the history content
         #[clap(short = 'n', long = "noconvert")]
@@ -116,7 +116,7 @@ pub(crate) enum HistoryCommands {
     },
 
     /// Removes older entries from history
-    #[clap(setting(AppSettings::InferSubcommands))]
+    #[clap(infer_subcommands = true)]
     #[clap(group(ArgGroup::new("expire").args(&["all", "days"])))]
     Expire {
         /// Remove without printing or confirming
