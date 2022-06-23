@@ -17,9 +17,7 @@ along with this program.  If not, see <https://www.gnu.org/licenses/>.
  */
 
 use anyhow::Result;
-use clap::{
-    crate_authors, crate_description, crate_version, ArgGroup, Parser, Subcommand,
-};
+use clap::{crate_authors, crate_description, crate_version, ArgGroup, Parser, Subcommand};
 use log::{error, info};
 
 mod api;
