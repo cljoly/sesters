@@ -22,6 +22,8 @@ end_insert -->
   Sesters
 </h1>
 
+> **Note**: This repository is archived for now, but I may work on this project in the future.
+
 💱 Fast, offline currency converter 💴 💷 💶 💵
 <!-- end_remove -->
 
